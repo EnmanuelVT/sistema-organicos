@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      ACCEPT_EULA: ${ACCEPT_EULA}
+      SA_PASSWORD: ${SA_PASSWORD}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD", "sqlcmd", "-S", "localhost", "-U", "${DB_USER}", "-P", "${SA_PASSWORD}", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  db-init:
+    build:
+      context: ./db-init
+      dockerfile: Dockerfile.csharp
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: "Server=${DB_SERVER},${DB_PORT};Database=${DB_DATABASE};User Id=${DB_USER};Password=${SA_PASSWORD};"
+    volumes:
+      - ./scripts:/scripts:ro
+    command: ["dotnet", "YourConsoleApp.dll"]
+
+volumes:
+  sqlserver_data:
