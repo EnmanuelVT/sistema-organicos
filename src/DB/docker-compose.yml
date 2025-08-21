@@ -4,8 +4,12 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
     environment:
-      ACCEPT_EULA: ${ACCEPT_EULA}
-      SA_PASSWORD: ${SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      DB_SERVER: "sqlserver"
+      DB_PORT: "1433"
+      DB_DATABASE: "master"
+      DB_USER: "sa"
     ports:
       - "${DB_PORT}:1433"
     volumes:
