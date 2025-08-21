@@ -18,4 +18,8 @@
       <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\ENTIDAD\ENTIDAD.csproj" />
+    </ItemGroup>
+
 </Project>
