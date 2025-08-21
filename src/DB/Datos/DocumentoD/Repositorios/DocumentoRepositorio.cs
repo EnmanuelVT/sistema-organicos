@@ -91,7 +91,8 @@ public class DocumentoRepositorio
         }
     }
 
-    public async Task GenerarDocumentoSpAsync(CreateDocumentoDto documentoDto)
+    // data transfer object
+    public async Task GenerarDocumentoSpAsync(CreateDocumentoDto documentoDto, int idUsuario)
     {
         // sp_generar_documento
         /* 
@@ -123,11 +124,11 @@ public class DocumentoRepositorio
                 command.CommandType = System.Data.CommandType.StoredProcedure;
 
                 // Agregar parámetros necesarios
-                command.Parameters.AddWithValue("@p_MST_CODIGO", "Muestra123");
-                command.Parameters.AddWithValue("@p_id_tipo_doc", 1);
-                command.Parameters.AddWithValue("@p_version", 1);
-                command.Parameters.AddWithValue("@p_ruta", "/ruta/al/documento.pdf");
-                command.Parameters.AddWithValue("@p_id_usuario", "usuario123");
+                command.Parameters.AddWithValue("@p_MST_CODIGO", documentoDto.IdMuestra);
+                command.Parameters.AddWithValue("@p_id_tipo_doc", documentoDto.IdTipoDoc);
+                command.Parameters.AddWithValue("@p_version", documentoDto.Version); // la version es autogenerada?
+                command.Parameters.AddWithValue("@p_ruta", documentoDto.RutaArchivo);
+                command.Parameters.AddWithValue("@p_id_usuario", idUsuario);
 
                 await command.ExecuteNonQueryAsync();
             }

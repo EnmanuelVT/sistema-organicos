@@ -346,11 +346,12 @@ CREATE PROCEDURE sp_generar_documento
     @p_id_tipo_doc TINYINT,
     @p_version INT,
     @p_ruta VARCHAR(255),
+    @p_doc_pdf VARBINARY(MAX),  -- opcional: almacenar PDF directamente
     @p_id_usuario VARCHAR(15)
 AS
 BEGIN
-    INSERT INTO Documento (id_muestra, id_tipo_doc, version, ruta_archivo)
-    VALUES (@p_MST_CODIGO, @p_id_tipo_doc, @p_version, @p_ruta);
+    INSERT INTO Documento (id_muestra, id_tipo_doc, version, ruta_archivo, DOC_PDF)
+    VALUES (@p_MST_CODIGO, @p_id_tipo_doc, @p_version, @p_ruta, @p_doc_pdf);
 
     INSERT INTO Auditoria (id_usuario, accion, descripcion)
     VALUES (@p_id_usuario, 'GENERAR_DOCUMENTO', CONCAT('MST=',@p_MST_CODIGO,', DOC=',CAST(@p_id_tipo_doc AS VARCHAR(10)),', v',CAST(@p_version AS VARCHAR(10))));

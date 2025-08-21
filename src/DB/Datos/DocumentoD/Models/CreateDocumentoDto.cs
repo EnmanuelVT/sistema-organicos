@@ -9,6 +9,8 @@ public class CreateDocumentoDto
     public int Version { get; set; }
 
     public string? RutaArchivo { get; set; }
+    
+    public byte[]? DocPdf { get; set; }
 
     public DateTime FechaCreacion { get; set; }
 }
