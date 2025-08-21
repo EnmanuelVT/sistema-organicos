@@ -6,6 +6,21 @@ namespace Models;
 
 public partial class MasterDbContext : DbContext
 {
+    private static readonly Lazy<MasterDbContext> _instance = new Lazy<MasterDbContext>(() =>
+    {
+        var builder = new DbContextOptionsBuilder<MasterDbContext>();
+        var server = Environment.GetEnvironmentVariable("DB_SERVER") ?? "localhost,1433";
+        var database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "master";
+        var user = Environment.GetEnvironmentVariable("DB_USER") ?? "sa";
+        var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "YourStrong!Passw0rd";
+        var trustCert = Environment.GetEnvironmentVariable("DB_TRUST_SERVER_CERTIFICATE") == "True";
+        var connectionString = $"Server={server};Database={database};User Id={user};Password={password};TrustServerCertificate={trustCert};";
+        builder.UseSqlServer(connectionString);
+        return new MasterDbContext(builder.Options);
+    });
+
+    public static MasterDbContext Instance => _instance.Value;
+
     public MasterDbContext()
     {
     }
@@ -44,7 +59,18 @@ public partial class MasterDbContext : DbContext
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Server=localhost,1433;Database=master;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;");
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var server = Environment.GetEnvironmentVariable("DB_SERVER") ?? "localhost,1433";
+            var database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "master";
+            var user = Environment.GetEnvironmentVariable("DB_USER") ?? "sa";
+            var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "YourStrong!Passw0rd";
+            var trustCert = Environment.GetEnvironmentVariable("DB_TRUST_SERVER_CERTIFICATE") == "True";
+            var connectionString = $"Server={server};Database={database};User Id={user};Password={password};TrustServerCertificate={trustCert};";
+            optionsBuilder.UseSqlServer(connectionString);
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

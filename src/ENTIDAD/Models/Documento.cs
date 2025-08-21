@@ -5,10 +5,9 @@ namespace Models;
 
 public partial class Documento
 {
+
     public long IdDocumento { get; set; }
-
     public string IdMuestra { get; set; } = null!;
-
     public byte IdTipoDoc { get; set; }
 
     public int Version { get; set; }

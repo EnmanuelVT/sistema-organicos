@@ -1,148 +1,122 @@
 using DB.Datos.DocumentoD.Models;
 using Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DB.Datos.DocumentoD.Repositorios;
 
 public class DocumentoRepositorio
 {
-    private readonly Conexion _conexion;
+    private readonly MasterDbContext _context;
 
     public DocumentoRepositorio()
     {
-        _conexion = Conexion.Instance;
+        _context = MasterDbContext.Instance;
     }
 
     public async Task<IEnumerable<Documento>> ObtenerDocumentosAsync()
     {
         try
         {
-            var documentos = new List<Documento>();
-            await _conexion.Connection.OpenAsync();
-            using (var command = _conexion.Connection.CreateCommand())
-            {
-                command.CommandText = "SELECT * FROM Documentos";
-                using (var reader = await command.ExecuteReaderAsync())
+            return await _context.Documentos
+                .Select(d => new Documento
                 {
-                    while (await reader.ReadAsync())
-                    {
-                        documentos.Add(new Documento
-                        {
-                            IdDocumento = reader.GetInt32(0),
-                            FechaCreacion = reader.GetDateTime(3)
-                        });
-                    }
-                }
-            }
-
-            await _conexion.Connection.CloseAsync();
-            return documentos;
+                    IdDocumento = d.IdDocumento,
+                    FechaCreacion = d.FechaCreacion,
+                    IdMuestra = d.IdMuestra,
+                    IdTipoDoc = d.IdTipoDoc,
+                    Version = d.Version,
+                    RutaArchivo = d.RutaArchivo,
+                    DocPdf = d.DocPdf
+                })
+                .ToListAsync();
         }
         catch (Exception ex)
         {
-            await _conexion.Connection.CloseAsync();
             throw new Exception("Error al obtener los documentos", ex);
         }
-        finally
-        {
-            if (_conexion.Connection.State == System.Data.ConnectionState.Open)
-            {
-                await _conexion.Connection.CloseAsync();
-            }
-        }
     }
 
-    public async Task<Documento> ObtenerDocumentoAsync(int id)
+    public async Task<Documento?> ObtenerDocumentoAsync(int id)
     {
         try
         {
-            Documento documento = null;
-            await _conexion.Connection.OpenAsync();
-            using (var command = _conexion.Connection.CreateCommand())
-            {
-                command.CommandText = "SELECT * FROM Documentos WHERE IdDocumento = @Id";
-                command.Parameters.AddWithValue("@Id", id);
-                using (var reader = await command.ExecuteReaderAsync())
+            return await _context.Documentos
+                .Where(d => d.IdDocumento == id)
+                .Select(d => new Documento
                 {
-                    if (await reader.ReadAsync())
-                    {
-                        documento = new Documento
-                        {
-                            IdDocumento = reader.GetInt32(0),
-                            FechaCreacion = reader.GetDateTime(3)
-                        };
-                    }
-                }
-            }
-
-            await _conexion.Connection.CloseAsync();
-            return documento;
+                    IdDocumento = d.IdDocumento,
+                    FechaCreacion = d.FechaCreacion,
+                    IdMuestra = d.IdMuestra,
+                    IdTipoDoc = d.IdTipoDoc,
+                    Version = d.Version,
+                    RutaArchivo = d.RutaArchivo,
+                    DocPdf = d.DocPdf
+                })
+                .FirstOrDefaultAsync();
         }
         catch (Exception ex)
         {
-            await _conexion.Connection.CloseAsync();
             throw new Exception("Error al obtener el documento", ex);
-        }
-        finally
-        {
-            if (_conexion.Connection.State == System.Data.ConnectionState.Open)
-            {
-                await _conexion.Connection.CloseAsync();
-            }
         }
     }
 
-    // data transfer object
     public async Task GenerarDocumentoSpAsync(CreateDocumentoDto documentoDto, int idUsuario)
     {
-        // sp_generar_documento
-        /* 
-            -- 6.5 Generar registro de documento
-            CREATE PROCEDURE sp_generar_documento 
-                @p_MST_CODIGO VARCHAR(30),
-                @p_id_tipo_doc TINYINT,
-                @p_version INT,
-                @p_ruta VARCHAR(255),
-                @p_id_usuario VARCHAR(15)
-            AS
-            BEGIN
-                INSERT INTO Documento (id_muestra, id_tipo_doc, version, ruta_archivo)
-                VALUES (@p_MST_CODIGO, @p_id_tipo_doc, @p_version, @p_ruta);
-
-                INSERT INTO Auditoria (id_usuario, accion, descripcion)
-                VALUES (@p_id_usuario, 'GENERAR_DOCUMENTO', CONCAT('MST=',@p_MST_CODIGO,', DOC=',CAST(@p_id_tipo_doc AS VARCHAR(10)),', v',CAST(@p_version AS VARCHAR(10))));
-            END
-            go
-        */
-        
-        // consumir el stored procedure sp_generar_documento
         try
         {
-            await _conexion.Connection.OpenAsync();
-            using (var command = _conexion.Connection.CreateCommand())
-            {
-                command.CommandText = "sp_generar_documento";
-                command.CommandType = System.Data.CommandType.StoredProcedure;
-
-                // Agregar parámetros necesarios
-                command.Parameters.AddWithValue("@p_MST_CODIGO", documentoDto.IdMuestra);
-                command.Parameters.AddWithValue("@p_id_tipo_doc", documentoDto.IdTipoDoc);
-                command.Parameters.AddWithValue("@p_version", documentoDto.Version); // la version es autogenerada?
-                command.Parameters.AddWithValue("@p_ruta", documentoDto.RutaArchivo);
-                command.Parameters.AddWithValue("@p_id_usuario", idUsuario);
-
-                await command.ExecuteNonQueryAsync();
-            }
+            // Using Entity Framework to execute stored procedure
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC sp_generar_documento @p_MST_CODIGO = {0}, @p_id_tipo_doc = {1}, @p_version = {2}, @p_ruta = {3}, @p_id_usuario = {4}",
+                documentoDto.IdMuestra,
+                documentoDto.IdTipoDoc,
+                documentoDto.Version,
+                documentoDto.RutaArchivo,
+                idUsuario);
         }
         catch (Exception ex)
         {
             throw new Exception("Error al generar el documento", ex);
         }
-        finally
+    }
+
+    // Alternative approach using Entity Framework entities instead of stored procedure
+    public async Task GenerarDocumentoAsync(CreateDocumentoDto documentoDto, string idUsuario)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        
+        try
         {
-            if (_conexion.Connection.State == System.Data.ConnectionState.Open)
+            // Create the document
+            var documento = new Documento
             {
-                await _conexion.Connection.CloseAsync();
-            }
+                IdMuestra = documentoDto.IdMuestra,
+                IdTipoDoc = documentoDto.IdTipoDoc,
+                Version = documentoDto.Version,
+                RutaArchivo = documentoDto.RutaArchivo,
+                FechaCreacion = DateTime.Now
+            };
+
+            _context.Documentos.Add(documento);
+            await _context.SaveChangesAsync();
+
+            // Create audit record
+            var auditoria = new Auditorium
+            {
+                IdUsuario = idUsuario,
+                Accion = "GENERAR_DOCUMENTO",
+                Descripcion = $"MST={documentoDto.IdMuestra}, DOC={documentoDto.IdTipoDoc}, v{documentoDto.Version}",
+                FechaAccion = DateTime.Now
+            };
+
+            _context.Auditoria.Add(auditoria);
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            throw new Exception("Error al generar el documento", ex);
         }
     }
 }
