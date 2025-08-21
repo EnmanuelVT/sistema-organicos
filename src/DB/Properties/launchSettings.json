@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "DB": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DB_SERVER": "localhost,1433",
+        "DB_DATABASE": "master",
+        "DB_USER": "sa",
+        "DB_PASSWORD": "YourStrong!Passw0rd",
+        "DB_TRUST_SERVER_CERTIFICATE": "True"
+      }
+    }
+  }
+}
