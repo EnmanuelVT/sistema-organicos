@@ -15,6 +15,8 @@ public partial class Documento
 
     public string? RutaArchivo { get; set; }
 
+    public byte[]? DocPdf { get; set; }
+
     public DateTime FechaCreacion { get; set; }
 
     public virtual Muestra IdMuestraNavigation { get; set; } = null!;
