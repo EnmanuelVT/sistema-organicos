@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB.Migrations
 {
     [DbContext(typeof(MasterDbContext))]
-    [Migration("20250827222504_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20250827233636_FixNullsUsuario2")]
+    partial class FixNullsUsuario2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,17 +27,13 @@ namespace DB.Migrations
 
             modelBuilder.Entity("ENTIDAD.Models.Usuario", b =>
                 {
-                    b.Property<string>("UsCedula")
-                        .HasMaxLength(15)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(15)")
-                        .HasColumnName("US_Cedula");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
                     b.Property<string>("Apellido")
-                        .IsRequired()
                         .HasMaxLength(80)
                         .IsUnicode(false)
                         .HasColumnType("varchar(80)")
@@ -65,9 +61,6 @@ namespace DB.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<byte>("IdRol")
                         .HasColumnType("tinyint")
                         .HasColumnName("id_rol");
@@ -79,7 +72,6 @@ namespace DB.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Nombre")
-                        .IsRequired()
                         .HasMaxLength(80)
                         .IsUnicode(false)
                         .HasColumnType("varchar(80)")
@@ -119,12 +111,17 @@ namespace DB.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
+                    b.Property<string>("UsCedula")
+                        .HasMaxLength(15)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(15)")
+                        .HasColumnName("US_Cedula");
+
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.HasKey("UsCedula")
-                        .HasName("PK__Usuario__615FCA4672B18000");
+                    b.HasKey("Id");
 
                     b.HasIndex("IdRol");
 
@@ -207,7 +204,7 @@ namespace DB.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("varchar(15)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -229,7 +226,7 @@ namespace DB.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("varchar(15)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -241,7 +238,7 @@ namespace DB.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("varchar(15)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
@@ -256,7 +253,7 @@ namespace DB.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("varchar(15)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
@@ -302,9 +299,9 @@ namespace DB.Migrations
 
                     b.Property<string>("IdUsuario")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(450)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("id_usuario");
 
                     b.HasKey("IdAuditoria")
@@ -332,9 +329,9 @@ namespace DB.Migrations
 
                     b.Property<string>("IdAnalista")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(450)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("id_analista");
 
                     b.Property<string>("IdMuestra")
@@ -462,9 +459,9 @@ namespace DB.Migrations
 
                     b.Property<string>("IdUsuario")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(450)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("id_usuario");
 
                     b.Property<string>("Observaciones")
@@ -518,16 +515,16 @@ namespace DB.Migrations
                         .HasColumnName("Fecha_Salida_Estimada");
 
                     b.Property<string>("IdAnalista")
-                        .HasMaxLength(15)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(450)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("id_Analista");
 
                     b.Property<string>("IdUsuarioSolicitante")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(450)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("id_usuario_solicitante");
 
                     b.Property<string>("Nombre")
@@ -731,9 +728,9 @@ namespace DB.Migrations
                         .HasColumnName("unidad");
 
                     b.Property<string>("ValidadoPor")
-                        .HasMaxLength(15)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(450)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("validado_por");
 
                     b.Property<decimal?>("ValorObtenido")

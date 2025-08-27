@@ -4,6 +4,7 @@ using DB.Datos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB.Migrations
 {
     [DbContext(typeof(MasterDbContext))]
-    partial class MasterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250827233807_FixNullsUsuario3")]
+    partial class FixNullsUsuario3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,6 +60,10 @@ namespace DB.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<byte?>("IdRol")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("id_rol");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -115,6 +122,8 @@ namespace DB.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IdRol");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -742,6 +751,28 @@ namespace DB.Migrations
                     b.ToTable("Resultado_Prueba", (string)null);
                 });
 
+            modelBuilder.Entity("Models.RolUsuario", b =>
+                {
+                    b.Property<byte>("IdRol")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("id_rol");
+
+                    b.Property<string>("NombreRol")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("nombre_rol");
+
+                    b.HasKey("IdRol")
+                        .HasName("PK__Rol_Usua__6ABCB5E0C2370F5E");
+
+                    b.HasIndex(new[] { "NombreRol" }, "UQ__Rol_Usua__673CB435C9C52528")
+                        .IsUnique();
+
+                    b.ToTable("Rol_Usuario", (string)null);
+                });
+
             modelBuilder.Entity("Models.TipoDocumento", b =>
                 {
                     b.Property<byte>("IdTipoDoc")
@@ -784,6 +815,16 @@ namespace DB.Migrations
                         .IsUnique();
 
                     b.ToTable("Tipo_Muestra", (string)null);
+                });
+
+            modelBuilder.Entity("ENTIDAD.Models.Usuario", b =>
+                {
+                    b.HasOne("Models.RolUsuario", "IdRolNavigation")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("IdRol")
+                        .HasConstraintName("fk_usuario_rol");
+
+                    b.Navigation("IdRolNavigation");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1046,6 +1087,11 @@ namespace DB.Migrations
                     b.Navigation("ParametroNormas");
 
                     b.Navigation("ResultadoPruebas");
+                });
+
+            modelBuilder.Entity("Models.RolUsuario", b =>
+                {
+                    b.Navigation("Usuarios");
                 });
 
             modelBuilder.Entity("Models.TipoDocumento", b =>

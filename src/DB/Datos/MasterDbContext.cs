@@ -36,8 +36,6 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
 
     public virtual DbSet<ResultadoPrueba> ResultadoPruebas { get; set; }
 
-    public virtual DbSet<RolUsuario> RolUsuarios { get; set; }
-
     public virtual DbSet<TipoDocumento> TipoDocumentos { get; set; }
 
     public virtual DbSet<TipoMuestra> TipoMuestras { get; set; }
@@ -56,6 +54,41 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Configure Usuario to use Identity's Id as primary key
+        modelBuilder.Entity<Usuario>(entity =>
+        {
+            entity.ToTable("Usuario");
+
+            // UsCedula is now just a regular property, not the primary key
+            entity.Property(e => e.UsCedula)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .HasColumnName("US_Cedula");
+
+            entity.Property(e => e.Apellido)
+                .HasMaxLength(80)
+                .IsUnicode(false)
+                .HasColumnName("apellido");
+            entity.Property(e => e.Contacto)
+                .HasMaxLength(120)
+                .IsUnicode(false)
+                .HasColumnName("CONTACTO");
+            entity.Property(e => e.Direccion)
+                .HasMaxLength(200)
+                .IsUnicode(false);
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(80)
+                .IsUnicode(false)
+                .HasColumnName("nombre");
+            entity.Property(e => e.RazonSocial)
+                .HasMaxLength(120)
+                .IsUnicode(false)
+                .HasColumnName("razon_social");
+            entity.Property(e => e.Telefono)
+                .HasMaxLength(30)
+                .IsUnicode(false);
+        });
 
         modelBuilder.Entity<Auditorium>(entity =>
         {
@@ -77,8 +110,8 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasColumnType("datetime")
                 .HasColumnName("fecha_accion");
             entity.Property(e => e.IdUsuario)
-                .HasMaxLength(15)
-                .IsUnicode(false)
+                .HasMaxLength(450) // Changed to match Identity's Id length
+                .IsUnicode(true)
                 .HasColumnName("id_usuario");
 
             entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.Auditoria)
@@ -103,8 +136,8 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasColumnType("datetime")
                 .HasColumnName("fecha_asignacion");
             entity.Property(e => e.IdAnalista)
-                .HasMaxLength(15)
-                .IsUnicode(false)
+                .HasMaxLength(450) // Changed to match Identity's Id length
+                .IsUnicode(true)
                 .HasColumnName("id_analista");
             entity.Property(e => e.IdMuestra)
                 .HasMaxLength(30)
@@ -200,8 +233,8 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .IsUnicode(false)
                 .HasColumnName("id_muestra");
             entity.Property(e => e.IdUsuario)
-                .HasMaxLength(15)
-                .IsUnicode(false)
+                .HasMaxLength(450) // Changed to match Identity's Id length
+                .IsUnicode(true)
                 .HasColumnName("id_usuario");
             entity.Property(e => e.Observaciones)
                 .HasMaxLength(255)
@@ -252,12 +285,12 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasColumnType("datetime")
                 .HasColumnName("Fecha_Salida_Estimada");
             entity.Property(e => e.IdAnalista)
-                .HasMaxLength(15)
-                .IsUnicode(false)
+                .HasMaxLength(450) // Changed to match Identity's Id length
+                .IsUnicode(true)
                 .HasColumnName("id_Analista");
             entity.Property(e => e.IdUsuarioSolicitante)
-                .HasMaxLength(15)
-                .IsUnicode(false)
+                .HasMaxLength(450) // Changed to match Identity's Id length
+                .IsUnicode(true)
                 .HasColumnName("id_usuario_solicitante");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(120)
@@ -408,8 +441,8 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .IsUnicode(false)
                 .HasColumnName("unidad");
             entity.Property(e => e.ValidadoPor)
-                .HasMaxLength(15)
-                .IsUnicode(false)
+                .HasMaxLength(450) // Changed to match Identity's Id length
+                .IsUnicode(true)
                 .HasColumnName("validado_por");
             entity.Property(e => e.ValorObtenido)
                 .HasColumnType("decimal(18, 6)")
@@ -428,21 +461,6 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
             entity.HasOne(d => d.ValidadoPorNavigation).WithMany(p => p.ResultadoPruebas)
                 .HasForeignKey(d => d.ValidadoPor)
                 .HasConstraintName("fk_res_validador");
-        });
-
-        modelBuilder.Entity<RolUsuario>(entity =>
-        {
-            entity.HasKey(e => e.IdRol).HasName("PK__Rol_Usua__6ABCB5E0C2370F5E");
-
-            entity.ToTable("Rol_Usuario");
-
-            entity.HasIndex(e => e.NombreRol, "UQ__Rol_Usua__673CB435C9C52528").IsUnique();
-
-            entity.Property(e => e.IdRol).HasColumnName("id_rol");
-            entity.Property(e => e.NombreRol)
-                .HasMaxLength(30)
-                .IsUnicode(false)
-                .HasColumnName("nombre_rol");
         });
 
         modelBuilder.Entity<TipoDocumento>(entity =>
@@ -473,46 +491,6 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasMaxLength(40)
                 .IsUnicode(false)
                 .HasColumnName("nombre");
-        });
-
-        modelBuilder.Entity<Usuario>(entity =>
-        {
-            entity.HasKey(e => e.UsCedula).HasName("PK__Usuario__615FCA4672B18000");
-
-            entity.ToTable("Usuario");
-
-            entity.Property(e => e.UsCedula)
-                .HasMaxLength(15)
-                .IsUnicode(false)
-                .HasColumnName("US_Cedula");
-            entity.Property(e => e.Apellido)
-                .HasMaxLength(80)
-                .IsUnicode(false)
-                .HasColumnName("apellido");
-            entity.Property(e => e.Contacto)
-                .HasMaxLength(120)
-                .IsUnicode(false)
-                .HasColumnName("CONTACTO");
-            entity.Property(e => e.Direccion)
-                .HasMaxLength(200)
-                .IsUnicode(false);
-            entity.Property(e => e.IdRol).HasColumnName("id_rol");
-            entity.Property(e => e.Nombre)
-                .HasMaxLength(80)
-                .IsUnicode(false)
-                .HasColumnName("nombre");
-            entity.Property(e => e.RazonSocial)
-                .HasMaxLength(120)
-                .IsUnicode(false)
-                .HasColumnName("razon_social");
-            entity.Property(e => e.Telefono)
-                .HasMaxLength(30)
-                .IsUnicode(false);
-
-            entity.HasOne(d => d.IdRolNavigation).WithMany(p => p.Usuarios)
-                .HasForeignKey(d => d.IdRol)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_usuario_rol");
         });
 
         OnModelCreatingPartial(modelBuilder);

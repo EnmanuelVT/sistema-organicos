@@ -98,6 +98,7 @@ namespace DB.Migrations
                 name: "Usuario",
                 columns: table => new
                 {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     US_Cedula = table.Column<string>(type: "varchar(15)", unicode: false, maxLength: 15, nullable: false),
                     nombre = table.Column<string>(type: "varchar(80)", unicode: false, maxLength: 80, nullable: false),
                     apellido = table.Column<string>(type: "varchar(80)", unicode: false, maxLength: 80, nullable: false),
@@ -106,7 +107,6 @@ namespace DB.Migrations
                     Telefono = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
                     CONTACTO = table.Column<string>(type: "varchar(120)", unicode: false, maxLength: 120, nullable: true),
                     id_rol = table.Column<byte>(type: "tinyint", nullable: false),
-                    Id = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -124,7 +124,7 @@ namespace DB.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK__Usuario__615FCA4672B18000", x => x.US_Cedula);
+                    table.PrimaryKey("PK_Usuario", x => x.Id);
                     table.ForeignKey(
                         name: "fk_usuario_rol",
                         column: x => x.id_rol,
@@ -158,7 +158,7 @@ namespace DB.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "varchar(15)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -169,7 +169,7 @@ namespace DB.Migrations
                         name: "FK_AspNetUserClaims_Usuario_UserId",
                         column: x => x.UserId,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -180,7 +180,7 @@ namespace DB.Migrations
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "varchar(15)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -189,7 +189,7 @@ namespace DB.Migrations
                         name: "FK_AspNetUserLogins_Usuario_UserId",
                         column: x => x.UserId,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -197,7 +197,7 @@ namespace DB.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "varchar(15)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -213,7 +213,7 @@ namespace DB.Migrations
                         name: "FK_AspNetUserRoles_Usuario_UserId",
                         column: x => x.UserId,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -221,7 +221,7 @@ namespace DB.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "varchar(15)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -233,7 +233,7 @@ namespace DB.Migrations
                         name: "FK_AspNetUserTokens_Usuario_UserId",
                         column: x => x.UserId,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -243,7 +243,7 @@ namespace DB.Migrations
                 {
                     id_auditoria = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    id_usuario = table.Column<string>(type: "varchar(15)", unicode: false, maxLength: 15, nullable: false),
+                    id_usuario = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     accion = table.Column<string>(type: "varchar(120)", unicode: false, maxLength: 120, nullable: false),
                     fecha_accion = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
                     descripcion = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: true)
@@ -255,7 +255,7 @@ namespace DB.Migrations
                         name: "fk_aud_usuario",
                         column: x => x.id_usuario,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula");
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -270,8 +270,8 @@ namespace DB.Migrations
                     Fecha_Salida_Estimada = table.Column<DateTime>(type: "datetime", nullable: true),
                     Condiciones_almacenamiento = table.Column<string>(type: "varchar(200)", unicode: false, maxLength: 200, nullable: true),
                     Condiciones_transporte = table.Column<string>(type: "varchar(200)", unicode: false, maxLength: 200, nullable: true),
-                    id_usuario_solicitante = table.Column<string>(type: "varchar(15)", unicode: false, maxLength: 15, nullable: false),
-                    id_Analista = table.Column<string>(type: "varchar(15)", unicode: false, maxLength: 15, nullable: true),
+                    id_usuario_solicitante = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
+                    id_Analista = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
                     estado_actual = table.Column<byte>(type: "tinyint", nullable: false)
                 },
                 constraints: table =>
@@ -281,7 +281,7 @@ namespace DB.Migrations
                         name: "fk_muestra_analista",
                         column: x => x.id_Analista,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula");
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "fk_muestra_estado",
                         column: x => x.estado_actual,
@@ -291,7 +291,7 @@ namespace DB.Migrations
                         name: "fk_muestra_solic",
                         column: x => x.id_usuario_solicitante,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula");
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "fk_muestra_tipo",
                         column: x => x.TPMST_ID,
@@ -328,7 +328,7 @@ namespace DB.Migrations
                     id_bitacora = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     id_muestra = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false),
-                    id_analista = table.Column<string>(type: "varchar(15)", unicode: false, maxLength: 15, nullable: false),
+                    id_analista = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     fecha_asignacion = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
                     observaciones = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: true)
                 },
@@ -339,7 +339,7 @@ namespace DB.Migrations
                         name: "fk_bit_analista",
                         column: x => x.id_analista,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula");
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "fk_bit_muestra",
                         column: x => x.id_muestra,
@@ -382,7 +382,7 @@ namespace DB.Migrations
                     id_historial = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     id_muestra = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: false),
-                    id_usuario = table.Column<string>(type: "varchar(15)", unicode: false, maxLength: 15, nullable: false),
+                    id_usuario = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     estado = table.Column<byte>(type: "tinyint", nullable: false),
                     fecha_cambio = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
                     observaciones = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: true)
@@ -404,7 +404,7 @@ namespace DB.Migrations
                         name: "fk_ht_usuario",
                         column: x => x.id_usuario,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula");
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -442,7 +442,7 @@ namespace DB.Migrations
                     unidad = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
                     cumple_norma = table.Column<bool>(type: "bit", nullable: true),
                     fecha_registro = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
-                    validado_por = table.Column<string>(type: "varchar(15)", unicode: false, maxLength: 15, nullable: true)
+                    validado_por = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -461,7 +461,7 @@ namespace DB.Migrations
                         name: "fk_res_validador",
                         column: x => x.validado_por,
                         principalTable: "Usuario",
-                        principalColumn: "US_Cedula");
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
