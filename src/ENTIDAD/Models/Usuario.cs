@@ -7,6 +7,7 @@ namespace ENTIDAD.Models;
 
 public partial class Usuario : IdentityUser
 {
+    // Campos comentandos estan en IdentityUser
     public string UsCedula { get; set; } = null!;
 
     public string Nombre { get; set; } = null!;
@@ -17,15 +18,9 @@ public partial class Usuario : IdentityUser
 
     public string? Direccion { get; set; }
 
-    public string Correo { get; set; } = null!;
-
     public string? Telefono { get; set; }
 
     public string? Contacto { get; set; }
-
-    public string Username { get; set; } = null!;
-
-    public string Contrasena { get; set; } = null!;
 
     public byte IdRol { get; set; }
 

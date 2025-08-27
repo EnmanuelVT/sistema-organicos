@@ -103,11 +103,8 @@ namespace DB.Migrations
                     apellido = table.Column<string>(type: "varchar(80)", unicode: false, maxLength: 80, nullable: false),
                     razon_social = table.Column<string>(type: "varchar(120)", unicode: false, maxLength: 120, nullable: true),
                     Direccion = table.Column<string>(type: "varchar(200)", unicode: false, maxLength: 200, nullable: true),
-                    Correo = table.Column<string>(type: "varchar(120)", unicode: false, maxLength: 120, nullable: false),
                     Telefono = table.Column<string>(type: "varchar(30)", unicode: false, maxLength: 30, nullable: true),
                     CONTACTO = table.Column<string>(type: "varchar(120)", unicode: false, maxLength: 120, nullable: true),
-                    Username = table.Column<string>(type: "varchar(60)", unicode: false, maxLength: 60, nullable: false),
-                    contrasena = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
                     id_rol = table.Column<byte>(type: "tinyint", nullable: false),
                     Id = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -634,12 +631,6 @@ namespace DB.Migrations
                 name: "IX_Usuario_id_rol",
                 table: "Usuario",
                 column: "id_rol");
-
-            migrationBuilder.CreateIndex(
-                name: "UQ__Usuario__536C85E4F8B48158",
-                table: "Usuario",
-                column: "Username",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
