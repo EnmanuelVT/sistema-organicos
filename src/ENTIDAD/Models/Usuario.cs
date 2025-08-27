@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
+using Models;
 
-namespace Models;
+namespace ENTIDAD.Models;
 
-public partial class Usuario
+public partial class Usuario : IdentityUser
 {
     public string UsCedula { get; set; } = null!;
 

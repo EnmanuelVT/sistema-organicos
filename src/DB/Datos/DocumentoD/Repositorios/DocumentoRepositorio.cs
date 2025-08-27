@@ -8,9 +8,9 @@ public class DocumentoRepositorio
 {
     private readonly MasterDbContext _context;
 
-    public DocumentoRepositorio()
+    public DocumentoRepositorio(MasterDbContext context)
     {
-        _context = MasterDbContext.Instance;
+        _context = context;
     }
 
     public async Task<IEnumerable<Documento>> ObtenerDocumentosAsync()
