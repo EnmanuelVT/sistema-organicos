@@ -48,12 +48,7 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
     {
         if (!optionsBuilder.IsConfigured)
         {
-            var server = Environment.GetEnvironmentVariable("DB_SERVER") ?? "localhost,1433";
-            var database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "master";
-            var user = Environment.GetEnvironmentVariable("DB_USER") ?? "sa";
-            var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "YourStrong!Passw0rd";
-            var trustCert = Environment.GetEnvironmentVariable("DB_TRUST_SERVER_CERTIFICATE") == "True";
-            var connectionString = $"Server={server};Database={database};User Id={user};Password={password};TrustServerCertificate={trustCert};";
+            var connectionString = "Data Source=localhost,1433;User ID=sa;Password=YourStrong!Passw0rd;Trust Server Certificate=True";
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
@@ -486,8 +481,6 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
 
             entity.ToTable("Usuario");
 
-            entity.HasIndex(e => e.Username, "UQ__Usuario__536C85E4F8B48158").IsUnique();
-
             entity.Property(e => e.UsCedula)
                 .HasMaxLength(15)
                 .IsUnicode(false)
@@ -500,13 +493,6 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasMaxLength(120)
                 .IsUnicode(false)
                 .HasColumnName("CONTACTO");
-            entity.Property(e => e.Contrasena)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("contrasena");
-            entity.Property(e => e.Correo)
-                .HasMaxLength(120)
-                .IsUnicode(false);
             entity.Property(e => e.Direccion)
                 .HasMaxLength(200)
                 .IsUnicode(false);
@@ -521,9 +507,6 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasColumnName("razon_social");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(30)
-                .IsUnicode(false);
-            entity.Property(e => e.Username)
-                .HasMaxLength(60)
                 .IsUnicode(false);
 
             entity.HasOne(d => d.IdRolNavigation).WithMany(p => p.Usuarios)

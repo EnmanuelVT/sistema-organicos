@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB.Migrations
 {
     [DbContext(typeof(MasterDbContext))]
-    [Migration("20250827001003_InitialMigration")]
+    [Migration("20250827222504_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -52,19 +52,6 @@ namespace DB.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(120)")
                         .HasColumnName("CONTACTO");
-
-                    b.Property<string>("Contrasena")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("contrasena");
-
-                    b.Property<string>("Correo")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(120)");
 
                     b.Property<string>("Direccion")
                         .HasMaxLength(200)
@@ -136,12 +123,6 @@ namespace DB.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(60)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(60)");
-
                     b.HasKey("UsCedula")
                         .HasName("PK__Usuario__615FCA4672B18000");
 
@@ -154,9 +135,6 @@ namespace DB.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex(new[] { "Username" }, "UQ__Usuario__536C85E4F8B48158")
-                        .IsUnique();
 
                     b.ToTable("Usuario", (string)null);
                 });

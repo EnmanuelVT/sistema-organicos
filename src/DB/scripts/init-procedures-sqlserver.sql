@@ -13,193 +13,193 @@ USE Laboratorio_Muestras;
 -- 1) CATALOGOS / LOOKUPS
 -- =========================
 
-CREATE TABLE Rol_Usuario (
-    id_rol        TINYINT PRIMARY KEY,
-    nombre_rol    VARCHAR(30) NOT NULL UNIQUE
-);
+--CREATE TABLE Rol_Usuario (
+--    id_rol        TINYINT PRIMARY KEY,
+--    nombre_rol    VARCHAR(30) NOT NULL UNIQUE
+--);
 
-CREATE TABLE Tipo_Muestra (
-    TPMST_ID      TINYINT PRIMARY KEY,
-    nombre        VARCHAR(40) NOT NULL UNIQUE  -- Agua, Alimento, Bebida alcohólica
-);
+--CREATE TABLE Tipo_Muestra (
+--    TPMST_ID      TINYINT PRIMARY KEY,
+--    nombre        VARCHAR(40) NOT NULL UNIQUE  -- Agua, Alimento, Bebida alcohólica
+--);
 
-CREATE TABLE Estado_Muestra (
-    id_estado     TINYINT PRIMARY KEY,
-    nombre        VARCHAR(30) NOT NULL UNIQUE  -- Recibida, En análisis, Evaluada, Certificada
-);
+--CREATE TABLE Estado_Muestra (
+--    id_estado     TINYINT PRIMARY KEY,
+--    nombre        VARCHAR(30) NOT NULL UNIQUE  -- Recibida, En análisis, Evaluada, Certificada
+--);
 
-CREATE TABLE Tipo_Documento (
-    id_tipo_doc   TINYINT PRIMARY KEY,
-    nombre        VARCHAR(30) NOT NULL UNIQUE  -- Certificado, Informe, etc.
-);
+--CREATE TABLE Tipo_Documento (
+--    id_tipo_doc   TINYINT PRIMARY KEY,
+--    nombre        VARCHAR(30) NOT NULL UNIQUE  -- Certificado, Informe, etc.
+--);
 
--- =========================
--- 2) NUCLEO - Create tables without foreign keys first
--- =========================
+---- =========================
+---- 2) NUCLEO - Create tables without foreign keys first
+---- =========================
 
-CREATE TABLE Usuario (
-    US_Cedula         VARCHAR(15) PRIMARY KEY,        -- cédula o NIT/RNC; string para conservar ceros
-    nombre            VARCHAR(80) NOT NULL,
-    apellido          VARCHAR(80) NOT NULL,
-    razon_social      VARCHAR(120) NULL,
-    Direccion         VARCHAR(200) NULL,
-    Correo            VARCHAR(120) NOT NULL,
-    Telefono          VARCHAR(30)  NULL,
-    CONTACTO          VARCHAR(120) NULL,              -- persona contacto si es empresa
-    Username          VARCHAR(60)  NOT NULL UNIQUE,
-    contrasena        VARCHAR(255) NOT NULL,          -- hash
-    id_rol            TINYINT NOT NULL
-);
+--CREATE TABLE Usuario (
+--    US_Cedula         VARCHAR(15) PRIMARY KEY,        -- cédula o NIT/RNC; string para conservar ceros
+--    nombre            VARCHAR(80) NOT NULL,
+--    apellido          VARCHAR(80) NOT NULL,
+--    razon_social      VARCHAR(120) NULL,
+--    Direccion         VARCHAR(200) NULL,
+--    Correo            VARCHAR(120) NOT NULL,
+--    Telefono          VARCHAR(30)  NULL,
+--    CONTACTO          VARCHAR(120) NULL,              -- persona contacto si es empresa
+--    Username          VARCHAR(60)  NOT NULL UNIQUE,
+--    contrasena        VARCHAR(255) NOT NULL,          -- hash
+--    id_rol            TINYINT NOT NULL
+--);
 
-CREATE TABLE Muestra (
-    MST_CODIGO            VARCHAR(30) PRIMARY KEY,    -- código único de la muestra
-    TPMST_ID              TINYINT NOT NULL,          -- FK a Tipo_Muestra
-    Nombre                VARCHAR(120) NULL,          -- nombre/alias de la muestra si aplica
-    Fecha_recepcion       DATETIME NOT NULL,          -- (pedido explícito)
-    origen                VARCHAR(200) NOT NULL,      -- fabricante, distribuidor, punto de toma
-    Fecha_Salida_Estimada DATETIME NULL,
-    Condiciones_almacenamiento VARCHAR(200) NULL,
-    Condiciones_transporte    VARCHAR(200) NULL,
-    id_usuario_solicitante    VARCHAR(15) NOT NULL,   -- US_Cedula solicitante (rol = solicitante)
-    id_Analista               VARCHAR(15) NULL,       -- US_Cedula analista asignado principal
-    estado_actual             TINYINT NOT NULL
-);
+--CREATE TABLE Muestra (
+--    MST_CODIGO            VARCHAR(30) PRIMARY KEY,    -- código único de la muestra
+--    TPMST_ID              TINYINT NOT NULL,          -- FK a Tipo_Muestra
+--    Nombre                VARCHAR(120) NULL,          -- nombre/alias de la muestra si aplica
+--    Fecha_recepcion       DATETIME NOT NULL,          -- (pedido explícito)
+--    origen                VARCHAR(200) NOT NULL,      -- fabricante, distribuidor, punto de toma
+--    Fecha_Salida_Estimada DATETIME NULL,
+--    Condiciones_almacenamiento VARCHAR(200) NULL,
+--    Condiciones_transporte    VARCHAR(200) NULL,
+--    id_usuario_solicitante    VARCHAR(15) NOT NULL,   -- US_Cedula solicitante (rol = solicitante)
+--    id_Analista               VARCHAR(15) NULL,       -- US_Cedula analista asignado principal
+--    estado_actual             TINYINT NOT NULL
+--);
 
-CREATE TABLE Bitacora_Muestra (
-    id_bitacora    BIGINT IDENTITY(1,1) PRIMARY KEY,
-    id_muestra     VARCHAR(30) NOT NULL,
-    id_analista    VARCHAR(15) NOT NULL,
-    fecha_asignacion DATETIME NOT NULL DEFAULT GETDATE(),
-    observaciones  VARCHAR(255) NULL
-);
+--CREATE TABLE Bitacora_Muestra (
+--    id_bitacora    BIGINT IDENTITY(1,1) PRIMARY KEY,
+--    id_muestra     VARCHAR(30) NOT NULL,
+--    id_analista    VARCHAR(15) NOT NULL,
+--    fecha_asignacion DATETIME NOT NULL DEFAULT GETDATE(),
+--    observaciones  VARCHAR(255) NULL
+--);
 
-CREATE TABLE Prueba (
-    id_prueba          INT IDENTITY(1,1) PRIMARY KEY,
-    nombre_prueba      VARCHAR(120) NOT NULL,
-    tipo_muestra_asociada TINYINT NOT NULL,          -- restringe por tipo
-    norma_referencia   VARCHAR(120) NULL             -- Codex, NORDOM, etc.
-);
+--CREATE TABLE Prueba (
+--    id_prueba          INT IDENTITY(1,1) PRIMARY KEY,
+--    nombre_prueba      VARCHAR(120) NOT NULL,
+--    tipo_muestra_asociada TINYINT NOT NULL,          -- restringe por tipo
+--    norma_referencia   VARCHAR(120) NULL             -- Codex, NORDOM, etc.
+--);
 
-CREATE TABLE Parametro_Norma (
-    id_parametro       INT IDENTITY(1,1) PRIMARY KEY,
-    id_prueba          INT NOT NULL,                  -- acoplar norma a prueba
-    nombre_parametro   VARCHAR(120) NOT NULL,         -- pH, turbidez, etc.
-    valor_min          DECIMAL(18,6) NULL,
-    valor_max          DECIMAL(18,6) NULL,            -- añadido para comparar rangos completos
-    unidad             VARCHAR(30)  NULL
-);
+--CREATE TABLE Parametro_Norma (
+--    id_parametro       INT IDENTITY(1,1) PRIMARY KEY,
+--    id_prueba          INT NOT NULL,                  -- acoplar norma a prueba
+--    nombre_parametro   VARCHAR(120) NOT NULL,         -- pH, turbidez, etc.
+--    valor_min          DECIMAL(18,6) NULL,
+--    valor_max          DECIMAL(18,6) NULL,            -- añadido para comparar rangos completos
+--    unidad             VARCHAR(30)  NULL
+--);
 
-CREATE TABLE Resultado_Prueba (
-    id_resultado     BIGINT IDENTITY(1,1) PRIMARY KEY,
-    id_prueba        INT NOT NULL,
-    id_muestra       VARCHAR(30) NOT NULL,
-    valor_obtenido   DECIMAL(18,6) NULL,
-    unidad           VARCHAR(30)  NULL,
-    cumple_norma     BIT          NULL,               -- 1 Sí / 0 No / NULL si no aplica
-    fecha_registro   DATETIME NOT NULL DEFAULT GETDATE(),
-    validado_por     VARCHAR(15)  NULL                -- US_Cedula evaluador/validador
-);
+--CREATE TABLE Resultado_Prueba (
+--    id_resultado     BIGINT IDENTITY(1,1) PRIMARY KEY,
+--    id_prueba        INT NOT NULL,
+--    id_muestra       VARCHAR(30) NOT NULL,
+--    valor_obtenido   DECIMAL(18,6) NULL,
+--    unidad           VARCHAR(30)  NULL,
+--    cumple_norma     BIT          NULL,               -- 1 Sí / 0 No / NULL si no aplica
+--    fecha_registro   DATETIME NOT NULL DEFAULT GETDATE(),
+--    validado_por     VARCHAR(15)  NULL                -- US_Cedula evaluador/validador
+--);
 
-CREATE TABLE Documento (
-    id_documento     BIGINT IDENTITY(1,1) PRIMARY KEY,
-    id_muestra       VARCHAR(30) NOT NULL,
-    id_tipo_doc      TINYINT NOT NULL,
-    version          INT NOT NULL DEFAULT 1,
-    ruta_archivo     VARCHAR(255) NULL,               -- soporte a "almacenamiento digital"
-    DOC_PDF          VARBINARY(MAX) NULL,               -- opcional: almacenar PDF directamente
-    fecha_creacion   DATETIME NOT NULL DEFAULT GETDATE()
-);
+--CREATE TABLE Documento (
+--    id_documento     BIGINT IDENTITY(1,1) PRIMARY KEY,
+--    id_muestra       VARCHAR(30) NOT NULL,
+--    id_tipo_doc      TINYINT NOT NULL,
+--    version          INT NOT NULL DEFAULT 1,
+--    ruta_archivo     VARCHAR(255) NULL,               -- soporte a "almacenamiento digital"
+--    DOC_PDF          VARBINARY(MAX) NULL,               -- opcional: almacenar PDF directamente
+--    fecha_creacion   DATETIME NOT NULL DEFAULT GETDATE()
+--);
 
-CREATE TABLE Historial_Trazabilidad (
-    id_historial     BIGINT IDENTITY(1,1) PRIMARY KEY,
-    id_muestra       VARCHAR(30) NOT NULL,
-    id_usuario       VARCHAR(15) NOT NULL,            -- responsable del cambio
-    estado           TINYINT NOT NULL,
-    fecha_cambio     DATETIME NOT NULL DEFAULT GETDATE(),
-    observaciones    VARCHAR(255) NULL
-);
+--CREATE TABLE Historial_Trazabilidad (
+--    id_historial     BIGINT IDENTITY(1,1) PRIMARY KEY,
+--    id_muestra       VARCHAR(30) NOT NULL,
+--    id_usuario       VARCHAR(15) NOT NULL,            -- responsable del cambio
+--    estado           TINYINT NOT NULL,
+--    fecha_cambio     DATETIME NOT NULL DEFAULT GETDATE(),
+--    observaciones    VARCHAR(255) NULL
+--);
 
-CREATE TABLE Notificacion (
-    id_notificacion  BIGINT IDENTITY(1,1) PRIMARY KEY,
-    id_muestra       VARCHAR(30) NOT NULL,
-    tipo_alerta      VARCHAR(60) NOT NULL,            -- Plazo, Fuera de norma, etc.
-    destinatario     VARCHAR(120) NOT NULL,
-    enviado          BIT NOT NULL DEFAULT 0,
-    fecha_envio      DATETIME NULL,
-    detalle          VARCHAR(255) NULL
-);
+--CREATE TABLE Notificacion (
+--    id_notificacion  BIGINT IDENTITY(1,1) PRIMARY KEY,
+--    id_muestra       VARCHAR(30) NOT NULL,
+--    tipo_alerta      VARCHAR(60) NOT NULL,            -- Plazo, Fuera de norma, etc.
+--    destinatario     VARCHAR(120) NOT NULL,
+--    enviado          BIT NOT NULL DEFAULT 0,
+--    fecha_envio      DATETIME NULL,
+--    detalle          VARCHAR(255) NULL
+--);
 
-CREATE TABLE Auditoria (
-    id_auditoria     BIGINT IDENTITY(1,1) PRIMARY KEY,
-    id_usuario       VARCHAR(15) NOT NULL,
-    accion           VARCHAR(120) NOT NULL,
-    fecha_accion     DATETIME NOT NULL DEFAULT GETDATE(),
-    descripcion      VARCHAR(255) NULL
-);
-GO
+--CREATE TABLE Auditoria (
+--    id_auditoria     BIGINT IDENTITY(1,1) PRIMARY KEY,
+--    id_usuario       VARCHAR(15) NOT NULL,
+--    accion           VARCHAR(120) NOT NULL,
+--    fecha_accion     DATETIME NOT NULL DEFAULT GETDATE(),
+--    descripcion      VARCHAR(255) NULL
+--);
+--GO
 
--- =========================
--- 3) ADD FOREIGN KEY CONSTRAINTS
--- =========================
+---- =========================
+---- 3) ADD FOREIGN KEY CONSTRAINTS
+---- =========================
 
--- Usuario constraints
-ALTER TABLE Usuario ADD CONSTRAINT fk_usuario_rol FOREIGN KEY (id_rol) REFERENCES Rol_Usuario(id_rol);
+---- Usuario constraints
+--ALTER TABLE Usuario ADD CONSTRAINT fk_usuario_rol FOREIGN KEY (id_rol) REFERENCES Rol_Usuario(id_rol);
 
--- Muestra constraints
-ALTER TABLE Muestra ADD CONSTRAINT fk_muestra_tipo FOREIGN KEY (TPMST_ID) REFERENCES Tipo_Muestra(TPMST_ID);
-ALTER TABLE Muestra ADD CONSTRAINT fk_muestra_solic FOREIGN KEY (id_usuario_solicitante) REFERENCES Usuario(US_Cedula);
-ALTER TABLE Muestra ADD CONSTRAINT fk_muestra_analista FOREIGN KEY (id_Analista) REFERENCES Usuario(US_Cedula);
-ALTER TABLE Muestra ADD CONSTRAINT fk_muestra_estado FOREIGN KEY (estado_actual) REFERENCES Estado_Muestra(id_estado);
+---- Muestra constraints
+--ALTER TABLE Muestra ADD CONSTRAINT fk_muestra_tipo FOREIGN KEY (TPMST_ID) REFERENCES Tipo_Muestra(TPMST_ID);
+--ALTER TABLE Muestra ADD CONSTRAINT fk_muestra_solic FOREIGN KEY (id_usuario_solicitante) REFERENCES Usuario(US_Cedula);
+--ALTER TABLE Muestra ADD CONSTRAINT fk_muestra_analista FOREIGN KEY (id_Analista) REFERENCES Usuario(US_Cedula);
+--ALTER TABLE Muestra ADD CONSTRAINT fk_muestra_estado FOREIGN KEY (estado_actual) REFERENCES Estado_Muestra(id_estado);
 
--- Bitacora_Muestra constraints
-ALTER TABLE Bitacora_Muestra ADD CONSTRAINT fk_bit_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
-ALTER TABLE Bitacora_Muestra ADD CONSTRAINT fk_bit_analista FOREIGN KEY (id_analista) REFERENCES Usuario(US_Cedula);
+---- Bitacora_Muestra constraints
+--ALTER TABLE Bitacora_Muestra ADD CONSTRAINT fk_bit_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
+--ALTER TABLE Bitacora_Muestra ADD CONSTRAINT fk_bit_analista FOREIGN KEY (id_analista) REFERENCES Usuario(US_Cedula);
 
--- Prueba constraints
-ALTER TABLE Prueba ADD CONSTRAINT fk_prueba_tipo FOREIGN KEY (tipo_muestra_asociada) REFERENCES Tipo_Muestra(TPMST_ID);
-ALTER TABLE Prueba ADD CONSTRAINT uk_prueba UNIQUE (nombre_prueba, tipo_muestra_asociada);
+---- Prueba constraints
+--ALTER TABLE Prueba ADD CONSTRAINT fk_prueba_tipo FOREIGN KEY (tipo_muestra_asociada) REFERENCES Tipo_Muestra(TPMST_ID);
+--ALTER TABLE Prueba ADD CONSTRAINT uk_prueba UNIQUE (nombre_prueba, tipo_muestra_asociada);
 
--- Parametro_Norma constraints
-ALTER TABLE Parametro_Norma ADD CONSTRAINT fk_parnorma_prueba FOREIGN KEY (id_prueba) REFERENCES Prueba(id_prueba);
-ALTER TABLE Parametro_Norma ADD CONSTRAINT uk_parametro UNIQUE (id_prueba, nombre_parametro);
+---- Parametro_Norma constraints
+--ALTER TABLE Parametro_Norma ADD CONSTRAINT fk_parnorma_prueba FOREIGN KEY (id_prueba) REFERENCES Prueba(id_prueba);
+--ALTER TABLE Parametro_Norma ADD CONSTRAINT uk_parametro UNIQUE (id_prueba, nombre_parametro);
 
--- Resultado_Prueba constraints
-ALTER TABLE Resultado_Prueba ADD CONSTRAINT fk_res_prueba FOREIGN KEY (id_prueba) REFERENCES Prueba(id_prueba);
-ALTER TABLE Resultado_Prueba ADD CONSTRAINT fk_res_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
-ALTER TABLE Resultado_Prueba ADD CONSTRAINT fk_res_validador FOREIGN KEY (validado_por) REFERENCES Usuario(US_Cedula);
+---- Resultado_Prueba constraints
+--ALTER TABLE Resultado_Prueba ADD CONSTRAINT fk_res_prueba FOREIGN KEY (id_prueba) REFERENCES Prueba(id_prueba);
+--ALTER TABLE Resultado_Prueba ADD CONSTRAINT fk_res_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
+--ALTER TABLE Resultado_Prueba ADD CONSTRAINT fk_res_validador FOREIGN KEY (validado_por) REFERENCES Usuario(US_Cedula);
 
--- Documento constraints
-ALTER TABLE Documento ADD CONSTRAINT fk_doc_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
-ALTER TABLE Documento ADD CONSTRAINT fk_doc_tipodoc FOREIGN KEY (id_tipo_doc) REFERENCES Tipo_Documento(id_tipo_doc);
+---- Documento constraints
+--ALTER TABLE Documento ADD CONSTRAINT fk_doc_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
+--ALTER TABLE Documento ADD CONSTRAINT fk_doc_tipodoc FOREIGN KEY (id_tipo_doc) REFERENCES Tipo_Documento(id_tipo_doc);
 
--- Historial_Trazabilidad constraints
-ALTER TABLE Historial_Trazabilidad ADD CONSTRAINT fk_ht_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
-ALTER TABLE Historial_Trazabilidad ADD CONSTRAINT fk_ht_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(US_Cedula);
-ALTER TABLE Historial_Trazabilidad ADD CONSTRAINT fk_ht_estado FOREIGN KEY (estado) REFERENCES Estado_Muestra(id_estado);
+---- Historial_Trazabilidad constraints
+--ALTER TABLE Historial_Trazabilidad ADD CONSTRAINT fk_ht_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
+--ALTER TABLE Historial_Trazabilidad ADD CONSTRAINT fk_ht_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(US_Cedula);
+--ALTER TABLE Historial_Trazabilidad ADD CONSTRAINT fk_ht_estado FOREIGN KEY (estado) REFERENCES Estado_Muestra(id_estado);
 
--- Notificacion constraints
-ALTER TABLE Notificacion ADD CONSTRAINT fk_not_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
+---- Notificacion constraints
+--ALTER TABLE Notificacion ADD CONSTRAINT fk_not_muestra FOREIGN KEY (id_muestra) REFERENCES Muestra(MST_CODIGO);
 
--- Auditoria constraints
-ALTER TABLE Auditoria ADD CONSTRAINT fk_aud_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(US_Cedula);
-GO
+---- Auditoria constraints
+--ALTER TABLE Auditoria ADD CONSTRAINT fk_aud_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(US_Cedula);
+--GO
 
--- =========================
--- 4) CREATE INDEXES
--- =========================
+---- =========================
+---- 4) CREATE INDEXES
+---- =========================
 
-CREATE INDEX IX_Bitacora_Muestra_id_muestra ON Bitacora_Muestra(id_muestra);
-CREATE INDEX IX_Bitacora_Muestra_id_analista ON Bitacora_Muestra(id_analista);
-CREATE INDEX IX_Resultado_Prueba_id_muestra ON Resultado_Prueba(id_muestra);
-CREATE INDEX IX_Resultado_Prueba_id_prueba ON Resultado_Prueba(id_prueba);
-CREATE INDEX IX_Documento_id_muestra ON Documento(id_muestra);
-CREATE INDEX IX_Historial_Trazabilidad_id_muestra ON Historial_Trazabilidad(id_muestra);
-CREATE INDEX IX_Historial_Trazabilidad_id_usuario ON Historial_Trazabilidad(id_usuario);
-CREATE INDEX IX_Notificacion_id_muestra ON Notificacion(id_muestra);
-CREATE INDEX IX_Auditoria_id_usuario ON Auditoria(id_usuario);
-CREATE INDEX idx_muestra_fechas ON Muestra(Fecha_recepcion, Fecha_Salida_Estimada);
-CREATE INDEX idx_resultado_muestra_fecha ON Resultado_Prueba(id_muestra, fecha_registro);
-GO
+--CREATE INDEX IX_Bitacora_Muestra_id_muestra ON Bitacora_Muestra(id_muestra);
+--CREATE INDEX IX_Bitacora_Muestra_id_analista ON Bitacora_Muestra(id_analista);
+--CREATE INDEX IX_Resultado_Prueba_id_muestra ON Resultado_Prueba(id_muestra);
+--CREATE INDEX IX_Resultado_Prueba_id_prueba ON Resultado_Prueba(id_prueba);
+--CREATE INDEX IX_Documento_id_muestra ON Documento(id_muestra);
+--CREATE INDEX IX_Historial_Trazabilidad_id_muestra ON Historial_Trazabilidad(id_muestra);
+--CREATE INDEX IX_Historial_Trazabilidad_id_usuario ON Historial_Trazabilidad(id_usuario);
+--CREATE INDEX IX_Notificacion_id_muestra ON Notificacion(id_muestra);
+--CREATE INDEX IX_Auditoria_id_usuario ON Auditoria(id_usuario);
+--CREATE INDEX idx_muestra_fechas ON Muestra(Fecha_recepcion, Fecha_Salida_Estimada);
+--CREATE INDEX idx_resultado_muestra_fecha ON Resultado_Prueba(id_muestra, fecha_registro);
+--GO
 
 -- =========================
 -- 5) SEED BASICO
