@@ -1,20 +1,12 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using DB;
+using Microsoft.Extensions.Configuration;
 
-using DB;
-using DotNetEnv;
 
-Env.Load(); // Loads .env file from the current directory
-
-// Now environment variables will be available
-
-// var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__Default");
-var dbServer = Environment.GetEnvironmentVariable("DB_SERVER");
-var dbDatabase = Environment.GetEnvironmentVariable("DB_DATABASE");
-var dbUser = Environment.GetEnvironmentVariable("DB_USER");
-var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
-var trustServerCertificate = Environment.GetEnvironmentVariable("DB_TRUST_SERVER_CERTIFICATE") ?? "True";
-
-var connectionString = $"Server={dbServer};Database={dbDatabase};User Id={dbUser};Password={dbPassword};TrustServerCertificate={trustServerCertificate};";
+// var connectionString = "Server=localhost,1433;Database=master;User Id=sa;Password=YourStrong!Passw0rd;Trust Server Certificate=True";
+// "Data Source=localhost,1433;Initial Catalog=master;User ID=sa;Password=YourTrust Server Certificate=True" 
+// var connectionString = "Data Source=localhost,1433;Initial Catalog=master;User ID=sa;Password=YourStrong!Passw0rd;Trust Server Certificate=True;";
+// var connectionString = "Data Source=localhost,1433;Initial Catalog=master;User ID=sa;Password=YourStrong!Passw0rd;Encrypt=False;";
+ var connectionString = "Data Source=localhost,1433;Initial Catalog=master;User ID=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;";
 Console.WriteLine($"Connection string: {connectionString}");
 
 if (string.IsNullOrWhiteSpace(connectionString))

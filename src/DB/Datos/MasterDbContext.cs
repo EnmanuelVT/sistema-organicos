@@ -1,26 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ENTIDAD.Models;
 
-namespace Models;
+namespace DB.Datos;
 
-public partial class MasterDbContext : DbContext
+public partial class MasterDbContext : IdentityDbContext<Usuario>
 {
-    private static readonly Lazy<MasterDbContext> _instance = new Lazy<MasterDbContext>(() =>
-    {
-        var builder = new DbContextOptionsBuilder<MasterDbContext>();
-        var server = Environment.GetEnvironmentVariable("DB_SERVER") ?? "localhost,1433";
-        var database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "master";
-        var user = Environment.GetEnvironmentVariable("DB_USER") ?? "sa";
-        var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "YourStrong!Passw0rd";
-        var trustCert = Environment.GetEnvironmentVariable("DB_TRUST_SERVER_CERTIFICATE") == "True";
-        var connectionString = $"Server={server};Database={database};User Id={user};Password={password};TrustServerCertificate={trustCert};";
-        builder.UseSqlServer(connectionString);
-        return new MasterDbContext(builder.Options);
-    });
-
-    public static MasterDbContext Instance => _instance.Value;
-
     public MasterDbContext()
     {
     }
@@ -74,6 +60,8 @@ public partial class MasterDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Auditorium>(entity =>
         {
             entity.HasKey(e => e.IdAuditoria).HasName("PK__Auditori__9644A3CED1A46BA2");

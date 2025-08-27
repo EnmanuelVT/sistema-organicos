@@ -20,26 +20,26 @@ services:
       timeout: 5s
       retries: 10
 
-  entidad:
-    build:
-      context: ./src/ENTIDAD
-      dockerfile: Dockerfile
-    # No ports or environment needed for class library
+  # entidad:
+  #   build:
+  #     context: ./src/ENTIDAD
+  #     dockerfile: Dockerfile
+  #   No ports or environment needed for class library
 
-  db-init:
-    build:
-      context: .
-      dockerfile: ./src/DB/Dockerfile
-    depends_on:
-      sqlserver :
-        condition: service_healthy
-      entidad:
-        condition: service_started
-    environment:
-      CONNECTION_STRING: "Server=sqlserver,${DB_PORT};Database=${DB_DATABASE};User Id=${DB_USER};Password=${SA_PASSWORD};"
-    volumes:
-      - ./scripts:/scripts:ro
-    command: ["dotnet", "DB.dll"]
+  # db-init:
+  #   build:
+  #     context: .
+  #     dockerfile: ./src/DB/Dockerfile
+  #   depends_on:
+  #     sqlserver :
+  #       condition: service_healthy
+  #     entidad:
+  #       condition: service_started
+  #   environment:
+  #     CONNECTION_STRING: "Server=sqlserver,${DB_PORT};Database=${DB_DATABASE};User Id=${DB_USER};Password=${SA_PASSWORD};"
+  #   volumes:
+  #     - ./scripts:/scripts:ro
+  #   command: ["dotnet", "DB.dll"]
 
 volumes:
   sqlserver_data:
