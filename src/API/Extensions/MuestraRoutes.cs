@@ -24,7 +24,7 @@ public static class MuestraRoutes
             }
         }).RequireAuthorization("RequireAnalistaRole");
 
-        group.MapGet("/usuario", async (MuestraNegocio negocio, ClaimsPrincipal user) => 
+        group.MapGet("/me", async (MuestraNegocio negocio, ClaimsPrincipal user) => 
         {
             try 
             {
@@ -34,6 +34,19 @@ public static class MuestraRoutes
                     return Results.Unauthorized();
                 }
                 var muestras = await negocio.ObtenerMuestrasPorUsuario(usuarioId);
+                return Results.Ok(muestras);
+            } 
+            catch (Exception ex) 
+            {
+                return Results.Problem(ex.Message);
+            }
+        });
+
+        group.MapGet("/usuario/{id}", async (MuestraNegocio negocio, ClaimsPrincipal user, string id) => 
+        {
+            try 
+            {
+                var muestras = await negocio.ObtenerMuestrasPorUsuario(id);
                 return Results.Ok(muestras);
             } 
             catch (Exception ex) 
