@@ -5,7 +5,6 @@ using API.Extensions;
 using API.Seed;
 using Microsoft.EntityFrameworkCore;
 using ENTIDAD.Models;
-using DB.Datos.DocumentoD.Repositorios;
 using DB.Datos.Repositorios;
 using Microsoft.OpenApi.Models;
 using NEGOCIOS;

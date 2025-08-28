@@ -1,4 +1,4 @@
-using DB.Datos.DocumentoD.Repositorios;
+using DB.Datos.Repositorios;
 using Models;
 
 namespace NEGOCIOS;
@@ -12,9 +12,4 @@ public class DocumentoNegocio
         _repositorio = repositorio;
     }
 
-    public async Task<IEnumerable<Documento>> Listar() 
-    {
-        var documentos = await _repositorio.ObtenerDocumentosAsync();
-        return documentos;
-    }
 }

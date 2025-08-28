@@ -18,5 +18,4 @@ public class CreateMuestraDto
     public string? CondicionesTransporte { get; set; }
 
     public byte EstadoActual { get; set; }
-    public string? IdAnalista { get; set; }
 }

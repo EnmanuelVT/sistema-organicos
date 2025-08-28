@@ -84,16 +84,6 @@ public class MuestraRepositorio
 
     public async Task<MuestraDto?> CrearMuestraAsync(CreateMuestraDto nuevaMuestra, string usuarioId)
     {
-        // Validate analyst ID if provided
-        if (!string.IsNullOrEmpty(nuevaMuestra.IdAnalista))
-        {
-            var analistaExists = await _context.Users.AnyAsync(u => u.Id == nuevaMuestra.IdAnalista);
-            if (!analistaExists)
-            {
-                throw new Exception($"The specified analyst ID {nuevaMuestra.IdAnalista} does not exist.");
-            }
-        }
-
         var result = await _context.Database.ExecuteSqlRawAsync(
             "EXEC sp_crear_muestra @p_MST_CODIGO = {0}, @p_TPMST_ID = {1}, @p_Nombre = {2}, @p_Fecha_recepcion = {3}, @p_origen = {4}, @p_Fecha_Salida_Estimada = {5}, @p_Cond_alm = {6}, @p_Cond_trans = {7}, @p_id_solicitante = {8}, @p_id_responsable = {9}",
             nuevaMuestra.MstCodigo,
@@ -104,8 +94,8 @@ public class MuestraRepositorio
             null,
             nuevaMuestra.CondicionesAlmacenamiento,
             nuevaMuestra.CondicionesTransporte,
-            usuarioId, // id del usuario solicitante
-            nuevaMuestra.IdAnalista
+            usuarioId,// id del usuario solicitante
+            null // id del analista se coloca despues
         );
 
         // map result from stored procedure to Muestra object
@@ -129,7 +119,6 @@ public class MuestraRepositorio
             CondicionesAlmacenamiento = muestra.CondicionesAlmacenamiento,
             CondicionesTransporte = muestra.CondicionesTransporte,
             EstadoActual = muestra.EstadoActual,
-            IdAnalista = muestra.IdAnalista
         };
 
         return muestraDto;
