@@ -20,4 +20,8 @@
     <ProjectReference Include="..\NEGOCIOS\NEGOCIOS.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Seed\" />
+  </ItemGroup>
+
 </Project>
