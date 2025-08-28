@@ -258,7 +258,7 @@ GO
 -- 6.2 Asignar analista a una muestra (bitácora + set analista actual)
 CREATE PROCEDURE sp_asignar_analista 
     @p_MST_CODIGO VARCHAR(30),
-    @p_id_analista VARCHAR(15),
+    @p_id_analista VARCHAR(30),
     @p_observaciones VARCHAR(255)
 AS
 BEGIN
@@ -276,7 +276,7 @@ GO
 CREATE PROCEDURE sp_cambiar_estado 
     @p_MST_CODIGO VARCHAR(30),
     @p_nuevo_estado TINYINT,
-    @p_id_usuario VARCHAR(15),
+    @p_id_usuario VARCHAR(30),
     @p_observaciones VARCHAR(255)
 AS
 BEGIN
@@ -296,7 +296,7 @@ CREATE PROCEDURE sp_registrar_resultado
     @p_id_prueba INT,
     @p_valor DECIMAL(18,6),
     @p_unidad VARCHAR(30),
-    @p_validado_por VARCHAR(15)
+    @p_validado_por VARCHAR(30)
 AS
 BEGIN
     DECLARE @v_cumple BIT;
@@ -348,7 +348,7 @@ CREATE PROCEDURE sp_generar_documento
     @p_version INT,
     @p_ruta VARCHAR(255),
     @p_doc_pdf VARBINARY(MAX),  -- opcional: almacenar PDF directamente
-    @p_id_usuario VARCHAR(15)
+    @p_id_usuario VARCHAR(30)
 AS
 BEGIN
     INSERT INTO Documento (id_muestra, id_tipo_doc, version, ruta_archivo, DOC_PDF)

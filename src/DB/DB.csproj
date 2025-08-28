@@ -25,4 +25,8 @@
       <ProjectReference Include="..\ENTIDAD\ENTIDAD.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Datos\DocumentoD\" />
+    </ItemGroup>
+
 </Project>
