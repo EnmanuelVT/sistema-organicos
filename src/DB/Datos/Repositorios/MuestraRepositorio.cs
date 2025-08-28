@@ -124,6 +124,27 @@ public class MuestraRepositorio
         return muestraDto;
     }
 
+    public async Task<BitacoraMuestra?> AsignarAnalistaAsync(AsignarAnalistaEnMuestraDto asignarAnalistaEnMuestraDto )
+    {
+        var result = await _context.Database.ExecuteSqlRawAsync(
+            "EXEC sp_asignar_analista @p_MST_CODIGO = {0}, @p_id_analista = {1}, @p_observaciones = {2}",
+            asignarAnalistaEnMuestraDto.MstCodigo,
+            asignarAnalistaEnMuestraDto.IdAnalista,
+            asignarAnalistaEnMuestraDto.Observaciones
+            );
+
+        if (result <= 0) return null; // Check if the stored procedure executed successfully
+
+        // Retrieve the newly created bitacora entry using its composite key (MstCodigo, FechaCambio)
+
+        var bitacoraEntry = await _context.BitacoraMuestras
+            .Where(b => b.IdMuestra == asignarAnalistaEnMuestraDto.MstCodigo)
+            .OrderByDescending(b => b.FechaAsignacion) // Order by FechaCambio descending to get the latest entry
+            .FirstOrDefaultAsync();
+
+        return bitacoraEntry;
+    }
+
     public async Task<MuestraDto?> ModificarMuestraAsync(Muestra muestraActualizada)
     {
         var existingMuestra = await _context.Muestras.FindAsync(muestraActualizada.MstCodigo);

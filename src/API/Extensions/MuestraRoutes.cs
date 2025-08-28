@@ -123,6 +123,23 @@ public static class MuestraRoutes
             }
         });
 
+        group.MapPatch("asignar-analista", async (MuestraNegocio negocio, AsignarAnalistaEnMuestraDto asignarAnalistaDto) =>
+        {
+            try
+            {
+                var bitacora = await negocio.AsignarAnalistaMuestraAsync(asignarAnalistaDto);
+                if (bitacora == null)
+                {
+                    return Results.BadRequest("No se pudo asignar el analista a la muestra.");
+                }
+                return Results.Ok(bitacora);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        });
+
         group.MapPut("/{id}", async (MuestraNegocio negocio, string id, CreateMuestraDto muestraDto) => 
         {
             try 

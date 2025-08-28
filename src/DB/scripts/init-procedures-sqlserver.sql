@@ -258,7 +258,7 @@ GO
 -- 6.2 Asignar analista a una muestra (bitácora + set analista actual)
 CREATE PROCEDURE sp_asignar_analista 
     @p_MST_CODIGO VARCHAR(30),
-    @p_id_analista VARCHAR(30),
+    @p_id_analista VARCHAR(450),
     @p_observaciones VARCHAR(255)
 AS
 BEGIN

@@ -35,6 +35,11 @@ public class MuestraNegocio
         return await _repositorio.CrearMuestraAsync(nuevaMuestra, usuarioId);
     }
 
+    public async Task<BitacoraMuestra?> AsignarAnalistaMuestraAsync(AsignarAnalistaEnMuestraDto asignarAnalistaEnMuestraDto)
+    {
+        return await _repositorio.AsignarAnalistaAsync(asignarAnalistaEnMuestraDto);
+    }
+
     public async Task<MuestraDto?> ModificarMuestraAsync(Muestra muestraActualizada)
     {
         return await _repositorio.ModificarMuestraAsync(muestraActualizada);
