@@ -12,15 +12,15 @@ public static class DocumentosRoutes
 
         group.MapGet("/", async (DocumentoNegocio negocio) =>
         {
-            try
-            {
-                var documentos = await negocio.Listar();
-                return Results.Ok(documentos);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(ex.Message);
-            }
+            //try
+            //{
+            //    var documentos = await negocio.Listar();
+            //    return Results.Ok(documentos);
+            //}
+            //catch (Exception ex)
+            //{
+            //    return Results.Problem(ex.Message);
+            //}
         });
 
         return group;
