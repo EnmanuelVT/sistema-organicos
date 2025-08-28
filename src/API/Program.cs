@@ -1,21 +1,23 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore; // Add this using directive
 using DB.Datos;
 using API.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using ENTIDAD.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddControllers();
+builder.Services.AddOpenApi();
 
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
-
-builder.Services.AddSwaggerGen();
+builder.Services.AddAuthentication()
+    .AddCookie(IdentityConstants.ApplicationScheme)
+    .AddBearerToken(IdentityConstants.BearerScheme);
 
 builder.Services.AddIdentityCore<Usuario>()
     .AddEntityFrameworkStores<MasterDbContext>() 
