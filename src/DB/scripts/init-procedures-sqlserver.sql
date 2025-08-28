@@ -223,6 +223,7 @@ USE Laboratorio_Muestras;
 -- =========================
 
 -- 6.1 Crear muestra (inicia en 'Recibida' y traza historial)
+-- Create the procedure with updated parameter types
 CREATE PROCEDURE sp_crear_muestra 
     @p_MST_CODIGO VARCHAR(30),
     @p_TPMST_ID TINYINT,
@@ -232,8 +233,8 @@ CREATE PROCEDURE sp_crear_muestra
     @p_Fecha_Salida_Estimada DATETIME,
     @p_Cond_alm VARCHAR(200),
     @p_Cond_trans VARCHAR(200),
-    @p_id_solicitante VARCHAR(15),
-    @p_id_responsable VARCHAR(15)    -- responsable técnico inicial (puede ser NULL)
+    @p_id_solicitante VARCHAR(450),  -- Changed from VARCHAR(15) to VARCHAR(450)
+    @p_id_responsable VARCHAR(450)   -- Changed from VARCHAR(15) to VARCHAR(450)
 AS
 BEGIN
     DECLARE @v_estado_recibida TINYINT = 1;

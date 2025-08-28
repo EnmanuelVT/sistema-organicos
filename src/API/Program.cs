@@ -71,6 +71,8 @@ builder.Services.AddScoped<DocumentoNegocio>();
 builder.Services.AddScoped<DocumentoRepositorio>();
 builder.Services.AddScoped<AdminUserNegocio>();
 builder.Services.AddScoped<AdminUserRepositorio>();
+builder.Services.AddScoped<MuestraNegocio>();
+builder.Services.AddScoped<MuestraRepositorio>();
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<Usuario>, AdditionalUserClaimsPrincipalFactory>();
 
 var app = builder.Build();
@@ -89,6 +91,7 @@ app.UseHttpsRedirection();
 app.MapIdentityApi<Usuario>();
 app.MapDocumentosRoutes();
 app.MapAdminUserRoutes();
+app.MapMuestraRoutes();
 
 // In Program.cs or Startup.cs
 using (var scope = app.Services.CreateScope())
