@@ -93,6 +93,9 @@ app.MapAdminUserRoutes();
 // In Program.cs or Startup.cs
 using (var scope = app.Services.CreateScope())
 {
+    var context = scope.ServiceProvider.GetRequiredService<MasterDbContext>();
+    await AppDataSeeder.SeedAsync(context);
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     await RoleSeeder.SeedRolesAsync(roleManager);
 }

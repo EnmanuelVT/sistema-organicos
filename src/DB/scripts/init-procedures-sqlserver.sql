@@ -205,18 +205,18 @@ USE Laboratorio_Muestras;
 -- 5) SEED BASICO
 -- =========================
 
-INSERT INTO Rol_Usuario (id_rol, nombre_rol) VALUES
-(1,'Solicitante'),(2,'Analista'),(3,'Evaluador'),(4,'Administrador');
+-- INSERT INTO Rol_Usuario (id_rol, nombre_rol) VALUES
+-- (1,'Solicitante'),(2,'Analista'),(3,'Evaluador'),(4,'Administrador');
 
-INSERT INTO Tipo_Muestra (TPMST_ID, nombre) VALUES
-(1,'Agua'),(2,'Alimento'),(3,'Bebida alcoholica');
+-- INSERT INTO Tipo_Muestra (TPMST_ID, nombre) VALUES
+-- (1,'Agua'),(2,'Alimento'),(3,'Bebida alcoholica');
 
-INSERT INTO Estado_Muestra (id_estado, nombre) VALUES
-(1,'Recibida'),(2,'En analisis'),(3,'Evaluada'),(4,'Certificada');
+-- INSERT INTO Estado_Muestra (id_estado, nombre) VALUES
+-- (1,'Recibida'),(2,'En analisis'),(3,'Evaluada'),(4,'Certificada');
 
-INSERT INTO Tipo_Documento (id_tipo_doc, nombre) VALUES
-(1,'Certificado'),(2,'Informe');
-GO
+-- INSERT INTO Tipo_Documento (id_tipo_doc, nombre) VALUES
+-- (1,'Certificado'),(2,'Informe');
+-- GO
 
 -- =========================
 -- 6) STORED PROCEDURES
