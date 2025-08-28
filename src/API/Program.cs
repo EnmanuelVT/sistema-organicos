@@ -3,6 +3,8 @@ using DB.Datos;
 using API.Extensions;
 using Microsoft.EntityFrameworkCore;
 using ENTIDAD.Models;
+using DB.Datos.DocumentoD.Repositorios;
+using NEGOCIOS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,9 @@ builder.Services.AddIdentityCore<Usuario>()
 builder.Services.AddDbContext<MasterDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Database")));
 
+builder.Services.AddScoped<DocumentoNegocio>();
+builder.Services.AddScoped<DocumentoRepositorio>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -40,5 +45,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapIdentityApi<Usuario>();
+app.MapDocumentosRoutes();
 
 app.Run();
