@@ -111,7 +111,7 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasColumnName("fecha_accion");
             entity.Property(e => e.IdUsuario)
                 .HasMaxLength(450) // Changed to match Identity's Id length
-                .IsUnicode(true)
+                .IsUnicode()
                 .HasColumnName("id_usuario");
 
             entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.Auditoria)
@@ -137,7 +137,7 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasColumnName("fecha_asignacion");
             entity.Property(e => e.IdAnalista)
                 .HasMaxLength(450) // Changed to match Identity's Id length
-                .IsUnicode(true)
+                .IsUnicode()
                 .HasColumnName("id_analista");
             entity.Property(e => e.IdMuestra)
                 .HasMaxLength(30)
@@ -234,7 +234,7 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasColumnName("id_muestra");
             entity.Property(e => e.IdUsuario)
                 .HasMaxLength(450) // Changed to match Identity's Id length
-                .IsUnicode(true)
+                .IsUnicode()
                 .HasColumnName("id_usuario");
             entity.Property(e => e.Observaciones)
                 .HasMaxLength(255)
@@ -286,11 +286,11 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasColumnName("Fecha_Salida_Estimada");
             entity.Property(e => e.IdAnalista)
                 .HasMaxLength(450) // Changed to match Identity's Id length
-                .IsUnicode(true)
+                .IsUnicode()
                 .HasColumnName("id_Analista");
             entity.Property(e => e.IdUsuarioSolicitante)
                 .HasMaxLength(450) // Changed to match Identity's Id length
-                .IsUnicode(true)
+                .IsUnicode()
                 .HasColumnName("id_usuario_solicitante");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(120)
@@ -442,7 +442,7 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasColumnName("unidad");
             entity.Property(e => e.ValidadoPor)
                 .HasMaxLength(450) // Changed to match Identity's Id length
-                .IsUnicode(true)
+                .IsUnicode()
                 .HasColumnName("validado_por");
             entity.Property(e => e.ValorObtenido)
                 .HasColumnType("decimal(18, 6)")

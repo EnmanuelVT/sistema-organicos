@@ -2,6 +2,7 @@ using API.Common;
 using Microsoft.AspNetCore.Identity;
 using DB.Datos;
 using API.Extensions;
+using API.Seed;
 using Microsoft.EntityFrameworkCore;
 using ENTIDAD.Models;
 using DB.Datos.DocumentoD.Repositorios;

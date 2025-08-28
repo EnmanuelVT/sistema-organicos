@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ENTIDAD.DTOs
+namespace ENTIDAD.DTOs.Users
 {
     public class CreateUserDto
     {
@@ -18,6 +18,6 @@ namespace ENTIDAD.DTOs
         public string? UsCedula { get; set; }
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
-        public string Password { get; set; }
+        public required string Password { get; set; }
     }
 }

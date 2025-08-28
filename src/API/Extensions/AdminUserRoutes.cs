@@ -1,6 +1,5 @@
-using ENTIDAD.DTOs;
+using ENTIDAD.DTOs.Users;
 using NEGOCIOS;
-using ENTIDAD.Models;
 
 namespace API.Extensions
 {

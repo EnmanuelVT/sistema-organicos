@@ -1,5 +1,5 @@
 using DB.Datos.Repositorios;
-using ENTIDAD.DTOs;
+using ENTIDAD.DTOs.Users;
 using Microsoft.AspNetCore.Identity;
 using ENTIDAD.Models;
 
@@ -52,6 +52,9 @@ namespace NEGOCIOS
             var result = await _userManager.CreateAsync(usuario, userDto.Password);
             if (result.Succeeded)
             {
+                if (userDto.Role == null)
+                    throw new Exception("Error al crear el usuario: " +
+                                        string.Join(", ", result.Errors.Select(e => e.Description)));
                 await _userManager.AddToRoleAsync(usuario, userDto.Role);
 
                 return new UserDto

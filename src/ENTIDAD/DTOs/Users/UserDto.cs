@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ENTIDAD.DTOs
+namespace ENTIDAD.DTOs.Users
 {
     public class UserDto
     {
-        public string Id { get; set; }
+        public required string Id { get; set; }
 
         [Required]
         [StringLength(256)]
@@ -20,6 +20,5 @@ namespace ENTIDAD.DTOs
         public string? UsCedula { get; set; }
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
-        public string Password { get; set; }
     }
 }

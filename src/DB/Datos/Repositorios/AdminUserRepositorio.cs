@@ -1,4 +1,5 @@
 using ENTIDAD.DTOs;
+using ENTIDAD.DTOs.Users;
 using ENTIDAD.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ namespace DB.Datos.Repositorios
             _userManager = userManager;
         }
 
-        public async Task<Usuario> AddUserAsync(UserDto adminUserDto)
+        public async Task<Usuario> AddUserAsync(CreateUserDto adminUserDto)
         {
             var user = new Usuario
             {
