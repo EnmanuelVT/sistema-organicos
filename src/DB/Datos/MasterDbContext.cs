@@ -447,6 +447,8 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
             entity.Property(e => e.ValorObtenido)
                 .HasColumnType("decimal(18, 6)")
                 .HasColumnName("valor_obtenido");
+            entity.Property(e => e.EstadoValidacion)
+                .HasMaxLength(30);
 
             entity.HasOne(d => d.IdMuestraNavigation).WithMany(p => p.ResultadoPruebas)
                 .HasForeignKey(d => d.IdMuestra)

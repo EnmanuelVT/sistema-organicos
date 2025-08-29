@@ -296,7 +296,7 @@ CREATE PROCEDURE sp_registrar_resultado
     @p_id_prueba INT,
     @p_valor DECIMAL(18,6),
     @p_unidad VARCHAR(30),
-    @p_validado_por VARCHAR(30)
+    @p_validado_por VARCHAR(450)
 AS
 BEGIN
     DECLARE @v_cumple BIT;
@@ -356,6 +356,52 @@ BEGIN
 
     INSERT INTO Auditoria (id_usuario, accion, descripcion)
     VALUES (@p_id_usuario, 'GENERAR_DOCUMENTO', CONCAT('MST=',@p_MST_CODIGO,', DOC=',CAST(@p_id_tipo_doc AS VARCHAR(10)),', v',CAST(@p_version AS VARCHAR(10))));
+END
+GO
+
+CREATE PROCEDURE dbo.sp_validar_resultado
+    @id_resultado INT,
+    @US_Cedula    VARCHAR(20),
+    @accion       NVARCHAR(30),  -- 'Aprobado' o 'Rechazado'
+    @obs          NVARCHAR(300) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @accion NOT IN ('Aprobado','Rechazado')
+        BEGIN
+            RAISERROR('Acción inválida. Use Aprobado o Rechazado.',16,1);
+            RETURN;
+        END
+
+    -- Actualiza el resultado con la decisión
+    UPDATE dbo.Resultado_Prueba
+    SET validado_por = @US_Cedula,
+        estado_validacion = @accion
+    WHERE id_resultado = @id_resultado;
+
+    -- Si fue rechazado, la muestra regresa a análisis
+    IF @accion = 'Rechazado'
+        BEGIN
+            DECLARE @muestra VARCHAR(30);
+            SELECT @muestra = MST_CODIGO FROM dbo.Resultado_Prueba WHERE id_resultado = @id_resultado;
+
+            UPDATE dbo.Muestra
+            SET estado_actual = 'En análisis'
+            WHERE MST_CODIGO = @muestra;
+
+            INSERT INTO dbo.Historial_Trazabilidad(MST_CODIGO,US_Cedula,estado,observaciones)
+            VALUES(@muestra,@US_Cedula,'Devuelta a análisis',@obs);
+        END
+    ELSE
+        BEGIN
+            -- Si fue aprobado, registrar trazabilidad normal
+            DECLARE @muestraA VARCHAR(30);
+            SELECT @muestraA = MST_CODIGO FROM dbo.Resultado_Prueba WHERE id_resultado = @id_resultado;
+
+            INSERT INTO dbo.Historial_Trazabilidad(MST_CODIGO,US_Cedula,estado,observaciones)
+            VALUES(@muestraA,@US_Cedula,'Resultado aprobado',@obs);
+        END
 END
 GO
 
