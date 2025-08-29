@@ -276,7 +276,7 @@ GO
 CREATE PROCEDURE sp_cambiar_estado 
     @p_MST_CODIGO VARCHAR(30),
     @p_nuevo_estado TINYINT,
-    @p_id_usuario VARCHAR(30),
+    @p_id_usuario VARCHAR(450),
     @p_observaciones VARCHAR(255)
 AS
 BEGIN

@@ -40,6 +40,11 @@ public class MuestraNegocio
         return await _repositorio.AsignarAnalistaAsync(asignarAnalistaEnMuestraDto);
     }
 
+    public async Task<BitacoraMuestra?> CambiarEstadoAsync(AsignarEstadoMuestraDto asignarEstadoMuestraDto, string idUsuario)
+    {
+        return await _repositorio.CambiarEstadoAsync(asignarEstadoMuestraDto, idUsuario);
+    }
+
     public async Task<MuestraDto?> ModificarMuestraAsync(Muestra muestraActualizada)
     {
         return await _repositorio.ModificarMuestraAsync(muestraActualizada);

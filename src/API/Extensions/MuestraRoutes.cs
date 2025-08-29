@@ -140,6 +140,29 @@ public static class MuestraRoutes
             }
         });
 
+        group.MapPatch("cambiar-estado", async (MuestraNegocio negocio, AsignarEstadoMuestraDto asignarEstadoDto, ClaimsPrincipal user) =>
+        {
+            try
+            {
+                var usuarioId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (usuarioId == null)
+                {
+                    return Results.Unauthorized();
+                }
+
+                var bitacora = await negocio.CambiarEstadoAsync(asignarEstadoDto, usuarioId);
+                if (bitacora == null)
+                {
+                    return Results.BadRequest("No se pudo cambiar el estado de la muestra.");
+                }
+                return Results.Ok(bitacora);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        });
+
         group.MapPut("/{id}", async (MuestraNegocio negocio, string id, CreateMuestraDto muestraDto) => 
         {
             try 
