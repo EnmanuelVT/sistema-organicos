@@ -362,8 +362,9 @@ GO
 CREATE PROCEDURE dbo.sp_validar_resultado
     @id_resultado INT,
     @US_Cedula    VARCHAR(20),
-    @accion       NVARCHAR(30),  -- 'Aprobado' o 'Rechazado'
-    @obs          NVARCHAR(300) = NULL
+    @accion       NVARCHAR(20),  -- 'Aprobado' o 'Rechazado'
+    @obs          NVARCHAR(300) = NULL,
+    @id_usuario   VARCHAR(450)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -384,23 +385,23 @@ BEGIN
     IF @accion = 'Rechazado'
         BEGIN
             DECLARE @muestra VARCHAR(30);
-            SELECT @muestra = MST_CODIGO FROM dbo.Resultado_Prueba WHERE id_resultado = @id_resultado;
+            SELECT @muestra = id_muestra FROM dbo.Resultado_Prueba WHERE id_resultado = @id_resultado;
 
             UPDATE dbo.Muestra
             SET estado_actual = 'En análisis'
             WHERE MST_CODIGO = @muestra;
 
-            INSERT INTO dbo.Historial_Trazabilidad(MST_CODIGO,US_Cedula,estado,observaciones)
-            VALUES(@muestra,@US_Cedula,'Devuelta a análisis',@obs);
+            INSERT INTO dbo.Historial_Trazabilidad(id_muestra,id_usuario,estado,observaciones)
+            VALUES(@muestra,@id_usuario,'Devuelta a análisis',@obs);
         END
     ELSE
         BEGIN
             -- Si fue aprobado, registrar trazabilidad normal
             DECLARE @muestraA VARCHAR(30);
-            SELECT @muestraA = MST_CODIGO FROM dbo.Resultado_Prueba WHERE id_resultado = @id_resultado;
+            SELECT @muestraA = id_muestra FROM dbo.Resultado_Prueba WHERE id_resultado = @id_resultado;
 
-            INSERT INTO dbo.Historial_Trazabilidad(MST_CODIGO,US_Cedula,estado,observaciones)
-            VALUES(@muestraA,@US_Cedula,'Resultado aprobado',@obs);
+            INSERT INTO dbo.Historial_Trazabilidad(id_muestra,id_usuario,estado,observaciones)
+            VALUES(@muestraA,@id_usuario,'Resultado aprobado',@obs);
         END
 END
 GO
