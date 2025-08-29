@@ -381,11 +381,20 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
             entity.Property(e => e.ValorMin)
                 .HasColumnType("decimal(18, 6)")
                 .HasColumnName("valor_min");
+            entity.Property(e => e.TpmstId)
+                .HasColumnName("tpmst_id");
 
-            entity.HasOne(d => d.IdPruebaNavigation).WithMany(p => p.ParametroNormas)
-                .HasForeignKey(d => d.IdPrueba)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_parnorma_prueba");
+            entity.HasOne(pn => pn.Prueba)
+                .WithOne(p => p.ParametroNorma)
+                .HasForeignKey<ParametroNorma>(pn => pn.IdPrueba)
+                .HasConstraintName("fk_parametro_prueba")
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
+            entity.HasOne(t => t.TipoMuestraAsociadaNavigation)
+                .WithMany(p => p.ParametroNormas)
+                .HasForeignKey("tmpst_id")
+                .HasConstraintName("fk_parametro_tipo")
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Prueba>(entity =>
@@ -401,16 +410,28 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .HasMaxLength(120)
                 .IsUnicode(false)
                 .HasColumnName("nombre_prueba");
-            entity.Property(e => e.NormaReferencia)
-                .HasMaxLength(120)
-                .IsUnicode(false)
-                .HasColumnName("norma_referencia");
             entity.Property(e => e.TipoMuestraAsociada).HasColumnName("tipo_muestra_asociada");
+            entity.Property(e => e.IdMuestra)
+                .HasMaxLength(30)
+                .IsUnicode(false)
+                .HasColumnName("id_muestra");
+            entity.Property(e => e.IdParametroNorma).HasColumnName("id_parametro_norma");
 
             entity.HasOne(d => d.TipoMuestraAsociadaNavigation).WithMany(p => p.Pruebas)
                 .HasForeignKey(d => d.TipoMuestraAsociada)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_prueba_tipo");
+            
+            entity.HasOne(p => p.ParametroNorma)
+                .WithOne(pn => pn.Prueba)
+                .HasForeignKey<ParametroNorma>(pn => pn.IdPrueba)
+                .HasConstraintName("fk_prueba_parametro")
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            
+            entity.HasOne(p => p.IdMuestraNavigation)
+                .WithMany(m => m.Pruebas)
+                .HasForeignKey(p => p.IdMuestra)
+                .HasConstraintName("fk_prueba_muestra");
         });
 
         modelBuilder.Entity<ResultadoPrueba>(entity =>
@@ -489,7 +510,7 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
 
             entity.HasIndex(e => e.Nombre, "UQ__Tipo_Mue__72AFBCC6EAC23A93").IsUnique();
 
-            entity.Property(e => e.TpmstId).HasColumnName("TPMST_ID");
+            entity.Property(e => e.TpmstId).HasColumnName("tpmst_id");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(40)
                 .IsUnicode(false)

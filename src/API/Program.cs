@@ -73,6 +73,12 @@ builder.Services.AddScoped<AdminUserRepositorio>();
 builder.Services.AddScoped<MuestraNegocio>();
 builder.Services.AddScoped<MuestraRepositorio>();
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<Usuario>, AdditionalUserClaimsPrincipalFactory>();
+builder.Services.AddScoped<ResultadoNegocio>();
+builder.Services.AddScoped<ResultadoRepositorio>();
+builder.Services.AddScoped<PruebaNegocio>();
+builder.Services.AddScoped<PruebaRepositorio>();
+builder.Services.AddScoped<ParametroNegocio>();
+builder.Services.AddScoped<ParametroRepositorio>();
 
 var app = builder.Build();
 
@@ -91,6 +97,9 @@ app.MapIdentityApi<Usuario>();
 app.MapDocumentosRoutes();
 app.MapAdminUserRoutes();
 app.MapMuestraRoutes();
+app.MapResultadoRoutes();
+app.MapPruebaRoutes();
+app.MapParametroRoutes();
 
 // In Program.cs or Startup.cs
 using (var scope = app.Services.CreateScope())

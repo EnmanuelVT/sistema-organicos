@@ -21,6 +21,7 @@ public partial class ResultadoPrueba
     public DateTime FechaRegistro { get; set; }
 
     public string? ValidadoPor { get; set; }
+    public string? EstadoValidacion { get; set; }
 
     public virtual Muestra IdMuestraNavigation { get; set; } = null!;
 

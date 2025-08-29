@@ -4,6 +4,7 @@ using DB.Datos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB.Migrations
 {
     [DbContext(typeof(MasterDbContext))]
-    partial class MasterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250829201632_ArreglarParametroNorma")]
+    partial class ArreglarParametroNorma
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -622,6 +625,9 @@ namespace DB.Migrations
                         .HasColumnType("varchar(120)")
                         .HasColumnName("nombre_parametro");
 
+                    b.Property<byte?>("TMPST_ID")
+                        .HasColumnType("tinyint");
+
                     b.Property<byte?>("TpmstId")
                         .HasColumnType("tinyint")
                         .HasColumnName("tpmst_id");
@@ -640,9 +646,6 @@ namespace DB.Migrations
                         .HasColumnType("decimal(18, 6)")
                         .HasColumnName("valor_min");
 
-                    b.Property<byte?>("tmpst_id")
-                        .HasColumnType("tinyint");
-
                     b.HasKey("IdParametro")
                         .HasName("PK__Parametr__3D24E3256A0410FE");
 
@@ -650,7 +653,7 @@ namespace DB.Migrations
                         .IsUnique()
                         .HasFilter("[id_prueba] IS NOT NULL");
 
-                    b.HasIndex("tmpst_id");
+                    b.HasIndex("TMPST_ID");
 
                     b.HasIndex(new[] { "IdPrueba", "NombreParametro" }, "uk_parametro")
                         .IsUnique()
@@ -794,7 +797,7 @@ namespace DB.Migrations
                 {
                     b.Property<byte>("TpmstId")
                         .HasColumnType("tinyint")
-                        .HasColumnName("tpmst_id");
+                        .HasColumnName("TPMST_ID");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -993,7 +996,7 @@ namespace DB.Migrations
 
                     b.HasOne("Models.TipoMuestra", "TipoMuestraAsociadaNavigation")
                         .WithMany("ParametroNormas")
-                        .HasForeignKey("tmpst_id")
+                        .HasForeignKey("TMPST_ID")
                         .HasConstraintName("fk_parametro_tipo");
 
                     b.Navigation("Prueba");

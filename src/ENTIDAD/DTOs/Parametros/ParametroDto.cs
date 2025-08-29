@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+namespace ENTIDAD.DTOs.Parametros;
 
-namespace Models;
-
-public partial class ParametroNorma
+public class ParametroDto
 {
     public int IdParametro { get; set; }
 
@@ -18,7 +15,4 @@ public partial class ParametroNorma
     public decimal? ValorMax { get; set; }
 
     public string? Unidad { get; set; }
-
-    public Prueba? Prueba { get; set; } = null!;
-    public virtual TipoMuestra? TipoMuestraAsociadaNavigation { get; set; } = null!;
 }

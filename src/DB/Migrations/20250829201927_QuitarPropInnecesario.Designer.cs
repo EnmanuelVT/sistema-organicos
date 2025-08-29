@@ -4,6 +4,7 @@ using DB.Datos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB.Migrations
 {
     [DbContext(typeof(MasterDbContext))]
-    partial class MasterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250829201927_QuitarPropInnecesario")]
+    partial class QuitarPropInnecesario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -623,8 +626,7 @@ namespace DB.Migrations
                         .HasColumnName("nombre_parametro");
 
                     b.Property<byte?>("TpmstId")
-                        .HasColumnType("tinyint")
-                        .HasColumnName("tpmst_id");
+                        .HasColumnType("tinyint");
 
                     b.Property<string>("Unidad")
                         .HasMaxLength(30)

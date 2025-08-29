@@ -4,6 +4,7 @@ using DB.Datos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB.Migrations
 {
     [DbContext(typeof(MasterDbContext))]
-    partial class MasterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250829184656_AnadirMuestraForeingKeyAPrueba")]
+    partial class AnadirMuestraForeingKeyAPrueba
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -611,7 +614,7 @@ namespace DB.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdParametro"));
 
-                    b.Property<int?>("IdPrueba")
+                    b.Property<int>("IdPrueba")
                         .HasColumnType("int")
                         .HasColumnName("id_prueba");
 
@@ -621,10 +624,6 @@ namespace DB.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(120)")
                         .HasColumnName("nombre_parametro");
-
-                    b.Property<byte?>("TpmstId")
-                        .HasColumnType("tinyint")
-                        .HasColumnName("tpmst_id");
 
                     b.Property<string>("Unidad")
                         .HasMaxLength(30)
@@ -640,21 +639,11 @@ namespace DB.Migrations
                         .HasColumnType("decimal(18, 6)")
                         .HasColumnName("valor_min");
 
-                    b.Property<byte?>("tmpst_id")
-                        .HasColumnType("tinyint");
-
                     b.HasKey("IdParametro")
                         .HasName("PK__Parametr__3D24E3256A0410FE");
 
-                    b.HasIndex("IdPrueba")
-                        .IsUnique()
-                        .HasFilter("[id_prueba] IS NOT NULL");
-
-                    b.HasIndex("tmpst_id");
-
                     b.HasIndex(new[] { "IdPrueba", "NombreParametro" }, "uk_parametro")
-                        .IsUnique()
-                        .HasFilter("[id_prueba] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Parametro_Norma", (string)null);
                 });
@@ -670,14 +659,7 @@ namespace DB.Migrations
 
                     b.Property<string>("IdMuestra")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(30)")
-                        .HasColumnName("id_muestra");
-
-                    b.Property<int>("IdParametroNorma")
-                        .HasColumnType("int")
-                        .HasColumnName("id_parametro_norma");
+                        .HasColumnType("varchar(30)");
 
                     b.Property<string>("NombrePrueba")
                         .IsRequired()
@@ -685,6 +667,12 @@ namespace DB.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(120)")
                         .HasColumnName("nombre_prueba");
+
+                    b.Property<string>("NormaReferencia")
+                        .HasMaxLength(120)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("norma_referencia");
 
                     b.Property<byte>("TipoMuestraAsociada")
                         .HasColumnType("tinyint")
@@ -794,7 +782,7 @@ namespace DB.Migrations
                 {
                     b.Property<byte>("TpmstId")
                         .HasColumnType("tinyint")
-                        .HasColumnName("tpmst_id");
+                        .HasColumnName("TPMST_ID");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -986,19 +974,13 @@ namespace DB.Migrations
 
             modelBuilder.Entity("Models.ParametroNorma", b =>
                 {
-                    b.HasOne("Models.Prueba", "Prueba")
-                        .WithOne("ParametroNorma")
-                        .HasForeignKey("Models.ParametroNorma", "IdPrueba")
-                        .HasConstraintName("fk_prueba_parametro");
-
-                    b.HasOne("Models.TipoMuestra", "TipoMuestraAsociadaNavigation")
+                    b.HasOne("Models.Prueba", "IdPruebaNavigation")
                         .WithMany("ParametroNormas")
-                        .HasForeignKey("tmpst_id")
-                        .HasConstraintName("fk_parametro_tipo");
+                        .HasForeignKey("IdPrueba")
+                        .IsRequired()
+                        .HasConstraintName("fk_parnorma_prueba");
 
-                    b.Navigation("Prueba");
-
-                    b.Navigation("TipoMuestraAsociadaNavigation");
+                    b.Navigation("IdPruebaNavigation");
                 });
 
             modelBuilder.Entity("Models.Prueba", b =>
@@ -1006,7 +988,6 @@ namespace DB.Migrations
                     b.HasOne("Models.Muestra", "IdMuestraNavigation")
                         .WithMany("Pruebas")
                         .HasForeignKey("IdMuestra")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_prueba_muestra");
 
@@ -1086,8 +1067,7 @@ namespace DB.Migrations
 
             modelBuilder.Entity("Models.Prueba", b =>
                 {
-                    b.Navigation("ParametroNorma")
-                        .IsRequired();
+                    b.Navigation("ParametroNormas");
 
                     b.Navigation("ResultadoPruebas");
                 });
@@ -1100,8 +1080,6 @@ namespace DB.Migrations
             modelBuilder.Entity("Models.TipoMuestra", b =>
                 {
                     b.Navigation("Muestras");
-
-                    b.Navigation("ParametroNormas");
 
                     b.Navigation("Pruebas");
                 });

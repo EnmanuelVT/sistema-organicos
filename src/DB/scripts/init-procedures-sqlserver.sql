@@ -290,6 +290,58 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE sp_crear_prueba
+    @p_nombre_prueba VARCHAR(120),
+    @p_tipo_muestra_asociada TINYINT,
+    @p_id_muestra VARCHAR(30),
+    @p_id_parametro_norma INT,
+    @p_id_usuario VARCHAR(450)
+AS
+BEGIN
+    DECLARE @new_id_prueba INT;
+
+    INSERT INTO Prueba (nombre_prueba, tipo_muestra_asociada, id_muestra, id_parametro_norma)
+    VALUES (@p_nombre_prueba, @p_tipo_muestra_asociada, @p_id_muestra, @p_id_parametro_norma);
+    SET @new_id_prueba = SCOPE_IDENTITY();
+
+    INSERT INTO Auditoria (id_usuario, accion, descripcion) VALUES (@p_id_usuario, 'CREAR_PRUEBA', CONCAT('PRB=',
+                                                                                                          CAST(@new_id_prueba AS VARCHAR(10))));
+END
+go
+
+
+CREATE PROCEDURE sp_agregar_parametro_a_tipo_muestra
+    @p_nombre_parametro VARCHAR(120),
+    @p_valor_min DECIMAL(18,6),
+    @p_valor_max DECIMAL(18,6),
+    @p_unidad VARCHAR(30),
+    @p_tpmst_id TINYINT,
+    @p_id_usuario VARCHAR(450)
+AS
+BEGIN
+    INSERT INTO Parametro_Norma (tpmst_id, nombre_parametro, valor_min, valor_max, unidad)
+    VALUES (@p_tpmst_id, @p_nombre_parametro, @p_valor_min, @p_valor_max, @p_unidad);
+    
+    INSERT INTO Auditoria (id_usuario, accion, descripcion) VALUES (@p_id_usuario, 'AGREGAR_PARAMETRO_A_TIPO_MUESTRA', CONCAT('PRB=',
+        CAST(@p_tpmst_id AS VARCHAR(10)),', PARAM=',@p_nombre_parametro));
+END
+
+CREATE PROCEDURE sp_agregar_parametro_a_prueba
+    @p_id_prueba INT,
+    @p_nombre_parametro VARCHAR(120),
+    @p_valor_min DECIMAL(18,6),
+    @p_valor_max DECIMAL(18,6),
+    @p_unidad VARCHAR(30),
+    @p_id_usuario VARCHAR(450)
+AS
+BEGIN
+    INSERT INTO Parametro_Norma (id_prueba, nombre_parametro, valor_min, valor_max, unidad)
+    VALUES (@p_id_prueba, @p_nombre_parametro, @p_valor_min, @p_valor_max, @p_unidad);
+
+    INSERT INTO Auditoria (id_usuario, accion, descripcion)
+    VALUES (@p_id_usuario, 'AGREGAR_PARAMETRO_A_PRUEBA', CONCAT('PRB=', CAST(@p_id_prueba AS VARCHAR(10)), ', PARAM=', @p_nombre_parametro));
+END
+
 -- 6.4 Registrar resultado de una prueba con evaluación de norma
 CREATE PROCEDURE sp_registrar_resultado 
     @p_MST_CODIGO VARCHAR(30),
@@ -303,7 +355,7 @@ BEGIN
     DECLARE @v_min DECIMAL(18,6);
     DECLARE @v_max DECIMAL(18,6);
     DECLARE @v_param VARCHAR(120);
-
+    
     -- Tomamos 1er parámetro de norma de esa prueba
     SELECT TOP 1 @v_param = nombre_parametro, @v_min = valor_min, @v_max = valor_max
     FROM Parametro_Norma
@@ -326,7 +378,7 @@ BEGIN
     -- Notificación si no cumple
     IF @v_cumple = 0 BEGIN
         INSERT INTO Notificacion (id_muestra, tipo_alerta, destinatario, enviado, detalle)
-        SELECT @p_MST_CODIGO, 'Resultado fuera de norma', u.Correo, 0,
+        SELECT @p_MST_CODIGO, 'Resultado fuera de norma', u.Email, 0,
                CONCAT('Prueba ', pr.nombre_prueba, ' valor=', CAST(@p_valor AS VARCHAR(20)),
                       ' (rango ', ISNULL(CONCAT('[',CAST(@v_min AS VARCHAR(20)),','), '['),
                       ISNULL(CONCAT(CAST(@v_max AS VARCHAR(20)),']'), 'infinito)'))
@@ -389,7 +441,7 @@ BEGIN
             WHERE MST_CODIGO = @muestra;
 
             INSERT INTO dbo.Historial_Trazabilidad(id_muestra,id_usuario,estado,observaciones)
-            VALUES(@muestra,@id_usuario,'Devuelta a análisis',@obs);
+            VALUES(@muestra,@id_usuario,2,@obs);
         END
     ELSE
         BEGIN
@@ -398,7 +450,7 @@ BEGIN
             SELECT @muestraA = id_muestra FROM dbo.Resultado_Prueba WHERE id_resultado = @id_resultado;
 
             INSERT INTO dbo.Historial_Trazabilidad(id_muestra,id_usuario,estado,observaciones)
-            VALUES(@muestraA,@id_usuario,'Resultado aprobado',@obs);
+            VALUES(@muestraA,@id_usuario,3,@obs);
         END
 END
 GO

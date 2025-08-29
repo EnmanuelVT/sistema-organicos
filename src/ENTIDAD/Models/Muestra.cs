@@ -41,6 +41,7 @@ public partial class Muestra
     public virtual Usuario IdUsuarioSolicitanteNavigation { get; set; } = null!;
 
     public virtual ICollection<Notificacion> Notificacions { get; set; } = new List<Notificacion>();
+    public virtual ICollection<Prueba> Pruebas { get; set; } = new List<Prueba>();
 
     public virtual ICollection<ResultadoPrueba> ResultadoPruebas { get; set; } = new List<ResultadoPrueba>();
 
