@@ -361,10 +361,9 @@ GO
 
 CREATE PROCEDURE dbo.sp_validar_resultado
     @id_resultado INT,
-    @US_Cedula    VARCHAR(20),
+    @id_usuario   VARCHAR(450),
     @accion       NVARCHAR(20),  -- 'Aprobado' o 'Rechazado'
-    @obs          NVARCHAR(300) = NULL,
-    @id_usuario   VARCHAR(450)
+    @obs          NVARCHAR(300) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -377,7 +376,7 @@ BEGIN
 
     -- Actualiza el resultado con la decisión
     UPDATE dbo.Resultado_Prueba
-    SET validado_por = @US_Cedula,
+    SET validado_por = @id_usuario,
         estado_validacion = @accion
     WHERE id_resultado = @id_resultado;
 
