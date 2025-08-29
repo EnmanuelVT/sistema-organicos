@@ -366,8 +366,6 @@ CREATE PROCEDURE dbo.sp_validar_resultado
     @obs          NVARCHAR(300) = NULL
 AS
 BEGIN
-    SET NOCOUNT ON;
-
     IF @accion NOT IN ('Aprobado','Rechazado')
         BEGIN
             RAISERROR('Acción inválida. Use Aprobado o Rechazado.',16,1);
