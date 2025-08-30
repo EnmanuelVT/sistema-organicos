@@ -24,8 +24,6 @@ public partial class Muestra
 
     public string IdUsuarioSolicitante { get; set; } = null!;
 
-    public string? IdAnalista { get; set; }
-
     public byte EstadoActual { get; set; }
 
     public virtual ICollection<BitacoraMuestra> BitacoraMuestras { get; set; } = new List<BitacoraMuestra>();
@@ -35,8 +33,6 @@ public partial class Muestra
     public virtual EstadoMuestra EstadoActualNavigation { get; set; } = null!;
 
     public virtual ICollection<HistorialTrazabilidad> HistorialTrazabilidads { get; set; } = new List<HistorialTrazabilidad>();
-
-    public virtual Usuario? IdAnalistaNavigation { get; set; }
 
     public virtual Usuario IdUsuarioSolicitanteNavigation { get; set; } = null!;
 

@@ -22,7 +22,7 @@ public class ParametroNegocio
         return await _repositorio.ObtenerParametrosPorPruebaAsync(idPrueba);
     }
     
-    public async Task<ParametroDto?> AgregarParametroATipoMuestra(CreateParametroATipoDto createParametroATipoDto, string idUsuario)
+    public async Task<ParametroDto?> AgregarParametroATipoMuestra(CreateParametroDto createParametroATipoDto, string idUsuario)
     {
         return await _repositorio.AgregarParametroATipoMuestra(createParametroATipoDto, idUsuario);
     }

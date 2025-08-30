@@ -16,6 +16,7 @@ public class ResultadoRepositorio
 CREATE PROCEDURE sp_registrar_resultado 
     @p_MST_CODIGO VARCHAR(30),
     @p_id_prueba INT,
+    @p_id_parametro INT,
     @p_valor DECIMAL(18,6),
     @p_unidad VARCHAR(30),
     @p_validado_por VARCHAR(30)
@@ -30,6 +31,7 @@ AS
             {
                 IdMuestra = r.IdMuestra,
                 IdPrueba = r.IdPrueba,
+                IdParametro = r.IdParametro,
                 IdResultado = r.IdResultado,
                 ValorObtenido = r.ValorObtenido,
                 Unidad = r.Unidad,
@@ -49,6 +51,7 @@ AS
             {
                 IdMuestra = r.IdMuestra,
                 IdPrueba = r.IdPrueba,
+                IdParametro = r.IdParametro,
                 IdResultado = r.IdResultado,
                 ValorObtenido = r.ValorObtenido,
                 Unidad = r.Unidad,
@@ -65,9 +68,10 @@ AS
         // recibir id usuario
         
         var result = await _context.Database.ExecuteSqlRawAsync(
-            "EXEC sp_registrar_resultado @p_MST_CODIGO = {0}, @p_id_prueba = {1}, @p_valor = {2}, @p_unidad = {3}, @p_validado_por = {4}",
+            "EXEC sp_registrar_resultado @p_MST_CODIGO = {0}, @p_id_prueba = {1}, @p_id_parametro = {2}, @p_valor = {3}, @p_unidad = {4}, @p_validado_por = {5}",
             createResultadoPruebaDto.IdMuestra,
             createResultadoPruebaDto.IdPrueba,
+            createResultadoPruebaDto.IdParametro,
             createResultadoPruebaDto.ValorObtenido,
             createResultadoPruebaDto.Unidad,
             createResultadoPruebaDto.ValidadoPor
@@ -87,6 +91,7 @@ AS
         {
             IdMuestra = resultadoEntry!.IdMuestra,
             IdPrueba = resultadoEntry.IdPrueba,
+            IdParametro = resultadoEntry.IdParametro,
             IdResultado = resultadoEntry.IdResultado,
             ValorObtenido = resultadoEntry.ValorObtenido,
             Unidad = resultadoEntry.Unidad,
@@ -126,6 +131,7 @@ AS
         var resultadoPruebaDto = new ResultadoPruebaDto()
         {
             IdMuestra = resultadoEntry!.IdMuestra,
+            IdParametro = resultadoEntry.IdParametro,
             IdPrueba = resultadoEntry.IdPrueba,
             IdResultado = resultadoEntry.IdResultado,
             ValorObtenido = resultadoEntry.ValorObtenido,

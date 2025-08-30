@@ -27,7 +27,8 @@ public class MuestraRepositorio
                 CondicionesAlmacenamiento = m.CondicionesAlmacenamiento,
                 CondicionesTransporte = m.CondicionesTransporte,
                 EstadoActual = m.EstadoActual,
-                IdAnalista = m.IdAnalista
+                FechaRecepcion = m.FechaRecepcion,
+                FechaSalidaEstimada = m.FechaSalidaEstimada
             })
             .ToListAsync();
     }
@@ -35,7 +36,7 @@ public class MuestraRepositorio
     public async Task<IEnumerable<MuestraDto>> ObtenerMuestrasPorUsuarioAsync(string usuarioId)
     {
         return await _context.Muestras
-            .Where(m => m.IdUsuarioSolicitante == usuarioId || m.IdAnalista == usuarioId)
+            .Where(m => m.IdUsuarioSolicitante == usuarioId)
             .Include(m => m.Tpmst)
             .Include(m => m.EstadoActualNavigation)
             .Select(m => new MuestraDto
@@ -47,7 +48,8 @@ public class MuestraRepositorio
                 CondicionesAlmacenamiento = m.CondicionesAlmacenamiento,
                 CondicionesTransporte = m.CondicionesTransporte,
                 EstadoActual = m.EstadoActual,
-                IdAnalista = m.IdAnalista
+                FechaRecepcion = m.FechaRecepcion,
+                FechaSalidaEstimada = m.FechaSalidaEstimada
             })
             .ToListAsync();
     }
@@ -64,8 +66,14 @@ public class MuestraRepositorio
             }
         }
 
+        var muestrasIds = _context.BitacoraMuestras
+            .Where(b => b.IdAnalista == analistaId)
+            .Select(b => b.IdMuestra)
+            .Distinct()
+            .ToList();
+
         return await _context.Muestras
-            .Where(m => m.IdAnalista == analistaId)
+            .Where(m => muestrasIds.Contains(m.MstCodigo))
             .Include(m => m.Tpmst)
             .Include(m => m.EstadoActualNavigation)
             .Select(m => new MuestraDto
@@ -77,7 +85,8 @@ public class MuestraRepositorio
                 CondicionesAlmacenamiento = m.CondicionesAlmacenamiento,
                 CondicionesTransporte = m.CondicionesTransporte,
                 EstadoActual = m.EstadoActual,
-                IdAnalista = m.IdAnalista
+                FechaRecepcion = m.FechaRecepcion,
+                FechaSalidaEstimada = m.FechaSalidaEstimada
             })
             .ToListAsync();
     }
@@ -85,7 +94,7 @@ public class MuestraRepositorio
     public async Task<MuestraDto?> CrearMuestraAsync(CreateMuestraDto nuevaMuestra, string usuarioId)
     {
         var result = await _context.Database.ExecuteSqlRawAsync(
-            "EXEC sp_crear_muestra @p_MST_CODIGO = {0}, @p_TPMST_ID = {1}, @p_Nombre = {2}, @p_Fecha_recepcion = {3}, @p_origen = {4}, @p_Fecha_Salida_Estimada = {5}, @p_Cond_alm = {6}, @p_Cond_trans = {7}, @p_id_solicitante = {8}, @p_id_responsable = {9}",
+            "EXEC sp_crear_muestra @p_MST_CODIGO = {0}, @p_TPMST_ID = {1}, @p_Nombre = {2}, @p_Fecha_recepcion = {3}, @p_origen = {4}, @p_Fecha_Salida_Estimada = {5}, @p_Cond_alm = {6}, @p_Cond_trans = {7}, @p_id_solicitante = {8}",
             nuevaMuestra.MstCodigo,
             nuevaMuestra.TpmstId,
             nuevaMuestra.Nombre,
@@ -94,8 +103,7 @@ public class MuestraRepositorio
             null,
             nuevaMuestra.CondicionesAlmacenamiento,
             nuevaMuestra.CondicionesTransporte,
-            usuarioId,// id del usuario solicitante
-            null // id del analista se coloca despues
+            usuarioId
         );
 
         // map result from stored procedure to Muestra object
@@ -175,16 +183,6 @@ public class MuestraRepositorio
             return null; // Muestra no encontrada
         }
 
-        // Validate analyst ID if provided
-        if (!string.IsNullOrEmpty(muestraActualizada.IdAnalista))
-        {
-            var analistaExists = await _context.Users.AnyAsync(u => u.Id == muestraActualizada.IdAnalista);
-            if (!analistaExists)
-            {
-                throw new Exception($"The specified analyst ID {muestraActualizada.IdAnalista} does not exist.");
-            }
-        }
-
         // Actualizar los campos necesarios
         existingMuestra.Nombre = muestraActualizada.Nombre;
         existingMuestra.TpmstId = muestraActualizada.TpmstId;
@@ -192,7 +190,6 @@ public class MuestraRepositorio
         existingMuestra.FechaSalidaEstimada = muestraActualizada.FechaSalidaEstimada;
         existingMuestra.CondicionesAlmacenamiento = muestraActualizada.CondicionesAlmacenamiento;
         existingMuestra.CondicionesTransporte = muestraActualizada.CondicionesTransporte;
-        existingMuestra.IdAnalista = muestraActualizada.IdAnalista;
         existingMuestra.EstadoActual = muestraActualizada.EstadoActual;
 
         await _context.SaveChangesAsync();
@@ -206,7 +203,6 @@ public class MuestraRepositorio
             CondicionesAlmacenamiento = existingMuestra.CondicionesAlmacenamiento,
             CondicionesTransporte = existingMuestra.CondicionesTransporte,
             EstadoActual = existingMuestra.EstadoActual,
-            IdAnalista = existingMuestra.IdAnalista
         };
 
         return muestraDto;

@@ -5,6 +5,7 @@ public class ResultadoPruebaDto
     public long IdResultado { get; set; }
 
     public int IdPrueba { get; set; }
+    public int IdParametro { get; set; }
 
     public string IdMuestra { get; set; } = null!;
 

@@ -1,6 +1,6 @@
 namespace ENTIDAD.DTOs.Parametros;
 
-public class CreateParametroATipoDto
+public class CreateParametroDto
 {
     public byte? TpmstId { get; set; }
 

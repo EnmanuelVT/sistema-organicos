@@ -4,6 +4,7 @@ using DB.Datos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DB.Migrations
 {
     [DbContext(typeof(MasterDbContext))]
-    partial class MasterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250830200856_ReworkDB")]
+    partial class ReworkDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -746,10 +749,6 @@ namespace DB.Migrations
                         .HasColumnType("varchar(30)")
                         .HasColumnName("id_muestra");
 
-                    b.Property<int>("IdParametro")
-                        .HasColumnType("int")
-                        .HasColumnName("id_parametro");
-
                     b.Property<int>("IdPrueba")
                         .HasColumnType("int")
                         .HasColumnName("id_prueba");
@@ -776,8 +775,6 @@ namespace DB.Migrations
                     b.HasIndex("ValidadoPor");
 
                     b.HasIndex(new[] { "IdMuestra" }, "IX_Resultado_Prueba_id_muestra");
-
-                    b.HasIndex(new[] { "IdParametro" }, "IX_Resultado_Prueba_id_parametro");
 
                     b.HasIndex(new[] { "IdPrueba" }, "IX_Resultado_Prueba_id_prueba");
 
@@ -1045,12 +1042,6 @@ namespace DB.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_res_muestra");
 
-                    b.HasOne("Models.ParametroNorma", "IdParametroNavigation")
-                        .WithMany("ResultadoPruebas")
-                        .HasForeignKey("IdParametro")
-                        .IsRequired()
-                        .HasConstraintName("fk_res_parametro");
-
                     b.HasOne("Models.Prueba", "IdPruebaNavigation")
                         .WithMany("ResultadoPruebas")
                         .HasForeignKey("IdPrueba")
@@ -1063,8 +1054,6 @@ namespace DB.Migrations
                         .HasConstraintName("fk_res_validador");
 
                     b.Navigation("IdMuestraNavigation");
-
-                    b.Navigation("IdParametroNavigation");
 
                     b.Navigation("IdPruebaNavigation");
 
@@ -1110,11 +1099,6 @@ namespace DB.Migrations
 
                     b.Navigation("Pruebas");
 
-                    b.Navigation("ResultadoPruebas");
-                });
-
-            modelBuilder.Entity("Models.ParametroNorma", b =>
-                {
                     b.Navigation("ResultadoPruebas");
                 });
 

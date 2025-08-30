@@ -20,5 +20,6 @@ namespace ENTIDAD.DTOs.Documentos
         public byte[]? DocPdf { get; set; }
 
         public DateTime FechaCreacion { get; set; }
+        public int IdEstadoDocumento { get; set; }
     }
 }

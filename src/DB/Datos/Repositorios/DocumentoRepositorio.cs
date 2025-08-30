@@ -72,9 +72,10 @@ namespace DB.Datos.Repositorios
             {
                 // Using Entity Framework to execute stored procedure
                 var result = await _context.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_generar_documento @p_MST_CODIGO = {0}, @p_id_tipo_doc = {1}, @p_version = {2}, @p_ruta = {3}, @p_doc_pdf = {4}, @p_id_usuario = {5}",
+                    "EXEC sp_generar_documento @p_MST_CODIGO = {0}, @p_id_tipo_doc = {1}, @p_id_estado_documento = {2}, @p_version = {3}, @p_ruta = {4}, @p_doc_pdf = {5}, @p_id_usuario = {6}",
                     createDocumentoDto.IdMuestra,
                     createDocumentoDto.IdTipoDoc,
+                    createDocumentoDto.IdEstadoDocumento,
                     createDocumentoDto.Version,
                     createDocumentoDto.RutaArchivo,
                     createDocumentoDto.DocPdf,
@@ -93,6 +94,7 @@ namespace DB.Datos.Repositorios
                         FechaCreacion = d.FechaCreacion,
                         IdMuestra = d.IdMuestra,
                         IdTipoDoc = d.IdTipoDoc,
+                        IdEstadoDocumento = d.IdEstadoDocumento,
                         Version = d.Version,
                         RutaArchivo = d.RutaArchivo,
                         DocPdf = d.DocPdf

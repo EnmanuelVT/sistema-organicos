@@ -21,7 +21,6 @@ namespace ENTIDAD.DTOs.Muestras
         public string? CondicionesTransporte { get; set; }
 
         public byte EstadoActual { get; set; }
-        public string? IdAnalista { get; set; }
         public DateTime FechaRecepcion { get; set; }
         public DateTime? FechaSalidaEstimada { get; set; }
     }

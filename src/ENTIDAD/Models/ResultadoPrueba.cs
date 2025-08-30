@@ -11,6 +11,7 @@ public partial class ResultadoPrueba
     public int IdPrueba { get; set; }
 
     public string IdMuestra { get; set; } = null!;
+    public int IdParametro { get; set; }
 
     public decimal? ValorObtenido { get; set; }
 
@@ -26,6 +27,7 @@ public partial class ResultadoPrueba
     public virtual Muestra IdMuestraNavigation { get; set; } = null!;
 
     public virtual Prueba IdPruebaNavigation { get; set; } = null!;
+    public virtual ParametroNorma IdParametroNavigation { get; set; } = null!;
 
     public virtual Usuario? ValidadoPorNavigation { get; set; }
 }

@@ -4,7 +4,6 @@ public class PruebaDto
 {
     public int IdPrueba { get; set; }
     public string IdMuestra { get; set; }
-    public int IdParametroNorma { get; set; }
 
     public string NombrePrueba { get; set; } = null!;
 

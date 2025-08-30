@@ -4,8 +4,6 @@ public class ParametroDto
 {
     public int IdParametro { get; set; }
 
-    public int? IdPrueba { get; set; }
-    
     public byte? TpmstId { get; set; }
 
     public string NombreParametro { get; set; } = null!;

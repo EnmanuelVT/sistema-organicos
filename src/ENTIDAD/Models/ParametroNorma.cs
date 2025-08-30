@@ -7,8 +7,6 @@ public partial class ParametroNorma
 {
     public int IdParametro { get; set; }
 
-    public int? IdPrueba { get; set; }
-    
     public byte? TpmstId { get; set; }
 
     public string NombreParametro { get; set; } = null!;
@@ -19,6 +17,6 @@ public partial class ParametroNorma
 
     public string? Unidad { get; set; }
 
-    public Prueba? Prueba { get; set; } = null!;
     public virtual TipoMuestra? TipoMuestraAsociadaNavigation { get; set; } = null!;
+    public ICollection<ResultadoPrueba> ResultadoPruebas { get; set; } = new List<ResultadoPrueba>();
 }

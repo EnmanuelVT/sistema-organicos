@@ -28,23 +28,7 @@ public class ParametroRepositorio
             .ToListAsync();
     }
     
-    public async Task<IEnumerable<ParametroDto>> ObtenerParametrosPorPruebaAsync(int idPrueba)
-    {
-        return await _context.ParametroNormas
-            .Where(p => p.IdPrueba == idPrueba)
-            .Select(p => new ParametroDto
-            {
-                IdParametro = p.IdParametro,
-                IdPrueba = p.IdPrueba,
-                NombreParametro = p.NombreParametro,
-                ValorMin = p.ValorMin,
-                ValorMax = p.ValorMax,
-                Unidad = p.Unidad
-            })
-            .ToListAsync();
-    }
-
-    public async Task<ParametroDto?> AgregarParametroATipoMuestra(CreateParametroATipoDto createParametroATipoDto, string idUsuario)
+    public async Task<ParametroDto?> AgregarParametroATipoMuestra(CreateParametroDto createParametroATipoDto, string idUsuario)
     {
         var result = await _context.Database.ExecuteSqlRawAsync(
             "EXEC sp_agregar_parametro_a_tipo_muestra @p_nombre_parametro = {0}, @p_valor_min = {1}, @p_valor_max = {2}, @p_unidad = {3}, @p_tpmst_id = {4}, @p_id_usuario = {5}",
@@ -71,38 +55,6 @@ public class ParametroRepositorio
                 ValorMax = p.ValorMax,
                 Unidad = p.Unidad,
                 TpmstId = p.TpmstId
-            })
-            .FirstOrDefaultAsync();
-    }
-
-    public async Task<ParametroDto?> AgregarParametroAPrueba(CreateParametroAPruebaDto createParametroAPruebaDto,
-        string idUsuario)
-    {
-        var result = await _context.Database.ExecuteSqlRawAsync(
-            "EXEC sp_agregar_parametro_a_prueba @p_id_prueba = {0}, @p_nombre_parametro = {1}, @p_valor_min = {2}, @p_valor_max = {3}, @p_unidad = {4}, @p_id_usuario = {5}",
-            createParametroAPruebaDto.IdPrueba,
-            createParametroAPruebaDto.NombreParametro,
-            createParametroAPruebaDto.ValorMin,
-            createParametroAPruebaDto.ValorMax,
-            createParametroAPruebaDto.Unidad,
-            idUsuario
-        );
-        
-        if (result <= 0)
-        {
-            return null;
-        }
-        
-        return await _context.ParametroNormas
-            .Where(p => p.NombreParametro == createParametroAPruebaDto.NombreParametro && p.IdPrueba == createParametroAPruebaDto.IdPrueba)
-            .Select(p => new ParametroDto
-            {
-                IdParametro = p.IdParametro,
-                IdPrueba = p.IdPrueba,
-                NombreParametro = p.NombreParametro,
-                ValorMin = p.ValorMin,
-                ValorMax = p.ValorMax,
-                Unidad = p.Unidad
             })
             .FirstOrDefaultAsync();
     }

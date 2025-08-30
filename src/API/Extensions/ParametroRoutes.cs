@@ -57,7 +57,7 @@ public static class ParametroRoutes
             });
         
         group.MapPost("/tipo-muestra",
-            async (ParametroNegocio negocio, CreateParametroATipoDto createParametroATipoMuestraDto, ClaimsPrincipal user) =>
+            async (ParametroNegocio negocio, CreateParametroDto createParametroATipoMuestraDto, ClaimsPrincipal user) =>
             {
                 try
                 {

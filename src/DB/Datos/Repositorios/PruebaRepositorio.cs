@@ -20,7 +20,6 @@ public class PruebaRepositorio
             {
                 IdPrueba = p.IdPrueba,
                 IdMuestra = p.IdMuestra,
-                IdParametroNorma = p.IdParametroNorma,
                 NombrePrueba = p.NombrePrueba,
                 TipoMuestraAsociada = p.TipoMuestraAsociada
             })
@@ -30,11 +29,10 @@ public class PruebaRepositorio
     public async Task<PruebaDto?> CrearPruebaAsync(CreatePruebaDto createPruebaDto, string idUsuario)
     {
         var result = await _context.Database.ExecuteSqlRawAsync(
-            "EXEC sp_crear_prueba @p_nombre_prueba = {0}, @p_tipo_muestra_asociada = {1}, @p_id_muestra = {2}, @p_id_parametro_norma = {3}, @p_id_usuario = {4}",
+            "EXEC sp_crear_prueba @p_nombre_prueba = {0}, @p_tipo_muestra_asociada = {1}, @p_id_muestra = {2}, @p_id_usuario = {3}",
             createPruebaDto.NombrePrueba,
             createPruebaDto.TipoMuestraAsociada,
             createPruebaDto.IdMuestra,
-            createPruebaDto.IdParametroNorma,
             idUsuario
         );
 
@@ -44,12 +42,11 @@ public class PruebaRepositorio
         }
         
         return await _context.Pruebas
-            .Where(p => p.IdMuestra == createPruebaDto.IdMuestra && p.IdParametroNorma == createPruebaDto.IdParametroNorma)
+            .Where(p => p.IdMuestra == createPruebaDto.IdMuestra)
             .Select(p => new PruebaDto
             {
                 IdPrueba = p.IdPrueba,
                 IdMuestra = p.IdMuestra,
-                IdParametroNorma = p.IdParametroNorma,
                 NombrePrueba = p.NombrePrueba,
                 TipoMuestraAsociada = p.TipoMuestraAsociada
             })
