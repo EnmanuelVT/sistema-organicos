@@ -284,6 +284,23 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE sp_cambiar_estado_documento
+    @p_id_documento INT,
+    @p_id_estado_doc INT,
+    @p_observaciones VARCHAR(255),
+    @p_id_usuario VARCHAR(450)
+AS
+BEGIN
+    UPDATE Documento SET id_estado_documento = @p_id_estado_doc WHERE id_documento = @p_id_documento;
+
+    INSERT INTO Historial_Trazabilidad (id_documento, id_usuario, estado, observaciones)
+    VALUES (@p_id_documento, @p_id_usuario, @p_id_estado_doc, @p_observaciones);
+
+    INSERT INTO Auditoria (id_usuario, accion, descripcion)
+    VALUES (@p_id_usuario, 'CAMBIAR_ESTADO_DOCUMENTO', CONCAT('DOC=',@p_id_documento,', ESTADO=',CAST(@p_id_estado_doc AS VARCHAR(10))));
+END
+GO
+
 CREATE OR ALTER PROCEDURE sp_crear_prueba
     @p_nombre_prueba VARCHAR(120),
     @p_tipo_muestra_asociada TINYINT,

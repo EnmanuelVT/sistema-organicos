@@ -99,7 +99,30 @@ public static class DocumentosRoutes
                 return Results.Problem(ex.Message);
             }
         });
-        
+
+        group.MapPatch("/cambiar-estado", async (CambiarEstadoDocumentoDto cambiarEstadoDocumentoDto, DocumentoNegocio negocio, ClaimsPrincipal user) =>
+        {
+            try
+            {
+                var usuarioId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (usuarioId == null)
+                {
+                    return Results.Unauthorized();
+                }
+
+                var resultado = await negocio.CambiarEstadoDocumentoAsync(cambiarEstadoDocumentoDto, usuarioId);
+                if (resultado == null)
+                {
+                    return Results.NotFound("Documento no encontrado.");
+                }
+                return Results.Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        });
+
         return group;
     }
 

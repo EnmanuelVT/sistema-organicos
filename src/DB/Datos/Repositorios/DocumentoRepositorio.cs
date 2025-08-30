@@ -149,5 +149,36 @@ namespace DB.Datos.Repositorios
                 throw new Exception("Error al generar el documento", ex);
             }
         }
+
+        public async Task<DocumentoDto?> CambiarEstadoDocumentoAsync(CambiarEstadoDocumentoDto cambiarEstadoDocumentoDto, string idUsuario) {
+            var result = await _context.Database.ExecuteSqlRawAsync(
+                "EXEC sp_cambiar_estado_documento @p_id_documento = {0}, @p_id_estado_doc = {1}, @p_observaciones = {2}, @p_id_usuario = {3}",
+                cambiarEstadoDocumentoDto.IdDocumento,
+                cambiarEstadoDocumentoDto.IdEstadoDocumento,
+                cambiarEstadoDocumentoDto.Observaciones,
+                idUsuario
+            );
+
+            if (result <= 0)
+            {
+                throw new Exception("No se pudo cambiar el estado del documento");
+            }
+
+            return await _context.Documentos
+                .Where(d => d.IdDocumento == cambiarEstadoDocumentoDto.IdDocumento)
+                .Select(d => new DocumentoDto
+                {
+                    IdDocumento = d.IdDocumento,
+                    FechaCreacion = d.FechaCreacion,
+                    IdMuestra = d.IdMuestra,
+                    IdTipoDoc = d.IdTipoDoc,
+                    IdEstadoDocumento = d.IdEstadoDocumento,
+                    Version = d.Version,
+                    RutaArchivo = d.RutaArchivo,
+                    DocPdf = d.DocPdf
+                })
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

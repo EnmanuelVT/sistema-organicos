@@ -27,4 +27,9 @@ public class DocumentoNegocio
     {
         return await _repositorio.GenerarDocumentoSpAsync(createDocumentoDto, idUsuario);
     }
+
+    public async Task<DocumentoDto?> CambiarEstadoDocumentoAsync(CambiarEstadoDocumentoDto cambiarEstadoDocumentoDto, string idUsuario)
+    {
+        return await _repositorio.CambiarEstadoDocumentoAsync(cambiarEstadoDocumentoDto, idUsuario);
+    }
 }

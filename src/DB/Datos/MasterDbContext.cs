@@ -23,6 +23,7 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
     public virtual DbSet<Documento> Documentos { get; set; }
 
     public virtual DbSet<EstadoMuestra> EstadoMuestras { get; set; }
+    public virtual DbSet<EstadoDocumento> EstadoDocumentos { get; set; }
 
     public virtual DbSet<HistorialTrazabilidad> HistorialTrazabilidads { get; set; }
 
@@ -212,8 +213,7 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
             entity.HasIndex(e => e.Nombre, "UQ__Estado_D__72AFBCC6E3D8D2B1").IsUnique();
 
             entity.Property(e => e.IdEstadoDocumento)
-                .HasColumnName("id_estado_documento")
-                .UseIdentityColumn();
+                .HasColumnName("id_estado_documento");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(30)
                 .IsUnicode(false)

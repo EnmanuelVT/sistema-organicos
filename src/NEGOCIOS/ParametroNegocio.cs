@@ -17,18 +17,8 @@ public class ParametroNegocio
         return await _repositorio.ObtenerParametrosPorTipoMuestraAsync(tpmstId);
     }
     
-    public async Task<IEnumerable<ParametroDto>> ObtenerParametrosPorPruebaAsync(int idPrueba)
-    {
-        return await _repositorio.ObtenerParametrosPorPruebaAsync(idPrueba);
-    }
-    
     public async Task<ParametroDto?> AgregarParametroATipoMuestra(CreateParametroDto createParametroATipoDto, string idUsuario)
     {
         return await _repositorio.AgregarParametroATipoMuestra(createParametroATipoDto, idUsuario);
-    }
-    
-    public async Task<ParametroDto?> AgregarParametroAPrueba(CreateParametroAPruebaDto createParametroAPruebaDto, string idUsuario)
-    {
-        return await _repositorio.AgregarParametroAPrueba(createParametroAPruebaDto, idUsuario);
     }
 }

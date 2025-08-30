@@ -1,3 +1,5 @@
+using ENTIDAD.Models;
+
 namespace API.Seed;
 
 using DB.Datos;
@@ -25,6 +27,15 @@ public static class AppDataSeeder
                 new EstadoMuestra { IdEstado = 2, Nombre = "En analisis" },
                 new EstadoMuestra { IdEstado = 3, Nombre = "Evaluada" },
                 new EstadoMuestra { IdEstado = 4, Nombre = "Certificada" }
+            );
+        }
+
+        // Seed EstadoDocumento
+        if (!context.EstadoDocumentos.Any())
+        {
+            context.EstadoDocumentos.AddRange(
+                new EstadoDocumento { IdEstadoDocumento = 1, Nombre = "Rechazado" },
+                new EstadoDocumento { IdEstadoDocumento = 2, Nombre = "Aprobado" }
             );
         }
 
