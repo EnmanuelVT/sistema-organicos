@@ -66,19 +66,40 @@ namespace DB.Datos.Repositorios
             }
         }
 
-        public async Task GenerarDocumentoSpAsync(CreateDocumentoDto documentoDto, int idUsuario)
+        public async Task<DocumentoDto?> GenerarDocumentoSpAsync(CreateDocumentoDto createDocumentoDto, string idUsuario)
         {
             try
             {
                 // Using Entity Framework to execute stored procedure
-                await _context.Database.ExecuteSqlRawAsync(
+                var result = await _context.Database.ExecuteSqlRawAsync(
                     "EXEC sp_generar_documento @p_MST_CODIGO = {0}, @p_id_tipo_doc = {1}, @p_version = {2}, @p_ruta = {3}, @p_doc_pdf = {4}, @p_id_usuario = {5}",
-                    documentoDto.IdMuestra,
-                    documentoDto.IdTipoDoc,
-                    documentoDto.Version,
-                    documentoDto.RutaArchivo,
-                    documentoDto.DocPdf,
+                    createDocumentoDto.IdMuestra,
+                    createDocumentoDto.IdTipoDoc,
+                    createDocumentoDto.Version,
+                    createDocumentoDto.RutaArchivo,
+                    createDocumentoDto.DocPdf,
                     idUsuario);
+                
+                if (result <= 0)
+                {
+                    throw new Exception("No se pudo generar el documento");
+                }
+                
+                var documentoDto = await _context.Documentos
+                    .Where(d => d.IdMuestra == createDocumentoDto.IdMuestra && d.IdTipoDoc == createDocumentoDto.IdTipoDoc && d.Version == createDocumentoDto.Version)
+                    .Select(d => new DocumentoDto
+                    {
+                        IdDocumento = d.IdDocumento,
+                        FechaCreacion = d.FechaCreacion,
+                        IdMuestra = d.IdMuestra,
+                        IdTipoDoc = d.IdTipoDoc,
+                        Version = d.Version,
+                        RutaArchivo = d.RutaArchivo,
+                        DocPdf = d.DocPdf
+                    })
+                    .FirstOrDefaultAsync();
+
+                return documentoDto;
             }
             catch (Exception ex)
             {

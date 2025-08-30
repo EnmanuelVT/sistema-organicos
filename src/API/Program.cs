@@ -66,6 +66,7 @@ builder.Services.AddIdentityCore<Usuario>()
 builder.Services.AddDbContext<MasterDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Database")));
 
+// builder.Services.AddAntiforgery();
 builder.Services.AddScoped<DocumentoNegocio>();
 builder.Services.AddScoped<DocumentoRepositorio>();
 builder.Services.AddScoped<AdminUserNegocio>();
@@ -92,6 +93,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+// app.UseAntiforgery();
 
 app.MapIdentityApi<Usuario>();
 app.MapDocumentosRoutes();
