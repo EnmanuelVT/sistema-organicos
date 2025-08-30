@@ -35,7 +35,8 @@ AS
                 Unidad = r.Unidad,
                 CumpleNorma = r.CumpleNorma,
                 FechaRegistro = r.FechaRegistro,
-                ValidadoPor = r.ValidadoPor
+                ValidadoPor = r.ValidadoPor,
+                EstadoValidacion = r.EstadoValidacion
             })
             .ToListAsync();
     }
@@ -53,7 +54,8 @@ AS
                 Unidad = r.Unidad,
                 CumpleNorma = r.CumpleNorma,
                 FechaRegistro = r.FechaRegistro,
-                ValidadoPor = r.ValidadoPor
+                ValidadoPor = r.ValidadoPor,
+                EstadoValidacion = r.EstadoValidacion
             })
             .FirstOrDefaultAsync();
     }
@@ -90,7 +92,8 @@ AS
             Unidad = resultadoEntry.Unidad,
             CumpleNorma = resultadoEntry.CumpleNorma,
             FechaRegistro = resultadoEntry.FechaRegistro,
-            ValidadoPor = resultadoEntry.ValidadoPor
+            ValidadoPor = resultadoEntry.ValidadoPor,
+            EstadoValidacion = resultadoEntry.EstadoValidacion
         };
 
         return resultadoPruebaDto;
@@ -129,7 +132,8 @@ AS
             Unidad = resultadoEntry.Unidad,
             CumpleNorma = resultadoEntry.CumpleNorma,
             FechaRegistro = resultadoEntry.FechaRegistro,
-            ValidadoPor = resultadoEntry.ValidadoPor
+            ValidadoPor = resultadoEntry.ValidadoPor,
+            EstadoValidacion = resultadoEntry.EstadoValidacion
         };
         
         return resultadoPruebaDto;

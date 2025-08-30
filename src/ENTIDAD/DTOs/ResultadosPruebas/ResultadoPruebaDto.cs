@@ -17,4 +17,5 @@ public class ResultadoPruebaDto
     public DateTime FechaRegistro { get; set; }
 
     public string? ValidadoPor { get; set; }
+    public string? EstadoValidacion { get; set; }
 }
