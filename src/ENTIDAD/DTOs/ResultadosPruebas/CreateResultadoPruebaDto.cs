@@ -7,5 +7,4 @@ public class CreateResultadoPruebaDto
     public int IdParametro { get; set;}
     public decimal? ValorObtenido { get; set; }
     public string? Unidad { get; set; }
-    public string? ValidadoPor { get; set; }
 }

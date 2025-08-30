@@ -63,18 +63,18 @@ AS
             .FirstOrDefaultAsync();
     }
 
-    public async Task<ResultadoPruebaDto?> RegistrarResultadoAsync(CreateResultadoPruebaDto createResultadoPruebaDto)
+    public async Task<ResultadoPruebaDto?> RegistrarResultadoAsync(CreateResultadoPruebaDto createResultadoPruebaDto, string idUsuario)
     {
         // recibir id usuario
         
         var result = await _context.Database.ExecuteSqlRawAsync(
-            "EXEC sp_registrar_resultado @p_MST_CODIGO = {0}, @p_id_prueba = {1}, @p_id_parametro = {2}, @p_valor = {3}, @p_unidad = {4}, @p_validado_por = {5}",
+            "EXEC sp_registrar_resultado @p_MST_CODIGO = {0}, @p_id_prueba = {1}, @p_id_parametro = {2}, @p_valor = {3}, @p_unidad = {4}, @p_id_usuario = {5}",
             createResultadoPruebaDto.IdMuestra,
             createResultadoPruebaDto.IdPrueba,
             createResultadoPruebaDto.IdParametro,
             createResultadoPruebaDto.ValorObtenido,
             createResultadoPruebaDto.Unidad,
-            createResultadoPruebaDto.ValidadoPor
+            idUsuario // no se ha validado
         );
 
         if (result <= 0)
@@ -104,7 +104,7 @@ AS
         return resultadoPruebaDto;
     }
 
-    public async Task<ResultadoPruebaDto?> ValidarResultadoAsync(ValidarResultadoDto validarResultadoDto)
+    public async Task<ResultadoPruebaDto?> ValidarResultadoAsync(ValidarResultadoDto validarResultadoDto, string idUsuario)
     {
         if (validarResultadoDto.Accion != "Aprobado" && validarResultadoDto.Accion != "Rechazado")
         {
@@ -114,7 +114,7 @@ AS
         var result = await _context.Database.ExecuteSqlRawAsync(
             "EXEC sp_validar_resultado @id_resultado = {0}, @id_usuario = {1}, @accion = {2}, @obs = {3}",
             validarResultadoDto.IdResultado,
-            validarResultadoDto.IdUsuario,
+            idUsuario,
             validarResultadoDto.Accion,
             validarResultadoDto.Observaciones
         );

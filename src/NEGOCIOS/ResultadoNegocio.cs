@@ -21,14 +21,14 @@ public class ResultadoNegocio
         return await _repositorio.ObtenerResultadoPorIdAsync(idResultado);
     }
     
-    public async Task<ResultadoPruebaDto?> RegistrarResultadoAsync(CreateResultadoPruebaDto createResultadoPruebaDto)
+    public async Task<ResultadoPruebaDto?> RegistrarResultadoAsync(CreateResultadoPruebaDto createResultadoPruebaDto, string idUsuario)
     {
-        return await _repositorio.RegistrarResultadoAsync(createResultadoPruebaDto);
+        return await _repositorio.RegistrarResultadoAsync(createResultadoPruebaDto, idUsuario);
     }
-    
-    public async Task<ResultadoPruebaDto?> ValidarResulltadoAsync(ValidarResultadoDto validarResultadoDto)
+
+    public async Task<ResultadoPruebaDto?> ValidarResultadoAsync(ValidarResultadoDto validarResultadoDto, string idUsuario)
     {
-        return await _repositorio.ValidarResultadoAsync(validarResultadoDto);
+        return await _repositorio.ValidarResultadoAsync(validarResultadoDto, idUsuario);
     }
 }
 

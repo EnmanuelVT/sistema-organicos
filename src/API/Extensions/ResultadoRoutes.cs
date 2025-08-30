@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using ENTIDAD.DTOs.ResultadosPruebas;
 using NEGOCIOS;
 
@@ -39,11 +40,17 @@ public static class ResultadoRoutes
             }
         }).RequireAuthorization("RequireAnalistaRole");
 
-        group.MapPost("/", async (ResultadoNegocio negocio, CreateResultadoPruebaDto createResultadoPruebaDto) =>
+        group.MapPost("/", async (ResultadoNegocio negocio, CreateResultadoPruebaDto createResultadoPruebaDto, ClaimsPrincipal user) =>
         {
             try
             {
-                var resultado = await negocio.RegistrarResultadoAsync(createResultadoPruebaDto);
+                var usuarioId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (usuarioId == null)
+                {
+                    return Results.Unauthorized();
+                }
+
+                var resultado = await negocio.RegistrarResultadoAsync(createResultadoPruebaDto, usuarioId);
                 return Results.Ok(resultado);
             }
             catch (Exception ex)
@@ -52,11 +59,17 @@ public static class ResultadoRoutes
             }
         }).RequireAuthorization("RequireAnalistaRole");
         
-        group.MapPatch("/validar", async (ResultadoNegocio negocio, ValidarResultadoDto validarResultadoDto) =>
+        group.MapPatch("/validar", async (ResultadoNegocio negocio, ValidarResultadoDto validarResultadoDto, ClaimsPrincipal user) =>
         {
             try
             {
-                var resultado = await negocio.ValidarResulltadoAsync(validarResultadoDto);
+                var usuarioId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (usuarioId == null)
+                {
+                    return Results.Unauthorized();
+                }
+
+                var resultado = await negocio.ValidarResultadoAsync(validarResultadoDto, usuarioId);
                 if (resultado == null)
                 {
                     return Results.NotFound();

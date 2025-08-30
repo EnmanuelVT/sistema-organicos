@@ -347,7 +347,7 @@ CREATE OR ALTER PROCEDURE sp_registrar_resultado
     @p_id_parametro INT,
     @p_valor DECIMAL(18,6),
     @p_unidad VARCHAR(30),
-    @p_validado_por VARCHAR(450)
+    @p_id_usuario VARCHAR(450)
 AS
 BEGIN
     DECLARE @v_cumple BIT;
@@ -370,25 +370,23 @@ BEGIN
     END
 
     INSERT INTO Resultado_Prueba
-    (id_prueba, id_parametro, id_muestra, valor_obtenido, unidad, cumple_norma, validado_por)
+    (id_prueba, id_parametro, id_muestra, valor_obtenido, unidad, cumple_norma)
     VALUES
-    (@p_id_prueba, @p_id_parametro, @p_MST_CODIGO, @p_valor, @p_unidad, @v_cumple, @p_validado_por);
+    (@p_id_prueba, @p_id_parametro, @p_MST_CODIGO, @p_valor, @p_unidad, @v_cumple);
 
     -- Notificación si no cumple
     IF @v_cumple = 0 BEGIN
-        INSERT INTO Notificacion (id_muestra, tipo_alerta, destinatario, enviado, detalle)
-        SELECT @p_MST_CODIGO, 'Resultado fuera de norma', u.Email, 0,
-               CONCAT('Prueba ', pr.nombre_prueba, ' valor=', CAST(@p_valor AS VARCHAR(20)),
-                      ' (rango ', ISNULL(CONCAT('[',CAST(@v_min AS VARCHAR(20)),','), '['),
-                      ISNULL(CONCAT(CAST(@v_max AS VARCHAR(20)),']'), 'infinito)'))
-        FROM Muestra m
-        INNER JOIN Usuario u ON u.US_Cedula = m.id_usuario_solicitante
-        INNER JOIN Prueba pr ON pr.id_prueba = @p_id_prueba
-        WHERE m.MST_CODIGO = @p_MST_CODIGO;
+        INSERT INTO Notificacion(id_muestra, tipo_alerta, destinatario, detalle, enviado, fecha_envio)
+        VALUES (@p_MST_CODIGO, 'Fuera de norma', (SELECT Email FROM Usuario WHERE Id = (SELECT id_usuario_solicitante FROM Muestra WHERE MST_CODIGO = @p_MST_CODIGO)),
+                CONCAT('El parámetro ',@v_param,' de la prueba ',CAST(@p_id_prueba AS VARCHAR(10)),' no cumple con la norma. Valor obtenido: ',CAST(@p_valor AS VARCHAR(20)),'. Rango esperado: [', 
+                       CASE WHEN @v_min IS NOT NULL THEN CAST(@v_min AS VARCHAR(20)) ELSE '-inf' END, ' - ', 
+                       CASE WHEN @v_max IS NOT NULL THEN CAST(@v_max AS VARCHAR(20)) ELSE '+inf' END, '].'),
+                0, NULL
+        );
     END
 
     INSERT INTO Auditoria (id_usuario, accion, descripcion)
-    VALUES (@p_validado_por, 'REGISTRAR_RESULTADO', CONCAT('MST=',@p_MST_CODIGO,', PRB=',CAST(@p_id_prueba AS VARCHAR(10))));
+    VALUES (@p_id_usuario, 'REGISTRAR_RESULTADO', CONCAT('MST=',@p_MST_CODIGO,', PRB=',CAST(@p_id_prueba AS VARCHAR(10))));
 END
 GO
 
