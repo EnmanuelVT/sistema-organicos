@@ -224,7 +224,7 @@ USE Laboratorio_Muestras;
 
 -- 6.1 Crear muestra (inicia en 'Recibida' y traza historial)
 -- Create the procedure with updated parameter types
-CREATE PROCEDURE sp_crear_muestra 
+CREATE OR ALTER PROCEDURE sp_crear_muestra 
     @p_MST_CODIGO VARCHAR(30),
     @p_TPMST_ID TINYINT,
     @p_Nombre VARCHAR(120),
@@ -256,7 +256,7 @@ END
 GO
 
 -- 6.2 Asignar analista a una muestra (bitácora + set analista actual)
-CREATE PROCEDURE sp_asignar_analista 
+CREATE OR ALTER PROCEDURE sp_asignar_analista 
     @p_MST_CODIGO VARCHAR(30),
     @p_id_analista VARCHAR(450),
     @p_observaciones VARCHAR(255)
@@ -273,7 +273,7 @@ END
 GO
 
 -- 6.3 Cambiar estado de la muestra (y trazar historial)
-CREATE PROCEDURE sp_cambiar_estado 
+CREATE OR ALTER PROCEDURE sp_cambiar_estado 
     @p_MST_CODIGO VARCHAR(30),
     @p_nuevo_estado TINYINT,
     @p_id_usuario VARCHAR(450),
@@ -290,7 +290,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE sp_crear_prueba
+CREATE OR ALTER PROCEDURE sp_crear_prueba
     @p_nombre_prueba VARCHAR(120),
     @p_tipo_muestra_asociada TINYINT,
     @p_id_muestra VARCHAR(30),
@@ -310,7 +310,7 @@ END
 go
 
 
-CREATE PROCEDURE sp_agregar_parametro_a_tipo_muestra
+CREATE OR ALTER PROCEDURE sp_agregar_parametro_a_tipo_muestra
     @p_nombre_parametro VARCHAR(120),
     @p_valor_min DECIMAL(18,6),
     @p_valor_max DECIMAL(18,6),
@@ -325,8 +325,9 @@ BEGIN
     INSERT INTO Auditoria (id_usuario, accion, descripcion) VALUES (@p_id_usuario, 'AGREGAR_PARAMETRO_A_TIPO_MUESTRA', CONCAT('PRB=',
         CAST(@p_tpmst_id AS VARCHAR(10)),', PARAM=',@p_nombre_parametro));
 END
+GO
 
-CREATE PROCEDURE sp_agregar_parametro_a_prueba
+CREATE OR ALTER PROCEDURE sp_agregar_parametro_a_prueba
     @p_id_prueba INT,
     @p_nombre_parametro VARCHAR(120),
     @p_valor_min DECIMAL(18,6),
@@ -341,9 +342,10 @@ BEGIN
     INSERT INTO Auditoria (id_usuario, accion, descripcion)
     VALUES (@p_id_usuario, 'AGREGAR_PARAMETRO_A_PRUEBA', CONCAT('PRB=', CAST(@p_id_prueba AS VARCHAR(10)), ', PARAM=', @p_nombre_parametro));
 END
+GO
 
 -- 6.4 Registrar resultado de una prueba con evaluación de norma
-CREATE PROCEDURE sp_registrar_resultado 
+CREATE OR ALTER PROCEDURE sp_registrar_resultado 
     @p_MST_CODIGO VARCHAR(30),
     @p_id_prueba INT,
     @p_valor DECIMAL(18,6),
@@ -394,7 +396,7 @@ END
 GO
 
 -- 6.5 Generar registro de documento
-CREATE PROCEDURE sp_generar_documento 
+CREATE OR ALTER PROCEDURE sp_generar_documento 
     @p_MST_CODIGO VARCHAR(30),
     @p_id_tipo_doc TINYINT,
     @p_version INT,
@@ -411,7 +413,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE dbo.sp_validar_resultado
+CREATE OR ALTER PROCEDURE dbo.sp_validar_resultado
     @id_resultado INT,
     @id_usuario   VARCHAR(450),
     @accion       NVARCHAR(20),  -- 'Aprobado' o 'Rechazado'
@@ -456,7 +458,7 @@ END
 GO
 
 -- 6.6 Registrar notificación
-CREATE PROCEDURE sp_registrar_notificacion 
+CREATE OR ALTER PROCEDURE sp_registrar_notificacion 
     @p_MST_CODIGO VARCHAR(30),
     @p_tipo_alerta VARCHAR(60),
     @p_destinatario VARCHAR(120),
