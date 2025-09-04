@@ -25,7 +25,7 @@ USE Laboratorio_Muestras;
 
 --CREATE TABLE Estado_Muestra (
 --    id_estado     TINYINT PRIMARY KEY,
---    nombre        VARCHAR(30) NOT NULL UNIQUE  -- Recibida, En análisis, Evaluada, Certificada
+--    nombre        VARCHAR(30) NOT NULL UNIQUE  -- Recibida, En análisis, En espera, Evaluada, Certificada
 --);
 
 --CREATE TABLE Tipo_Documento (
