@@ -25,8 +25,9 @@ public static class AppDataSeeder
             context.EstadoMuestras.AddRange(
                 new EstadoMuestra { IdEstado = 1, Nombre = "Recibida" },
                 new EstadoMuestra { IdEstado = 2, Nombre = "En analisis" },
-                new EstadoMuestra { IdEstado = 3, Nombre = "Evaluada" },
-                new EstadoMuestra { IdEstado = 4, Nombre = "Certificada" }
+                new EstadoMuestra { IdEstado = 2, Nombre = "En espera" },
+                new EstadoMuestra { IdEstado = 4, Nombre = "Evaluada" },
+                new EstadoMuestra { IdEstado = 5, Nombre = "Certificada" }
             );
         }
 
