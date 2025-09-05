@@ -118,7 +118,7 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        });
+        }).RequireAuthorization("RequireAdminRole");
 
         group.MapPost("/", async (MuestraNegocio negocio, CreateMuestraDto muestraDto, ClaimsPrincipal user) => 
         {
