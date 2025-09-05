@@ -91,6 +91,23 @@ public class MuestraRepositorio
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<AuditoriaDto>> ObtenerAuditoriaPorIdAsync(string usuarioId)
+    {
+        return await _context.Auditoria
+            .Where(m => m.IdUsuario == usuarioId)
+            //.Include(m => m.Tpmst)
+            //.Include(m => m.EstadoActualNavigation)
+            .Select(m => new AuditoriaDto
+            {
+                idAuditoria = m.IdUsuario,
+                idUsuario = m.IdUsuario,
+                Accion = m.Accion,
+                fechaAcción = m.FechaAccion,
+                descripcion = m.Descripcion,
+            })
+            .ToListAsync();
+    }
+
     public async Task<MuestraDto?> CrearMuestraAsync(CreateMuestraDto nuevaMuestra, string usuarioId)
     {
         var result = await _context.Database.ExecuteSqlRawAsync(
