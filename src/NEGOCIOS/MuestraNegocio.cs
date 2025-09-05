@@ -29,6 +29,10 @@ public class MuestraNegocio
     {
         return await _repositorio.ObtenerMuestrasPorAnalistaAsync(id);
     }
+    public async Task<IEnumerable<AuditoriaDto>> ObtenerAuditoriaPorIdAsync(string id)
+    {
+        return await _repositorio.ObtenerAuditoriaPorIdAsync(id);
+    }
 
     public async Task<MuestraDto?> CrearMuestraAsync(CreateMuestraDto nuevaMuestra, string usuarioId)
     {

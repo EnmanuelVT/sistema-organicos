@@ -103,6 +103,23 @@ public static class MuestraRoutes
             }
         });
 
+        group.MapGet("Auditoria{id}", async (MuestraNegocio negocio, string id) =>
+        {
+            try
+            {
+                var auditoria = await negocio.ObtenerAuditoriaPorIdAsync(id);
+                if (auditoria == null)
+                {
+                    return Results.NotFound();
+                }
+                return Results.Ok(auditoria);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        }).RequireAuthorization("RequireAdminRole");
+
         group.MapPost("/", async (MuestraNegocio negocio, CreateMuestraDto muestraDto, ClaimsPrincipal user) => 
         {
             try 
