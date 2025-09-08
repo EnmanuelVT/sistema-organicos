@@ -1,0 +1,7 @@
+@API_HostAddress = https://localhost:7232
+
+GET {{API_HostAddress}}/api/documentos/formulario-agua-registro
+
+## # Accept: application/json
+
+###

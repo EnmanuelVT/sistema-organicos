@@ -1,66 +1,40 @@
-import { useEffect, useState } from "react";
-import { listarMuestras } from "@/api/muestras";
-import type { Muestra } from "@/types/domain";
-import { Link } from "react-router-dom";
+import { useQuery } from '@tanstack/react-query'
+import { listMuestras } from '../libs/fakeApi'
+import { Link } from 'react-router-dom'
+import { useAuthStore } from '../store/auth'
 
-export default function Muestras() {
-  const [items, setItems] = useState<Muestra[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [q, setQ] = useState("");
-  const [estado, setEstado] = useState<number | "">("");
-
-  const load = async () => {
-    setLoading(true);
-    const res = await listarMuestras({ q, estado });
-    setItems(res.items ?? []);
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
-
+export default function MuestrasList() {
+  const { data, isLoading } = useQuery({ queryKey: ['muestras'], queryFn: listMuestras })
+  const { role } = useAuthStore()
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-xl font-semibold">Muestras</h1>
-
-      <div className="flex gap-2">
-        <input className="border px-3 py-2" placeholder="Buscar por código/origen"
-               value={q} onChange={e=>setQ(e.target.value)} />
-        <select className="border px-3 py-2" value={estado}
-                onChange={e=>setEstado(e.target.value === "" ? "" : +e.target.value)}>
-          <option value="">Estado (todos)</option>
-          <option value={1}>Recibida</option>
-          <option value={2}>En análisis</option>
-          <option value={3}>Evaluada</option>
-          <option value={4}>Certificada</option>
-        </select>
-        <button onClick={load} className="border px-3 py-2">Filtrar</button>
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between'>
+        <h1 className='text-xl font-semibold'>Muestras (todas)</h1>
+        {(role==='SOLICITANTE' || role==='ADMIN') && (
+          <Link to='/muestras/nueva' className='rounded bg-slate-900 px-4 py-2 text-white'>Registrar muestra</Link>
+        )}
       </div>
-
-      {loading ? <div>Cargando…</div> : items.length === 0 ? (
-        <div className="text-sm text-slate-600">No hay muestras.</div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="[&>th]:text-left [&>th]:py-2">
-                <th>Código</th><th>Tipo</th><th>Origen</th><th>Estado</th><th>Recepción</th><th></th>
+      <div className='overflow-hidden rounded-xl border bg-white'>
+        <table className='w-full text-left text-sm'>
+          <thead className='bg-slate-50 text-slate-600'>
+            <tr>
+              <th className='px-4 py-2'>Código</th>
+              <th className='px-4 py-2'>Tipo</th>
+              <th className='px-4 py-2'>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading && <tr><td className='px-4 py-6' colSpan={3}>Cargando...</td></tr>}
+            {data?.map(m => (
+              <tr key={m.id} className='border-t'>
+                <td className='px-4 py-2 font-medium'>{m.codigo}</td>
+                <td className='px-4 py-2'>{m.tipo}</td>
+                <td className='px-4 py-2'><span className='rounded bg-slate-100 px-2 py-1'>{m.estado}</span></td>
               </tr>
-            </thead>
-            <tbody>
-              {items.map(m => (
-                <tr key={m.mstCodigo} className="[&>td]:py-2 border-t">
-                  <td>{m.mstCodigo}</td>
-                  <td>{m.tpmstId}</td>
-                  <td>{m.origen}</td>
-                  <td>{m.estadoActual}</td>
-                  <td>{new Date(m.fechaRecepcion).toLocaleString()}</td>
-                  <td><Link className="underline" to={`/muestras/${m.mstCodigo}`}>ver</Link></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
-  );
+  )
 }
