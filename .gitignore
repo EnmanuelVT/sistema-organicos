@@ -10,3 +10,7 @@
 .idea/.idea.desarrolloweb-proyecto-exoneracion/.idea/httpRequests/http-client.cookies
 .idea/.idea.desarrolloweb-proyecto-exoneracion/.idea/httpRequests/http-requests-log.http
 src/API/Assets/.~lock.FormularioAguaRegistro.xlsx#
+
+
+node_modules/
+

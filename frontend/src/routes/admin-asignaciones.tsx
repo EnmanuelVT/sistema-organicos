@@ -1,62 +1,52 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listMuestras, assignAnalista, assignEvaluador } from '../libs/fakeApi'
-import { useState } from 'react'
+import { useEffect, useState } from "react";
+import { listarMuestras } from "@/api/muestras";
+import type { Muestra } from "@/types/domain";
+import api from "@/api/apiClient";
 
 export default function AdminAsignaciones() {
-  const { data } = useQuery({ queryKey: ['muestras-all'], queryFn: listMuestras })
-  const qc = useQueryClient()
-  const [analista, setAnalista] = useState('analista-1')
-  const [evaluador, setEvaluador] = useState('eval-1')
+  const [items, setItems] = useState<Muestra[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [analista, setAnalista] = useState("");
+  const [evaluador, setEvaluador] = useState("");
 
-  const mutAnalista = useMutation({
-    mutationFn: ({ id, analistaId }: { id: string, analistaId: string }) => assignAnalista(id, analistaId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['muestras-all'] })
-  })
-  const mutEvaluador = useMutation({
-    mutationFn: ({ id, evaluadorId }: { id: string, evaluadorId: string }) => assignEvaluador(id, evaluadorId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['muestras-all'] })
-  })
+  const load = async () => {
+    setLoading(true);
+    const res = await listarMuestras({ estado: 1 }); // por ejemplo, pendientes
+    setItems(res.items ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const asignar = async (mstCodigo: string) => {
+    await api.put('/admin/asignaciones', { mstCodigo, idAnalista: analista || null, idEvaluador: evaluador || null });
+    await load();
+  };
 
   return (
-    <div className='space-y-4'>
-      <h1 className='text-xl font-semibold'>Asignaciones</h1>
-      <div className='overflow-hidden rounded-xl border bg-white'>
-        <table className='w-full text-left text-sm'>
-          <thead className='bg-slate-50 text-slate-600'>
-            <tr>
-              <th className='px-4 py-2'>Código</th>
-              <th className='px-4 py-2'>Estado</th>
-              <th className='px-4 py-2'>Analista</th>
-              <th className='px-4 py-2'>Evaluador</th>
-              <th className='px-4 py-2'>Acciones</th>
-            </tr>
-          </thead>
+    <div className="p-6 space-y-4">
+      <h1 className="text-xl font-semibold">Asignaciones</h1>
+
+      <div className="flex gap-2">
+        <input className="border p-2" placeholder="Id analista" value={analista} onChange={e=>setAnalista(e.target.value)} />
+        <input className="border p-2" placeholder="Id evaluador" value={evaluador} onChange={e=>setEvaluador(e.target.value)} />
+      </div>
+
+      {loading ? <div>Cargando…</div> : (
+        <table className="text-sm min-w-full">
+          <thead><tr><th className="text-left">Código</th><th>Origen</th><th>Estado</th><th></th></tr></thead>
           <tbody>
-            {data?.map(m => (
-              <tr key={m.id} className='border-t'>
-                <td className='px-4 py-2 font-medium'>{m.codigo}</td>
-                <td className='px-4 py-2'><span className='rounded bg-slate-100 px-2 py-1'>{m.estado}</span></td>
-                <td className='px-4 py-2'>{m.analistaId || '-'}</td>
-                <td className='px-4 py-2'>{m.evaluadorId || '-'}</td>
-                <td className='px-4 py-2'>
-                  <div className='flex flex-wrap gap-2'>
-                    <select className='rounded border px-2 py-1' value={analista} onChange={e=>setAnalista(e.target.value)}>
-                      <option value='analista-1'>analista-1</option>
-                      <option value='analista-2'>analista-2</option>
-                    </select>
-                    <button className='rounded bg-slate-900 px-3 py-1 text-white' onClick={()=>mutAnalista.mutate({ id: m.id, analistaId: analista })}>Asignar analista</button>
-                    <select className='rounded border px-2 py-1' value={evaluador} onChange={e=>setEvaluador(e.target.value)}>
-                      <option value='eval-1'>eval-1</option>
-                      <option value='eval-2'>eval-2</option>
-                    </select>
-                    <button className='rounded bg-slate-900 px-3 py-1 text-white' onClick={()=>mutEvaluador.mutate({ id: m.id, evaluadorId: evaluador })}>Asignar evaluador</button>
-                  </div>
-                </td>
+            {items.map(m => (
+              <tr key={m.mstCodigo} className="border-t [&>td]:py-2">
+                <td>{m.mstCodigo}</td>
+                <td>{m.origen}</td>
+                <td>{m.estadoActual}</td>
+                <td><button className="border px-3 py-1" onClick={()=>asignar(m.mstCodigo)}>Asignar</button></td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      )}
     </div>
-  )
+  );
 }
