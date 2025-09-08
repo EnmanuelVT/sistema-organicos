@@ -234,41 +234,63 @@ public class MuestraRepositorio
             .FirstOrDefaultAsync(m => m.MstCodigo == id);
     }
 
-    public async Task<EvaluarMuestraResponseDto?> EvaluarMuestraAsync(EvaluarMuestraDto evaluarDto, string evaluadorId)
+public async Task<EvaluarMuestraResponseDto?> EvaluarMuestraAsync(EvaluarMuestraDto evaluarDto, string evaluadorId)
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
-
+    
         try
         {
+            // Define state IDs
+            var estadoEsperaId = (byte)3; // En espera
+            var estadoCertificadaId = (byte)5; // Certificada  
+            var estadoEnAnalisisId = (byte)2; // En analisis
+    
+            // Verify these states exist in the database
+            var estadosValidos = await _context.EstadoMuestras
+                .Where(e => e.IdEstado == estadoEsperaId || 
+                            e.IdEstado == estadoCertificadaId || 
+                            e.IdEstado == estadoEnAnalisisId)
+                .Select(e => e.IdEstado)
+                .ToListAsync();
+    
+            if (!estadosValidos.Contains(estadoEsperaId))
+            {
+                throw new Exception("Estado 'En espera' no existe en la base de datos");
+            }
+    
             // Verificar que la muestra existe
             var muestra = await _context.Muestras
                 .Include(m => m.Tpmst)
                 .Include(m => m.EstadoActualNavigation)
                 .FirstOrDefaultAsync(m => m.MstCodigo == evaluarDto.MuestraId);
-
+    
             if (muestra == null)
             {
                 return null;
             }
-
+    
             // Verificar que la muestra tiene resultados de pruebas (estado En espera = 3)
-            if (muestra.EstadoActual != 3) // Estado "En espera"
+            if (muestra.EstadoActual != estadoEsperaId)
             {
                 throw new Exception("La muestra debe estar en estado 'En espera' para poder ser evaluada por el evaluador");
             }
-
+    
             DocumentoDto? documentoCreado = null;
-
+    
             if (evaluarDto.Aprobado)
             {
                 // APROBADO: Cambiar estado a Certificada (5) y crear documento
-                muestra.EstadoActual = 5; // Estado "Certificada"
-
+                if (!estadosValidos.Contains(estadoCertificadaId))
+                {
+                    throw new Exception("Estado 'Certificada' no existe en la base de datos");
+                }
+                muestra.EstadoActual = estadoCertificadaId;
+    
                 // Crear documento certificado
                 var siguienteVersion = await _context.Documentos
                     .Where(d => d.IdMuestra == evaluarDto.MuestraId)
                     .CountAsync() + 1;
-
+    
                 var nuevoDocumento = new Documento
                 {
                     IdMuestra = evaluarDto.MuestraId,
@@ -278,10 +300,10 @@ public class MuestraRepositorio
                     FechaCreacion = DateTime.Now,
                     RutaArchivo = $"certificados/{evaluarDto.MuestraId}_v{siguienteVersion}.pdf"
                 };
-
+    
                 _context.Documentos.Add(nuevoDocumento);
                 await _context.SaveChangesAsync();
-
+    
                 documentoCreado = new DocumentoDto
                 {
                     IdDocumento = nuevoDocumento.IdDocumento,
@@ -296,9 +318,13 @@ public class MuestraRepositorio
             }
             else
             {
-                // RECHAZADO: Cambiar estado a En analisis (2) 
-                muestra.EstadoActual = 2; // Estado "En analisis"
-                
+                // RECHAZADO: Cambiar estado a En analisis (2)
+                if (!estadosValidos.Contains(estadoEnAnalisisId))
+                {
+                    throw new Exception("Estado 'En analisis' no existe en la base de datos");
+                }
+                muestra.EstadoActual = estadoEnAnalisisId;
+    
                 // Crear registro en BitacoraMuestra con las observaciones del evaluador
                 var bitacora = new BitacoraMuestra
                 {
@@ -307,13 +333,13 @@ public class MuestraRepositorio
                     FechaAsignacion = DateTime.Now,
                     Observaciones = evaluarDto.Observaciones ?? "Muestra rechazada por el evaluador"
                 };
-
+    
                 _context.BitacoraMuestras.Add(bitacora);
             }
-
+    
             // Guardar cambios en la muestra
             await _context.SaveChangesAsync();
-
+    
             // Crear registro de auditoría
             var auditoria = new Auditorium
             {
@@ -322,12 +348,12 @@ public class MuestraRepositorio
                 Descripcion = $"MST={evaluarDto.MuestraId}, Resultado={evaluarDto.Aprobado}, Obs={evaluarDto.Observaciones}",
                 FechaAccion = DateTime.Now
             };
-
+    
             _context.Auditoria.Add(auditoria);
             await _context.SaveChangesAsync();
-
+    
             await transaction.CommitAsync();
-
+    
             // Preparar respuesta con la muestra actualizada
             var muestraDto = new MuestraDto
             {
@@ -341,7 +367,7 @@ public class MuestraRepositorio
                 FechaRecepcion = muestra.FechaRecepcion,
                 FechaSalidaEstimada = muestra.FechaSalidaEstimada
             };
-
+    
             return new EvaluarMuestraResponseDto
             {
                 Muestra = muestraDto,
@@ -354,4 +380,5 @@ public class MuestraRepositorio
             throw;
         }
     }
+
 }
