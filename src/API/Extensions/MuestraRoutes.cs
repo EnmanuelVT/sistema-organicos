@@ -207,6 +207,43 @@ public static class MuestraRoutes
         }).RequireAuthorization("RequireAnalistaRole");
         // Solo el administrador puede modificar una muestra
 
+        group.MapPost("/{id}/evaluar", async (MuestraNegocio negocio, string id, EvaluarMuestraDto evaluarDto, ClaimsPrincipal user) =>
+        {
+            try
+            {
+                var evaluadorId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (evaluadorId == null)
+                {
+                    return Results.Unauthorized();
+                }
+
+                // Verificar que el usuario tiene rol de evaluador
+                // if (!user.IsInRole("Evaluador") || !user.IsInRole("Admin"))
+                // {
+                //     return Results.Forbid();
+                // }
+
+                // Asegurar que el ID de la muestra coincida
+                evaluarDto.MuestraId = id;
+
+                var resultado = await negocio.EvaluarMuestraAsync(evaluarDto, evaluadorId);
+                if (resultado == null)
+                {
+                    return Results.NotFound("Muestra no encontrada");
+                }
+
+                return Results.Ok(resultado);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        }).RequireAuthorization("RequireEvaluadorRole");
+
         return group;
     }
 }

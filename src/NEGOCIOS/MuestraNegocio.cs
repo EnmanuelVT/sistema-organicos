@@ -53,4 +53,25 @@ public class MuestraNegocio
     {
         return await _repositorio.ModificarMuestraAsync(muestraActualizada);
     }
+
+    public async Task<EvaluarMuestraResponseDto?> EvaluarMuestraAsync(EvaluarMuestraDto evaluarDto, string evaluadorId)
+    {
+        // Validaciones de negocio
+        if (string.IsNullOrWhiteSpace(evaluarDto.MuestraId))
+        {
+            throw new ArgumentException("El ID de la muestra es requerido");
+        }
+
+        if (string.IsNullOrWhiteSpace(evaluadorId))
+        {
+            throw new ArgumentException("El ID del evaluador es requerido");
+        }
+
+        if (!evaluarDto.Aprobado && string.IsNullOrWhiteSpace(evaluarDto.Observaciones))
+        {
+            throw new ArgumentException("Las observaciones son requeridas cuando se rechaza una muestra");
+        }
+
+        return await _repositorio.EvaluarMuestraAsync(evaluarDto, evaluadorId);
+    }
 }
