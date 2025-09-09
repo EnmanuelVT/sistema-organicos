@@ -2,16 +2,100 @@ using ENTIDAD.DTOs.Muestras;
 using ENTIDAD.DTOs.Documentos;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using System.IO;
+using Aspose.Cells;
 
 namespace DB.Datos.Repositorios;
 
 public class MuestraRepositorio
 {
     private readonly MasterDbContext _context;
+    private readonly ResultadoRepositorio _resultadoRepositorio;
+    private readonly ParametroRepositorio _parametroRepositorio;
+    private readonly UsuarioRepositorio _usuarioRepositorio;
 
     public MuestraRepositorio(MasterDbContext context)
     {
         _context = context;
+        _resultadoRepositorio = new ResultadoRepositorio(context);
+        _parametroRepositorio = new ParametroRepositorio(context);
+        _usuarioRepositorio = new UsuarioRepositorio(context);
+    }
+
+    private void ConvertWorksheetToPdf(Workbook workbook, string pdfPath)
+    {
+        // Save the worksheet as PDF
+        var pdfSaveOptions = new PdfSaveOptions
+        {
+            OnePagePerSheet = true,
+            AllColumnsInOnePagePerSheet = true
+        };
+        workbook.Save(pdfPath, pdfSaveOptions);
+    }
+    
+    private async void FillExcelTemplate(Worksheet worksheet, MuestraDto muestra)
+    {
+        // Replace placeholders in Excel template
+        
+        worksheet.Cells["S10"].Value = muestra.MstCodigo;
+        worksheet.Cells["H20"].Value = muestra.TpmstId;
+
+        var muestraCompleta = await ObtenerMuestraPorIdAsync(muestra.MstCodigo);
+        
+        var usuariosSolicitante = await _usuarioRepositorio.ObtenerUsuarioAsync(muestraCompleta.IdUsuarioSolicitante);
+        var usuarioSolicitante = usuariosSolicitante.First();
+
+        if (string.IsNullOrEmpty(usuarioSolicitante.Nombre))
+        {
+            worksheet.Cells["H12"].Value = usuarioSolicitante.Email;
+        }
+        else
+        {
+            worksheet.Cells["H12"].Value = usuarioSolicitante.Nombre;
+        }
+
+
+        var pHRangoCellValue = worksheet.Cells["R55"].Value;
+        var pHResultadoCellValue = worksheet.Cells["M55"].Value;
+        
+        var resultadosMuestra = await _resultadoRepositorio.ObtenerResultadosPorMuestraAsync(muestra.MstCodigo);
+        var pHResultado = resultadosMuestra.FirstOrDefault(r => r.IdParametro == 1); // Assuming 1 is the ID for pH
+        var parametros = await _parametroRepositorio.ObtenerParametrosPorTipoMuestraAsync(1); // Assuming 1 is the ID for pH
+
+        // phRango is the parameter with NombreParametro ph
+        
+        var phRango = parametros.FirstOrDefault(p => p.NombreParametro.ToLower().Contains("ph"));
+
+        if (pHResultado != null)
+        {
+            worksheet.Cells["M55"].Value = pHResultado.ValorObtenido;
+            worksheet.Cells["R55"].Value = phRango.ValorMin + " - " + phRango.ValorMax;
+        }
+    }
+    
+    private async Task<string> ConvertExcelToPdfAsync(string xlsxTemplatePath, string muestraId, int version, MuestraDto muestra)
+    {
+        var outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "certificados");
+        Directory.CreateDirectory(outputDir);
+        var pdfOutputPath = Path.Combine(outputDir, $"{muestraId}_v{version}.pdf");
+
+        try
+        {
+            // Load Excel template using ClosedXML
+            using var workbook = new Workbook(xlsxTemplatePath);
+            var worksheet = workbook.Worksheets[0];
+
+            // Fill template with sample data
+            FillExcelTemplate(worksheet, muestra);
+            
+            ConvertWorksheetToPdf(workbook, pdfOutputPath);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error creating PDF: {ex.Message}", ex);
+        }
+
+        return pdfOutputPath;
     }
 
     public async Task<IEnumerable<MuestraDto>> ObtenerTodasLasMuestrasAsync()
@@ -290,7 +374,8 @@ public async Task<EvaluarMuestraResponseDto?> EvaluarMuestraAsync(EvaluarMuestra
                 var siguienteVersion = await _context.Documentos
                     .Where(d => d.IdMuestra == evaluarDto.MuestraId)
                     .CountAsync() + 1;
-    
+
+                
                 var nuevoDocumento = new Documento
                 {
                     IdMuestra = evaluarDto.MuestraId,
@@ -298,11 +383,37 @@ public async Task<EvaluarMuestraResponseDto?> EvaluarMuestraAsync(EvaluarMuestra
                     IdEstadoDocumento = 2, // Estado "Aprobado"
                     Version = siguienteVersion,
                     FechaCreacion = DateTime.Now,
-                    RutaArchivo = $"certificados/{evaluarDto.MuestraId}_v{siguienteVersion}.pdf"
+                    RutaArchivo = $"certificados/{evaluarDto.MuestraId}_v{siguienteVersion}.pdf",
                 };
+                
+                if (muestra.TpmstId == 1)
+                {
+                    var xlsxTemplatePath = "Assets/FormularioAguaRegistro.xlsx";
+    
+                    // Convert Excel template to PDF with sample data
+                    var pdfPath = await ConvertExcelToPdfAsync(
+                        xlsxTemplatePath, 
+                        evaluarDto.MuestraId, 
+                        siguienteVersion, 
+                        new MuestraDto
+                        {
+                            MstCodigo = muestra.MstCodigo,
+                            Nombre = muestra.Nombre,
+                            Origen = muestra.Origen,
+                            CondicionesAlmacenamiento = muestra.CondicionesAlmacenamiento,
+                            CondicionesTransporte = muestra.CondicionesTransporte
+                        });
+    
+                    // Update the document path
+                    nuevoDocumento.RutaArchivo = pdfPath;
+                }
     
                 _context.Documentos.Add(nuevoDocumento);
                 await _context.SaveChangesAsync();
+                
+                // trabajar con los documentos
+                // fisicos en el sistema de archivos
+
     
                 documentoCreado = new DocumentoDto
                 {
