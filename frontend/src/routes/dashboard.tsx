@@ -2,7 +2,17 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 
 export default function Dashboard() {
-  const { role } = useAuthStore()
+  const { user } = useAuthStore()
+  const role = user?.role
+  
+  if (!user) {
+    return (
+      <div className='space-y-6'>
+        <h1 className='text-2xl font-semibold'>Cargando...</h1>
+      </div>
+    )
+  }
+  
   return (
     <div className='space-y-6'>
       <h1 className='text-2xl font-semibold'>Panel ({role})</h1>

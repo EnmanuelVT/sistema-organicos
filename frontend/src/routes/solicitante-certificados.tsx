@@ -1,43 +1,41 @@
 import { useQuery } from '@tanstack/react-query'
-import { listMuestrasBySolicitante, listDocumentosByMuestra } from '../libs/fakeApi'
+import { getMyMuestras } from '../api/muestras'
 import { useAuthStore } from '../store/auth'
-import { useEffect, useState } from 'react'
 
 export default function SolicitanteCertificados() {
-  const { userId } = useAuthStore()
-  const { data: muestras } = useQuery({ queryKey: ['muestras-solic', userId], queryFn: ()=> listMuestrasBySolicitante(userId!), enabled: !!userId })
-  const [docs, setDocs] = useState<{ muestraId: string, items: any[] }[]>([])
+  const { user } = useAuthStore()
+  const { data: muestras } = useQuery({ 
+    queryKey: ['my-muestras-certificados'], 
+    queryFn: getMyMuestras, 
+    enabled: !!user 
+  })
 
-  useEffect(()=>{
-    async function load() {
-      if (!muestras) return
-      const all: { muestraId: string, items: any[] }[] = []
-      for (const m of muestras) {
-        const d = await listDocumentosByMuestra(m.id)
-        if (d.length) all.push({ muestraId: m.id, items: d })
-      }
-      setDocs(all)
-    }
-    load()
-  }, [muestras])
+  // Filter only certified samples (assuming state 4 or similar represents certified)
+  const muestrasCertificadas = muestras?.filter(m => m.estadoActual >= 4) || []
 
   return (
     <div className='space-y-4'>
-      <h1 className='text-xl font-semibold'>Certificados recibidos</h1>
-      {!docs.length ? <p className='text-sm text-slate-600'>Aún no tienes certificados.</p> :
-      docs.map(group => (
-        <div key={group.muestraId} className='rounded border bg-white p-4'>
-          <h2 className='font-medium'>Muestra {group.muestraId}</h2>
-          <ul className='text-sm'>
-            {group.items.map(d => (
-              <li key={d.id} className='flex items-center justify-between border-t py-2 first:border-t-0'>
-                <span>#{d.version} - {d.tipo}</span>
-                <a className='text-slate-700 underline' href={d.url} target='_blank'>Descargar</a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      <h1 className='text-xl font-semibold'>Certificados y documentos</h1>
+      {!muestrasCertificadas.length ? (
+        <p className='text-sm text-slate-600'>Aún no tienes muestras certificadas.</p>
+      ) : (
+        muestrasCertificadas.map(muestra => (
+          <div key={muestra.mstCodigo} className='rounded border bg-white p-4'>
+            <h2 className='font-medium'>Muestra {muestra.mstCodigo}</h2>
+            <div className='text-sm text-slate-600 mt-1'>
+              <p><b>Nombre:</b> {muestra.nombre}</p>
+              <p><b>Origen:</b> {muestra.origen}</p>
+              <p><b>Estado:</b> {muestra.estadoActual}</p>
+              <p><b>Fecha recepción:</b> {new Date(muestra.fechaRecepcion).toLocaleDateString()}</p>
+            </div>
+            <div className='mt-3'>
+              <p className='text-sm text-slate-500'>
+                Los documentos y certificados estarán disponibles cuando se implemente la funcionalidad de generación de documentos en el backend.
+              </p>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   )
 }

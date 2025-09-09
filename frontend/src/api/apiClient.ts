@@ -1,9 +1,7 @@
 // src/api/apiClient.ts
 import axios from 'axios';
 
-const baseURL = import.meta.env.DEV
-  ? '' // DEV: mismo origen (Vite → proxy → API)
-  : (import.meta.env.VITE_API_BASE_URL || ''); // PROD: URL real
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7232';
 
 const api = axios.create({ baseURL });
 

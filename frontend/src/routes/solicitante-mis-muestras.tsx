@@ -1,11 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
-import { listMuestrasBySolicitante } from '../libs/fakeApi'
+import { getMyMuestras } from '../api/muestras'
 import { useAuthStore } from '../store/auth'
 import { Link } from 'react-router-dom'
 
 export default function SolicitanteMisMuestras() {
-  const { userId } = useAuthStore()
-  const { data, isLoading } = useQuery({ queryKey: ['muestras-solic', userId], queryFn: ()=> listMuestrasBySolicitante(userId!), enabled: !!userId })
+  const { user } = useAuthStore()
+  const { data, isLoading } = useQuery({ 
+    queryKey: ['my-muestras'], 
+    queryFn: getMyMuestras,
+    enabled: !!user 
+  })
 
   return (
     <div className='space-y-4'>
@@ -16,16 +20,18 @@ export default function SolicitanteMisMuestras() {
           <thead className='bg-slate-50 text-slate-600'>
             <tr>
               <th className='px-4 py-2'>Código</th>
+              <th className='px-4 py-2'>Nombre</th>
               <th className='px-4 py-2'>Estado</th>
-              <th className='px-4 py-2'>Asignaciones</th>
+              <th className='px-4 py-2'>Fecha Recepción</th>
             </tr>
           </thead>
           <tbody>
             {data?.map(m => (
-              <tr key={m.id} className='border-t'>
-                <td className='px-4 py-2 font-medium'>{m.codigo}</td>
-                <td className='px-4 py-2'><span className='rounded bg-slate-100 px-2 py-1'>{m.estado}</span></td>
-                <td className='px-4 py-2'>Analista: {m.analistaId || '-'} · Evaluador: {m.evaluadorId || '-'}</td>
+              <tr key={m.mstCodigo} className='border-t'>
+                <td className='px-4 py-2 font-medium'>{m.mstCodigo}</td>
+                <td className='px-4 py-2'>{m.nombre}</td>
+                <td className='px-4 py-2'><span className='rounded bg-slate-100 px-2 py-1'>{m.estadoActual}</span></td>
+                <td className='px-4 py-2'>{new Date(m.fechaRecepcion).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>

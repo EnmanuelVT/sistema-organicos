@@ -1,4 +1,6 @@
 ﻿using ENTIDAD.DTOs.Users;
+using ENTIDAD.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,42 +13,43 @@ namespace DB.Datos.Repositorios
     public class UsuarioRepositorio
     {
         private readonly MasterDbContext _context;
+        private readonly UserManager<Usuario> _userManager;
 
-        public UsuarioRepositorio(MasterDbContext context)
+        public UsuarioRepositorio(MasterDbContext context, UserManager<Usuario> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        public async Task<IEnumerable<UserDto>> ObtenerUsuarioAsync(string usuarioId)
+        public async Task<UserDto?> ObtenerUsuarioAsync(string usuarioId)
         {
             // Validate analyst ID if provided
-            if (!string.IsNullOrEmpty(usuarioId))
+            if (string.IsNullOrEmpty(usuarioId))
             {
-                var usuarioExists = await _context.Users.AnyAsync(u => u.Id == usuarioId);
-                if (!usuarioExists)
-                {
-                    throw new Exception($"The specified analyst ID {usuarioId} does not exist.");
-                }
+                return null;
             }
 
-            //var muestrasIds = _context.BitacoraMuestras
-            //    .Where(b => b.IdAnalista == usuarioId)
-            //    .Select(b => b.IdMuestra)
-            //    .Distinct()
-            //    .ToList();
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(m => m.Id == usuarioId);
 
-            return await _context.Usuarios
-                .Where(m => m.Id == usuarioId)
-                .Select(m => new UserDto
-                {
-                    Id = m.Id,
-                    UserName = m.UserName,
-                    Email = m.Email,
-                    Nombre = m.Nombre,
-                    Apellido = m.Apellido
-                })
-                .ToListAsync();
+            if (usuario == null)
+            {
+                return null;
+            }
+
+            var roles = await _userManager.GetRolesAsync(usuario);
+            var primaryRole = roles.FirstOrDefault() ?? "SOLICITANTE"; // Default role if none found
+            
+            return new UserDto
+            {
+                Id = usuario.Id,
+                UserName = usuario.UserName,
+                Email = usuario.Email,
+                UsCedula = usuario.UsCedula,
+                Nombre = usuario.Nombre,
+                Apellido = usuario.Apellido,
+                Role = primaryRole
+            };
         }
-
     }
 }

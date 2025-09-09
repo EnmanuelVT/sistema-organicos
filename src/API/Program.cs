@@ -11,6 +11,17 @@ using NEGOCIOS;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add CORS services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
@@ -93,6 +104,9 @@ if (app.Environment.IsDevelopment())
 
     app.ApplyMigrations();
 }
+
+// Enable CORS
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 

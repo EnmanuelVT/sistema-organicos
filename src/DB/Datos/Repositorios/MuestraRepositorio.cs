@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using System.IO;
 using Aspose.Cells;
+using ENTIDAD.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace DB.Datos.Repositorios;
 
@@ -13,13 +15,14 @@ public class MuestraRepositorio
     private readonly ResultadoRepositorio _resultadoRepositorio;
     private readonly ParametroRepositorio _parametroRepositorio;
     private readonly UsuarioRepositorio _usuarioRepositorio;
+    private readonly UserManager<Usuario> _userManager;
 
-    public MuestraRepositorio(MasterDbContext context)
+    public MuestraRepositorio(MasterDbContext context, UserManager<Usuario> userManager)
     {
         _context = context;
         _resultadoRepositorio = new ResultadoRepositorio(context);
         _parametroRepositorio = new ParametroRepositorio(context);
-        _usuarioRepositorio = new UsuarioRepositorio(context);
+        _usuarioRepositorio = new UsuarioRepositorio(context, userManager);
     }
 
     private void ConvertWorksheetToPdf(Workbook workbook, string pdfPath)
@@ -42,8 +45,7 @@ public class MuestraRepositorio
 
         var muestraCompleta = await ObtenerMuestraPorIdAsync(muestra.MstCodigo);
         
-        var usuariosSolicitante = await _usuarioRepositorio.ObtenerUsuarioAsync(muestraCompleta.IdUsuarioSolicitante);
-        var usuarioSolicitante = usuariosSolicitante.First();
+        var usuarioSolicitante = await _usuarioRepositorio.ObtenerUsuarioAsync(muestraCompleta.IdUsuarioSolicitante);
 
         if (string.IsNullOrEmpty(usuarioSolicitante.Nombre))
         {
