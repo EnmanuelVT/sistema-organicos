@@ -29,9 +29,23 @@ public class MuestraNegocio
     {
         return await _repositorio.ObtenerMuestrasPorAnalistaAsync(id);
     }
+    public async Task<IEnumerable<AuditoriaDto>> ObtenerAuditoriasAsync()
+    {
+        return await _repositorio.ObtenerAuditoriasAsync();
+    }
     public async Task<IEnumerable<AuditoriaDto>> ObtenerAuditoriaPorIdAsync(string id)
     {
         return await _repositorio.ObtenerAuditoriaPorIdAsync(id);
+    }
+
+    public async Task<IEnumerable<HistorialDto>> ObtenerHistorialTrazabilidadAsync()
+    {
+        return await _repositorio.ObtenerHistorialTrazabilidadAsync();
+    }
+
+    public async Task<IEnumerable<HistorialDto>> ObtenerHistorialTrazabilidadPorIdAsync(string id)
+    {
+        return await _repositorio.ObtenerHistorialTrazabilidadPorIdAsync(id);
     }
 
     public async Task<MuestraDto?> CrearMuestraAsync(CreateMuestraDto nuevaMuestra, string usuarioId)

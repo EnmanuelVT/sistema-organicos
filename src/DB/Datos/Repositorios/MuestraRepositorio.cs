@@ -178,6 +178,23 @@ public class MuestraRepositorio
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<AuditoriaDto>> ObtenerAuditoriasAsync()
+    {
+        return await _context.Auditoria
+            //.Where(m => m.IdUsuario == usuarioId)
+            //.Include(m => m.Tpmst)
+            //.Include(m => m.EstadoActualNavigation)
+            .Select(m => new AuditoriaDto
+            {
+                idAuditoria = m.IdAuditoria.ToString(),
+                idUsuario = m.IdUsuario,
+                Accion = m.Accion,
+                fechaAcción = m.FechaAccion,
+                descripcion = m.Descripcion ?? "",
+            })
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<AuditoriaDto>> ObtenerAuditoriaPorIdAsync(string usuarioId)
     {
         return await _context.Auditoria
@@ -191,6 +208,40 @@ public class MuestraRepositorio
                 Accion = m.Accion,
                 fechaAcción = m.FechaAccion,
                 descripcion = m.Descripcion ?? "",
+            })
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<HistorialDto>> ObtenerHistorialTrazabilidadAsync()
+    {
+        return await _context.HistorialTrazabilidads
+            //.Where(m => m.IdUsuario == usuarioId)
+            //.Include(m => m.Tpmst)
+            //.Include(m => m.EstadoActualNavigation)
+            .Select(h => new HistorialDto
+            {
+                IdBitacora = h.IdHistorial,
+                IdMuestra = h.IdMuestra,
+                IdAnalista = h.IdUsuario,
+                Estado = h.Estado,
+                FechaCambio = h.FechaCambio,
+                Observaciones = h.Observaciones ?? "",
+            })
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<HistorialDto>> ObtenerHistorialTrazabilidadPorIdAsync(string AnalistaId)
+    {
+        return await _context.HistorialTrazabilidads
+            .Where(h => h.IdUsuario == AnalistaId)
+            .Select(h => new HistorialDto
+            {
+                IdBitacora = h.IdHistorial,
+                IdMuestra = h.IdMuestra,
+                IdAnalista = h.IdUsuario,
+                Estado = h.Estado,
+                FechaCambio = h.FechaCambio,
+                Observaciones = h.Observaciones ?? "",
             })
             .ToListAsync();
     }

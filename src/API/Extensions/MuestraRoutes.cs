@@ -160,6 +160,30 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
+        group.MapGet("Auditoria", async (MuestraNegocio negocio) =>
+        {
+            try
+            {
+                var auditorias = await negocio.ObtenerAuditoriasAsync();
+                return Results.Ok(auditorias);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        })
+        .RequireAuthorization("RequireAdminRole")
+        .WithName("GetMuestraAudits")
+        .WithSummary("Get sample audit trail")
+        .WithDescription("Retrieves the audit trails. Requires admin role.")
+        .WithTags("Muestras", "Admin", "Audit")
+        .WithOpenApi()
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
+
         group.MapGet("Auditoria{id}", async (MuestraNegocio negocio, string id) =>
         {
             try
@@ -181,6 +205,54 @@ public static class MuestraRoutes
         .WithSummary("Get sample audit trail by ID")
         .WithDescription("Retrieves the audit trail for a specific sample. Requires admin role.")
         .WithTags("Muestras", "Admin", "Audit")
+        .WithOpenApi()
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("Historial", async (MuestraNegocio negocio) =>
+        {
+            try
+            {
+                var historial = await negocio.ObtenerHistorialTrazabilidadAsync();
+                return Results.Ok(historial);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        })
+        .RequireAuthorization("RequireAdminRole")
+        .WithName("GetMuestraHistorial")
+        .WithSummary("Get history")
+        .WithDescription("Retrieves the history. Requires admin role.")
+        .WithTags("Muestras", "Admin", "History")
+        .WithOpenApi()
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("Historial{id}", async (MuestraNegocio negocio, string id) =>
+        {
+            try
+            {
+                var historial = await negocio.ObtenerHistorialTrazabilidadPorIdAsync(id);
+                return Results.Ok(historial);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        })
+        .RequireAuthorization("RequireAdminRole")
+        .WithName("GetMuestraHistorialById")
+        .WithSummary("Get history")
+        .WithDescription("Retrieves the history. Requires admin role.")
+        .WithTags("Muestras", "Admin", "History")
         .WithOpenApi()
         .Produces<object>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
