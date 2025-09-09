@@ -1,22 +1,33 @@
 import { create } from 'zustand'
 import { UserDto } from '../types/domain'
 import { login as apiLogin, getCurrentUser as apiGetCurrentUser } from '../api/auth'
+import { normalizeRole } from '../utils/roles'
 
 export type Role = 'SOLICITANTE' | 'ANALISTA' | 'EVALUADOR' | 'ADMIN'
 
+type User = {
+  id: string
+  email: string
+  role: string // keep original for debugging
+  roleNorm?: ReturnType<typeof normalizeRole> // normalized
+}
+
 interface AuthState {
   token: string | null
-  user: UserDto | null
+  user: User,
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   getCurrentUser: () => Promise<void>
+  setUser: (u: User) => void
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: localStorage.getItem('token'),
   user: null,
   isAuthenticated: !!localStorage.getItem('token'),
+
+  setUser: (u) => set({ user: { ...u, roleNorm: normalizeRole(u.role) } }),
 
   login: async (email: string, password: string) => {
     try {
@@ -63,3 +74,4 @@ const token = localStorage.getItem('token')
 if (token) {
   useAuthStore.getState().getCurrentUser()
 }
+

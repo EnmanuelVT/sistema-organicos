@@ -1,3 +1,4 @@
+// src/pages/muestras.tsx (or wherever this component lives)
 import { useQuery } from '@tanstack/react-query'
 import { getAllMuestras } from '../api/muestras'
 import { Link } from 'react-router-dom'
@@ -6,16 +7,23 @@ import { useAuthStore } from '../store/auth'
 export default function MuestrasList() {
   const { data, isLoading } = useQuery({ queryKey: ['muestras'], queryFn: getAllMuestras })
   const { user } = useAuthStore()
-  const role = user?.role
-  
+
+  // normalize once
+  const role = (user?.role ?? '').toString().trim().toUpperCase()
+
+  const canCreate = role === 'SOLICITANTE' || role === 'ADMIN'
+
   return (
     <div className='space-y-4'>
       <div className='flex items-center justify-between'>
         <h1 className='text-xl font-semibold'>Muestras (todas)</h1>
-        {(role==='SOLICITANTE' || role==='ADMIN') && (
-          <Link to='/muestras/nueva' className='rounded bg-slate-900 px-4 py-2 text-white'>Registrar muestra</Link>
+        {canCreate && (
+          <Link to='/muestras/nueva' className='rounded bg-slate-900 px-4 py-2 text-white'>
+            Registrar muestra
+          </Link>
         )}
       </div>
+
       <div className='overflow-hidden rounded-xl border bg-white'>
         <table className='w-full text-left text-sm'>
           <thead className='bg-slate-50 text-slate-600'>

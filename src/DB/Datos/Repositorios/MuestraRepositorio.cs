@@ -61,7 +61,7 @@ public class MuestraRepositorio
         var pHResultadoCellValue = worksheet.Cells["M55"].Value;
         
         var resultadosMuestra = await _resultadoRepositorio.ObtenerResultadosPorMuestraAsync(muestra.MstCodigo);
-        var pHResultado = resultadosMuestra.FirstOrDefault(r => r.IdParametro == 1); // Assuming 1 is the ID for pH
+        var pHResultado = resultadosMuestra.LastOrDefault(r => r.IdParametro == 1); // Assuming 1 is the ID for pH
         var parametros = await _parametroRepositorio.ObtenerParametrosPorTipoMuestraAsync(1); // Assuming 1 is the ID for pH
 
         // phRango is the parameter with NombreParametro ph

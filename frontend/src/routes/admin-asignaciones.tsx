@@ -47,7 +47,7 @@ export default function AdminAsignaciones() {
     }
   };
 
-  const analistas = users.filter(u => u.role === 'ANALISTA');
+  const analistas = users.filter(u => u.role === 'Analista');
   const evaluadores = users.filter(u => u.role === 'EVALUADOR');
 
   return (

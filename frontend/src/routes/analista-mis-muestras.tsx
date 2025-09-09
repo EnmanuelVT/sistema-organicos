@@ -8,7 +8,7 @@ export default function AnalistaMisMuestras() {
   const { data, isLoading } = useQuery({ 
     queryKey: ['my-assigned-muestras'], 
     queryFn: getMyAssignedMuestras, 
-    enabled: !!user && user.role === 'ANALISTA'
+    enabled: !!user && user.role === 'Analista'
   })
 
   return (
