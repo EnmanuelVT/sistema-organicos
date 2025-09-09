@@ -1,0 +1,26 @@
+{
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/dotnet:2.3.0": {
+      "version": "9.0"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/sql-server:1": {
+      "version": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",      // C# Dev Kit
+        "ms-mssql.mssql",              // Microsoft SQL Server
+        "dbaeumer.vscode-eslint",      // ESLint
+        "ms-azuretools.vscode-docker", // Docker / Container Tools
+        "ms-vscode-remote.remote-containers"
+      ]
+    }
+  },
+  "postCreateCommand": "dotnet restore"
+}
