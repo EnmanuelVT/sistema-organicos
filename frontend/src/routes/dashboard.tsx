@@ -2,7 +2,17 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 
 export default function Dashboard() {
-  const { role } = useAuthStore()
+  const { user } = useAuthStore()
+  const role = user?.role
+  
+  if (!user) {
+    return (
+      <div className='space-y-6'>
+        <h1 className='text-2xl font-semibold'>Cargando...</h1>
+      </div>
+    )
+  }
+  
   return (
     <div className='space-y-6'>
       <h1 className='text-2xl font-semibold'>Panel ({role})</h1>
@@ -12,13 +22,13 @@ export default function Dashboard() {
           <Card title='Certificados' to='/solicitante/certificados' desc='Descarga de certificados.' />
           <Card title='Notificaciones' to='/solicitante/notificaciones' desc='Alertas y avisos.' />
         </>)}
-        {role==='ANALISTA' && (<>
+        {role==='Analista' && (<>
           <Card title='Mis muestras' to='/analista/mis-muestras' desc='Listado asignado.' />
         </>)}
         {role==='EVALUADOR' && (<>
           <Card title='Bandeja' to='/evaluador/bandeja' desc='Muestras con tests para decisión.' />
         </>)}
-        {role==='ADMIN' && (<>
+        {role==='Admin' && (<>
           <Card title='Asignaciones' to='/admin/asignaciones' desc='Asignar analista/evaluador.' />
           <Card title='Muestras' to='/muestras' desc='Vista general.' />
         </>)}

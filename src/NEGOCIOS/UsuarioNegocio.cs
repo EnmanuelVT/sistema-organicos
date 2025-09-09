@@ -13,7 +13,7 @@ public class UsuarioNegocio
         _repositorio = repositorio;
     }
 
-    public async Task<IEnumerable<UserDto>> ObtenerUsuarioAsync(string id)
+    public async Task<UserDto> ObtenerUsuarioAsync(string id)
     {
         return await _repositorio.ObtenerUsuarioAsync(id);
     }

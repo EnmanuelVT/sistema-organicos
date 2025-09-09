@@ -1,12 +1,25 @@
-import { ReactNode } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+// src/components/ProtectedRoute.tsx (example)
+import { Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
-import type { Role } from '../store/auth'
+import { hasAnyRole, AppRole } from '../utils/roles'
 
-export default function Protected({ children, roles }: { children: ReactNode, roles?: Role[] }) {
-  const { token, role } = useAuthStore()
-  const location = useLocation()
-  if (!token) return <Navigate to='/login' state={{ from: location }} replace />
-  if (roles && !roles.includes(role)) return <div className='rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700'>No tienes permisos para ver esta sección.</div>
+export default function ProtectedRoute({
+  roles,
+  children,
+}: {
+  roles?: AppRole[]
+  children: React.ReactNode
+}) {
+  const { user } = useAuthStore()
+
+  // Not logged in
+  if (!user) return <Navigate to="/login" replace />
+
+  if (roles && !hasAnyRole(user.role, roles)) {
+    return <div className="p-6 text-center text-sm text-red-600">
+      No tienes permisos para ver esta sección.
+    </div>
+  }
+
   return <>{children}</>
 }

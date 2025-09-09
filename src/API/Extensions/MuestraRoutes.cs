@@ -22,7 +22,17 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireAnalistaRole");
+        })
+        .RequireAuthorization("RequireAnalistaRole")
+        .WithName("GetAllMuestras")
+        .WithSummary("Get all samples")
+        .WithDescription("Retrieves a list of all samples in the system. Requires analyst role.")
+        .WithTags("Muestras")
+        .WithOpenApi()
+        .Produces<List<MuestraDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapGet("/me", async (MuestraNegocio negocio, ClaimsPrincipal user) => 
         {
@@ -40,7 +50,15 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        });
+        })
+        .WithName("GetMyMuestras")
+        .WithSummary("Get current user's samples")
+        .WithDescription("Retrieves all samples belonging to the currently authenticated user.")
+        .WithTags("Muestras")
+        .WithOpenApi()
+        .Produces<List<MuestraDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapGet("/usuario/{id}", async (MuestraNegocio negocio, ClaimsPrincipal user, string id) => 
         {
@@ -53,7 +71,17 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireAnalistaRole");
+        })
+        .RequireAuthorization("RequireAnalistaRole")
+        .WithName("GetMuestrasByUser")
+        .WithSummary("Get samples by user ID")
+        .WithDescription("Retrieves all samples belonging to a specific user. Requires analyst role.")
+        .WithTags("Muestras")
+        .WithOpenApi()
+        .Produces<List<MuestraDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapGet("/analista/me", async (MuestraNegocio negocio, ClaimsPrincipal user) => 
         {
@@ -71,7 +99,17 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireAnalistaRole");
+        })
+        .RequireAuthorization("RequireAnalistaRole")
+        .WithName("GetMyAssignedMuestras")
+        .WithSummary("Get samples assigned to current analyst")
+        .WithDescription("Retrieves all samples assigned to the currently authenticated analyst.")
+        .WithTags("Muestras", "Analyst")
+        .WithOpenApi()
+        .Produces<List<MuestraDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapGet("/analista/{id}", async (MuestraNegocio negocio, ClaimsPrincipal user, string id) => 
         {
@@ -84,7 +122,17 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireAdminRole");
+        })
+        .RequireAuthorization("RequireAdminRole")
+        .WithName("GetMuestrasByAnalyst")
+        .WithSummary("Get samples assigned to specific analyst")
+        .WithDescription("Retrieves all samples assigned to a specific analyst. Requires admin role.")
+        .WithTags("Muestras", "Admin", "Analyst")
+        .WithOpenApi()
+        .Produces<List<MuestraDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapGet("/{id}", async (MuestraNegocio negocio, string id) => 
         {
@@ -101,7 +149,16 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        });
+        })
+        .WithName("GetMuestraById")
+        .WithSummary("Get sample by ID")
+        .WithDescription("Retrieves a specific sample by its unique identifier.")
+        .WithTags("Muestras")
+        .WithOpenApi()
+        .Produces<MuestraDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapGet("Auditoria{id}", async (MuestraNegocio negocio, string id) =>
         {
@@ -118,7 +175,18 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireAdminRole");
+        })
+        .RequireAuthorization("RequireAdminRole")
+        .WithName("GetMuestraAuditById")
+        .WithSummary("Get sample audit trail by ID")
+        .WithDescription("Retrieves the audit trail for a specific sample. Requires admin role.")
+        .WithTags("Muestras", "Admin", "Audit")
+        .WithOpenApi()
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapPost("/", async (MuestraNegocio negocio, CreateMuestraDto muestraDto, ClaimsPrincipal user) => 
         {
@@ -138,7 +206,17 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        });
+        })
+        .WithName("CreateMuestra")
+        .WithSummary("Create a new sample")
+        .WithDescription("Creates a new sample in the system with the provided information.")
+        .WithTags("Muestras")
+        .WithOpenApi()
+        .Accepts<CreateMuestraDto>("application/json")
+        .Produces<object>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapPatch("asignar-analista", async (MuestraNegocio negocio, AsignarAnalistaEnMuestraDto asignarAnalistaDto) =>
         {
@@ -155,7 +233,17 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        });
+        })
+        .WithName("AssignAnalystToMuestra")
+        .WithSummary("Assign analyst to sample")
+        .WithDescription("Assigns a specific analyst to a sample for analysis.")
+        .WithTags("Muestras", "Analyst")
+        .WithOpenApi()
+        .Accepts<AsignarAnalistaEnMuestraDto>("application/json")
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapPatch("cambiar-estado", async (MuestraNegocio negocio, AsignarEstadoMuestraDto asignarEstadoDto, ClaimsPrincipal user) =>
         {
@@ -178,7 +266,17 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        });
+        })
+        .WithName("ChangeMuestraStatus")
+        .WithSummary("Change sample status")
+        .WithDescription("Updates the status of a sample with tracking information.")
+        .WithTags("Muestras")
+        .WithOpenApi()
+        .Accepts<AsignarEstadoMuestraDto>("application/json")
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapPut("/{id}", async (MuestraNegocio negocio, string id, CreateMuestraDto muestraDto) => 
         {
@@ -204,8 +302,64 @@ public static class MuestraRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireAnalistaRole");
-        // Solo el administrador puede modificar una muestra
+        })
+        .RequireAuthorization("RequireAnalistaRole")
+        .WithName("UpdateMuestra")
+        .WithSummary("Update an existing sample")
+        .WithDescription("Updates an existing sample's information. Requires analyst role.")
+        .WithTags("Muestras", "Analyst")
+        .WithOpenApi()
+        .Accepts<CreateMuestraDto>("application/json")
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        group.MapPost("/{id}/evaluar", async (MuestraNegocio negocio, string id, EvaluarMuestraDto evaluarDto, ClaimsPrincipal user) =>
+        {
+            try
+            {
+                var evaluadorId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (evaluadorId == null)
+                {
+                    return Results.Unauthorized();
+                }
+
+                // Asegurar que el ID de la muestra coincida
+                evaluarDto.MuestraId = id;
+
+                var resultado = await negocio.EvaluarMuestraAsync(evaluarDto, evaluadorId);
+                if (resultado == null)
+                {
+                    return Results.NotFound("Muestra no encontrada");
+                }
+
+                return Results.Ok(resultado);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        })
+        .RequireAuthorization("RequireEvaluadorRole")
+        .WithName("EvaluateMuestra")
+        .WithSummary("Evaluate a sample")
+        .WithDescription("Performs evaluation of a sample, marking it as approved or rejected with observations. Requires evaluator role.")
+        .WithTags("Muestras", "Evaluator")
+        .WithOpenApi()
+        .Accepts<EvaluarMuestraDto>("application/json")
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return group;
     }

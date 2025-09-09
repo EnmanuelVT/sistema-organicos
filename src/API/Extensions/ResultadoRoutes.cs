@@ -21,7 +21,18 @@ public static class ResultadoRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireAnalistaRole");
+        })
+        .RequireAuthorization("RequireAnalistaRole")
+        .WithName("GetResultadosByMuestra")
+        .WithSummary("Get test results by sample ID")
+        .WithDescription("Retrieves all test results associated with a specific sample. Requires analyst role.")
+        .WithTags("Resultados", "Analyst")
+        .WithOpenApi()
+        .Produces<List<ResultadoPruebaDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
         
         group.MapGet("/{idResultado}", async (ResultadoNegocio negocio, long idResultado) =>
         {
@@ -38,7 +49,18 @@ public static class ResultadoRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireAnalistaRole");
+        })
+        .RequireAuthorization("RequireAnalistaRole")
+        .WithName("GetResultadoById")
+        .WithSummary("Get test result by ID")
+        .WithDescription("Retrieves a specific test result by its unique identifier. Requires analyst role.")
+        .WithTags("Resultados", "Analyst")
+        .WithOpenApi()
+        .Produces<ResultadoPruebaDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         group.MapPost("/", async (ResultadoNegocio negocio, CreateResultadoPruebaDto createResultadoPruebaDto, ClaimsPrincipal user) =>
         {
@@ -57,7 +79,19 @@ public static class ResultadoRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireAnalistaRole");
+        })
+        .RequireAuthorization("RequireAnalistaRole")
+        .WithName("CreateResultado")
+        .WithSummary("Register a new test result")
+        .WithDescription("Creates a new test result for a specific sample and parameter. The result will be associated with the authenticated analyst. Requires analyst role.")
+        .WithTags("Resultados", "Analyst")
+        .WithOpenApi()
+        .Accepts<CreateResultadoPruebaDto>("application/json")
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
         
         group.MapPatch("/validar", async (ResultadoNegocio negocio, ValidarResultadoDto validarResultadoDto, ClaimsPrincipal user) =>
         {
@@ -80,7 +114,20 @@ public static class ResultadoRoutes
             {
                 return Results.Problem(ex.Message);
             }
-        }).RequireAuthorization("RequireEvaluadorRole");
+        })
+        .RequireAuthorization("RequireEvaluadorRole")
+        .WithName("ValidateResultado")
+        .WithSummary("Validate a test result")
+        .WithDescription("Validates or rejects a test result with observations. The validation will be tracked with the authenticated evaluator. Requires evaluator role.")
+        .WithTags("Resultados", "Evaluator")
+        .WithOpenApi()
+        .Accepts<ValidarResultadoDto>("application/json")
+        .Produces<object>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return group;
     }

@@ -26,7 +26,17 @@ namespace API.Extensions
                 {
                     return Results.Problem(ex.Message);
                 }
-            });
+            })
+            .WithName("GetCurrentUser")
+            .WithSummary("Get current authenticated user")
+            .WithDescription("Retrieves the profile information of the currently authenticated user")
+            .WithTags("Users")
+            .WithOpenApi()
+            .Produces<UserDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
             return group;
         }
     }
