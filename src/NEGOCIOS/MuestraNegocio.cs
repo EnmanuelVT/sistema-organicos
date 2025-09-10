@@ -88,4 +88,20 @@ public class MuestraNegocio
 
         return await _repositorio.EvaluarMuestraAsync(evaluarDto, evaluadorId);
     }
+    
+    // NEGOCIOS/MuestraNegocio.cs
+    public async Task<EvaluarPruebaResponseDto?> EvaluarPruebaAsync(int idPrueba, EvaluarPruebaDto dto, string evaluadorId)
+    {
+        if (string.IsNullOrWhiteSpace(evaluadorId))
+            throw new ArgumentException("El ID del evaluador es requerido");
+
+        if (!dto.Aprobado && string.IsNullOrWhiteSpace(dto.Observaciones))
+            throw new ArgumentException("Las observaciones son requeridas cuando se rechaza una prueba");
+
+        // Delegamos al repositorio (método que ya preparamos anteriormente)
+        return await _repositorio.EvaluarPruebaAsync(
+            new EvaluarPruebaDto { IdPrueba = idPrueba, Aprobado = dto.Aprobado, Observaciones = dto.Observaciones, /* (id va en la ruta) */ },
+            evaluadorId
+        );
+    }
 }

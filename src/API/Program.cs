@@ -6,6 +6,7 @@ using API.Seed;
 using Microsoft.EntityFrameworkCore;
 using ENTIDAD.Models;
 using DB.Datos.Repositorios;
+using DB.Helpers;
 using Microsoft.OpenApi.Models;
 using NEGOCIOS;
 
@@ -93,6 +94,8 @@ builder.Services.AddScoped<PruebaNegocio>();
 builder.Services.AddScoped<PruebaRepositorio>();
 builder.Services.AddScoped<ParametroNegocio>();
 builder.Services.AddScoped<ParametroRepositorio>();
+// Register the IDocumentBuilder implementation
+builder.Services.AddScoped<IDocumentBuilder, DocumentBuilder>(); // Replace DocumentBuilder with your actual implementation class name
 
 var app = builder.Build();
 

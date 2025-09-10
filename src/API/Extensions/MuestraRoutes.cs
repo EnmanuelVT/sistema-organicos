@@ -432,6 +432,44 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
+        
+        // API.Extensions/MuestraRoutes.cs (dentro de MapMuestraRoutes)
+        group.MapPost("/pruebas/{id:int}/evaluar", async (MuestraNegocio negocio, int id, EvaluarPruebaDto body, ClaimsPrincipal user) =>
+            {
+                try
+                {
+                    var evaluadorId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (evaluadorId == null)
+                        return Results.Unauthorized();
+
+                    var resp = await negocio.EvaluarPruebaAsync(id, body, evaluadorId);
+                    if (resp is null) return Results.NotFound("Prueba no encontrada o inválida");
+
+                    return Results.Ok(resp);
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem(ex.Message);
+                }
+            })
+            .RequireAuthorization("RequireEvaluadorRole")
+            .WithName("EvaluatePrueba")
+            .WithSummary("Evaluate a test (Prueba)")
+            .WithDescription("Approves or rejects a specific test and generates the corresponding certificate when approved. Requires evaluator role.")
+            .WithTags("Muestras", "Pruebas", "Evaluator")
+            .WithOpenApi()
+            .Accepts<EvaluarPruebaDto>("application/json")
+            .Produces<object>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
 
         return group;
     }
