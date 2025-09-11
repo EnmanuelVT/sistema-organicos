@@ -1,3 +1,4 @@
+using System.Data;
 using ENTIDAD.DTOs.Muestras;
 using ENTIDAD.DTOs.Documentos;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using DB.Helpers;
 using ENTIDAD.DTOs.ResultadosPruebas;
 using ENTIDAD.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 
 namespace DB.Datos.Repositorios;
 
@@ -176,43 +178,57 @@ public class MuestraRepositorio
 
     public async Task<MuestraDto?> CrearMuestraAsync(CreateMuestraDto nuevaMuestra, string usuarioId)
     {
-        var result = await _context.Database.ExecuteSqlRawAsync(
-            "EXEC sp_crear_muestra @p_MST_CODIGO = {0}, @p_TPMST_ID = {1}, @p_Nombre = {2}, @p_Fecha_recepcion = {3}, @p_origen = {4}, @p_Fecha_Salida_Estimada = {5}, @p_Cond_alm = {6}, @p_Cond_trans = {7}, @p_id_solicitante = {8}",
-            nuevaMuestra.MstCodigo,
-            nuevaMuestra.TpmstId,
-            nuevaMuestra.Nombre,
-            DateTime.Now,
-            nuevaMuestra.Origen,
-            null,
-            nuevaMuestra.CondicionesAlmacenamiento,
-            nuevaMuestra.CondicionesTransporte,
-            usuarioId
+        var pTpmstId        = new SqlParameter("@p_TPMST_ID", SqlDbType.TinyInt) { Value = nuevaMuestra.TpmstId };
+        var pNombre         = new SqlParameter("@p_Nombre", SqlDbType.VarChar, 120) { Value = (object?)nuevaMuestra.Nombre ?? DBNull.Value };
+        var pFechaRecep     = new SqlParameter("@p_Fecha_recepcion", SqlDbType.DateTime) { Value = DateTime.Now };
+        var pOrigen         = new SqlParameter("@p_origen", SqlDbType.VarChar, 200) { Value = (object?)nuevaMuestra.Origen ?? DBNull.Value };
+        var pFechaSalidaEst = new SqlParameter("@p_Fecha_Salida_Estimada", SqlDbType.DateTime) { Value = DBNull.Value };
+        var pCondAlm        = new SqlParameter("@p_Cond_alm", SqlDbType.VarChar, 200) { Value = (object?)nuevaMuestra.CondicionesAlmacenamiento ?? DBNull.Value };
+        var pCondTrans      = new SqlParameter("@p_Cond_trans", SqlDbType.VarChar, 200) { Value = (object?)nuevaMuestra.CondicionesTransporte ?? DBNull.Value };
+        var pSolicitante    = new SqlParameter("@p_id_solicitante", SqlDbType.VarChar, 450) { Value = usuarioId };
+
+        var pOutCodigo = new SqlParameter("@o_MST_CODIGO", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output };
+
+        var sql = @"
+            EXEC dbo.sp_crear_muestra
+                 @p_TPMST_ID,
+                 @p_Nombre,
+                 @p_Fecha_recepcion,
+                 @p_origen,
+                 @p_Fecha_Salida_Estimada,
+                 @p_Cond_alm,
+                 @p_Cond_trans,
+                 @p_id_solicitante,
+                 @o_MST_CODIGO OUTPUT";
+
+        // Nota: ExecuteSqlRawAsync puede devolver -1 y AÚN ASÍ ser éxito.
+        await _context.Database.ExecuteSqlRawAsync(
+            sql,
+            pTpmstId, pNombre, pFechaRecep, pOrigen, pFechaSalidaEst, pCondAlm, pCondTrans, pSolicitante, pOutCodigo
         );
 
-        // map result from stored procedure to Muestra object
-        if (result <= 0) // Check if the stored procedure executed successfully
-        {
-            return null; // Return null if the stored procedure execution was not successful
-        }
+        var mstCodigo = pOutCodigo.Value as string;
+        if (string.IsNullOrWhiteSpace(mstCodigo)) return null;
 
-        // Retrieve the newly created sample using its ID
         var muestra = await _context.Muestras
             .Include(m => m.Tpmst)
             .Include(m => m.EstadoActualNavigation)
-            .FirstOrDefaultAsync(m => m.MstCodigo == nuevaMuestra.MstCodigo);
+            .FirstOrDefaultAsync(m => m.MstCodigo == mstCodigo);
 
-        MuestraDto muestraDto = new MuestraDto
+        if (muestra is null) return null;
+
+        return new MuestraDto
         {
-            MstCodigo = muestra!.MstCodigo,
+            MstCodigo = muestra.MstCodigo,
             TpmstId = muestra.TpmstId,
             Nombre = muestra.Nombre,
             Origen = muestra.Origen,
             CondicionesAlmacenamiento = muestra.CondicionesAlmacenamiento,
             CondicionesTransporte = muestra.CondicionesTransporte,
             EstadoActual = muestra.EstadoActual,
+            FechaRecepcion = muestra.FechaRecepcion,
+            FechaSalidaEstimada = muestra.FechaSalidaEstimada
         };
-
-        return muestraDto;
     }
 
     public async Task<BitacoraMuestra?> AsignarAnalistaAsync(AsignarAnalistaEnMuestraDto asignarAnalistaEnMuestraDto )

@@ -364,7 +364,6 @@ public static class MuestraRoutes
                 muestraExistente.Nombre = muestraDto.Nombre;
                 muestraExistente.TpmstId = muestraDto.TpmstId;
                 muestraExistente.Origen = muestraDto.Origen;
-                muestraExistente.EstadoActual = muestraDto.EstadoActual;
                 muestraExistente.CondicionesAlmacenamiento = muestraDto.CondicionesAlmacenamiento;
                 muestraExistente.CondicionesTransporte = muestraDto.CondicionesTransporte;
 

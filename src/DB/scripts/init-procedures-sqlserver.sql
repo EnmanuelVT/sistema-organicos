@@ -48,52 +48,95 @@ VALUES (@p_id_usuario, 'CAMBIAR_ESTADO', CONCAT('MST=',@p_MST_CODIGO,', ESTADO='
 END
 go
 
-CREATE   PROCEDURE sp_crear_muestra
-    @p_MST_CODIGO VARCHAR(30),
-    @p_TPMST_ID TINYINT,
-    @p_Nombre VARCHAR(120),
-    @p_Fecha_recepcion DATETIME,
-    @p_origen VARCHAR(200),
-    @p_Fecha_Salida_Estimada DATETIME,
-    @p_Cond_alm VARCHAR(200),
-    @p_Cond_trans VARCHAR(200),
-    @p_id_solicitante VARCHAR(450) -- Changed from VARCHAR(15) to VARCHAR(450)
-AS
+/* Tabla muestraConsecutivo */
+IF NOT EXISTS (
+    SELECT 1 FROM sys.objects 
+    WHERE object_id = OBJECT_ID(N'[dbo].[MuestraConsecutivo]') AND type = 'U'
+)
 BEGIN
+CREATE TABLE dbo.MuestraConsecutivo
+(
+    Fecha   DATE      NOT NULL,
+    TpmstId TINYINT   NOT NULL,
+    Ultimo  INT       NOT NULL,
+    CONSTRAINT PK_MuestraConsecutivo PRIMARY KEY (Fecha, TpmstId)
+);
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_crear_muestra
+    @p_TPMST_ID               TINYINT,
+    @p_Nombre                 VARCHAR(120),
+    @p_Fecha_recepcion        DATETIME = NULL,
+    @p_origen                 VARCHAR(200),
+    @p_Fecha_Salida_Estimada  DATETIME = NULL,
+    @p_Cond_alm               VARCHAR(200),
+    @p_Cond_trans             VARCHAR(200),
+    @p_id_solicitante         VARCHAR(450),
+    @o_MST_CODIGO             VARCHAR(50) OUTPUT
+    AS
+BEGIN
+    SET NOCOUNT ON;
+
     DECLARE @v_estado_recibida TINYINT = 1;
+    IF @p_Fecha_recepcion IS NULL SET @p_Fecha_recepcion = SYSDATETIME();
 
-INSERT INTO Muestra
-(MST_CODIGO, TPMST_ID, Nombre, Fecha_recepcion, origen, Fecha_Salida_Estimada,
- Condiciones_almacenamiento, Condiciones_transporte, id_usuario_solicitante,
- estado_actual)
-VALUES
-    (@p_MST_CODIGO, @p_TPMST_ID, @p_Nombre, @p_Fecha_recepcion, @p_origen, @p_Fecha_Salida_Estimada,
-     @p_Cond_alm, @p_Cond_trans, @p_id_solicitante, @v_estado_recibida);
+    DECLARE @fecha DATE = CAST(@p_Fecha_recepcion AS DATE);
 
-INSERT INTO Auditoria (id_usuario, accion, descripcion)
-VALUES (@p_id_solicitante, 'CREAR_MUESTRA', CONCAT('MST=',@p_MST_CODIGO));
-END
-go
+    -- Concurrencia segura: bloquea el rango mientras calcula e incrementa
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+BEGIN TRAN;
 
+    DECLARE @siguiente INT;
 
-CREATE   PROCEDURE sp_crear_prueba
-    @p_nombre_prueba VARCHAR(120),
-    @p_tipo_muestra_asociada TINYINT,
-    @p_id_muestra VARCHAR(30),
-    @p_id_usuario VARCHAR(450)
-AS
+    -- Crea fila de control si no existe para (fecha, tipo)
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM dbo.MuestraConsecutivo WITH (UPDLOCK, HOLDLOCK)
+        WHERE Fecha = @fecha AND TpmstId = @p_TPMST_ID
+    )
 BEGIN
-    DECLARE @new_id_prueba INT;
-
-INSERT INTO Prueba (nombre_prueba, tipo_muestra_asociada, id_muestra)
-VALUES (@p_nombre_prueba, @p_tipo_muestra_asociada, @p_id_muestra);
-SET @new_id_prueba = SCOPE_IDENTITY();
-
-INSERT INTO Auditoria (id_usuario, accion, descripcion) VALUES (@p_id_usuario, 'CREAR_PRUEBA', CONCAT('PRB=',
-                                                                                                      CAST(@new_id_prueba AS VARCHAR(10))));
+INSERT INTO dbo.MuestraConsecutivo (Fecha, TpmstId, Ultimo)
+VALUES (@fecha, @p_TPMST_ID, 0);
 END
-go
 
+    -- Incrementa y lee el consecutivo
+UPDATE dbo.MuestraConsecutivo
+SET @siguiente = Ultimo = Ultimo + 1
+WHERE Fecha = @fecha AND TpmstId = @p_TPMST_ID;
+
+-- Formato: M-{TPMST}-{YYYYMMDD}-{NNNN}
+DECLARE @yyyymmdd CHAR(8) = CONVERT(CHAR(8), @fecha, 112);
+    SET @o_MST_CODIGO = CONCAT(
+        'M-',
+        RIGHT('00' + CAST(@p_TPMST_ID AS VARCHAR(2)), 2), 
+        '-', 
+        @yyyymmdd, 
+        '-', 
+        RIGHT('0000' + CAST(@siguiente AS VARCHAR(10)), 4)
+    );
+
+    -- Inserta la muestra
+INSERT INTO dbo.Muestra
+(
+    MST_CODIGO, TPMST_ID, Nombre, Fecha_recepcion, origen, Fecha_Salida_Estimada,
+    Condiciones_almacenamiento, Condiciones_transporte, id_usuario_solicitante,
+    estado_actual
+)
+VALUES
+    (
+        @o_MST_CODIGO, @p_TPMST_ID, @p_Nombre, @p_Fecha_recepcion, @p_origen, @p_Fecha_Salida_Estimada,
+        @p_Cond_alm, @p_Cond_trans, @p_id_solicitante, @v_estado_recibida
+    );
+
+COMMIT;
+
+-- Devuelve también el código por resultset (útil si mapeas con FromSql)
+SELECT MST_CODIGO
+FROM dbo.Muestra
+WHERE MST_CODIGO = @o_MST_CODIGO;
+END
+GO
 
 -- 6.5 Generar registro de documento
 CREATE   PROCEDURE sp_generar_documento
