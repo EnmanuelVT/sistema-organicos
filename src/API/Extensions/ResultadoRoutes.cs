@@ -92,42 +92,6 @@ public static class ResultadoRoutes
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
-        
-        group.MapPatch("/validar", async (ResultadoNegocio negocio, ValidarResultadoDto validarResultadoDto, ClaimsPrincipal user) =>
-        {
-            try
-            {
-                var usuarioId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (usuarioId == null)
-                {
-                    return Results.Unauthorized();
-                }
-
-                var resultado = await negocio.ValidarResultadoAsync(validarResultadoDto, usuarioId);
-                if (resultado == null)
-                {
-                    return Results.NotFound();
-                }
-                return Results.Ok(resultado);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(ex.Message);
-            }
-        })
-        .RequireAuthorization("RequireEvaluadorRole")
-        .WithName("ValidateResultado")
-        .WithSummary("Validate a test result")
-        .WithDescription("Validates or rejects a test result with observations. The validation will be tracked with the authenticated evaluator. Requires evaluator role.")
-        .WithTags("Resultados", "Evaluator")
-        .WithOpenApi()
-        .Accepts<ValidarResultadoDto>("application/json")
-        .Produces<object>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound)
-        .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return group;
     }

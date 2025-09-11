@@ -103,45 +103,4 @@ AS
 
         return resultadoPruebaDto;
     }
-
-    public async Task<ResultadoPruebaDto?> ValidarResultadoAsync(ValidarResultadoDto validarResultadoDto, string idUsuario)
-    {
-        if (validarResultadoDto.Accion != "Aprobado" && validarResultadoDto.Accion != "Rechazado")
-        {
-            throw new ArgumentException("Accion debe ser Aprobado o Rechazado");
-        }
-        
-        var result = await _context.Database.ExecuteSqlRawAsync(
-            "EXEC sp_validar_resultado @id_resultado = {0}, @id_usuario = {1}, @accion = {2}, @obs = {3}",
-            validarResultadoDto.IdResultado,
-            idUsuario,
-            validarResultadoDto.Accion,
-            validarResultadoDto.Observaciones
-        );
-
-        if (result <= 0)
-        {
-            return null;
-        }
-        
-        var resultadoEntry = await _context.ResultadoPruebas
-            .Where(r => r.IdResultado == validarResultadoDto.IdResultado)
-            .FirstOrDefaultAsync();
-
-        var resultadoPruebaDto = new ResultadoPruebaDto()
-        {
-            IdMuestra = resultadoEntry!.IdMuestra,
-            IdParametro = resultadoEntry.IdParametro,
-            IdPrueba = resultadoEntry.IdPrueba,
-            IdResultado = resultadoEntry.IdResultado,
-            ValorObtenido = resultadoEntry.ValorObtenido,
-            Unidad = resultadoEntry.Unidad,
-            CumpleNorma = resultadoEntry.CumpleNorma,
-            FechaRegistro = resultadoEntry.FechaRegistro,
-            ValidadoPor = resultadoEntry.ValidadoPor,
-            EstadoValidacion = resultadoEntry.EstadoValidacion
-        };
-        
-        return resultadoPruebaDto;
-    }
 }

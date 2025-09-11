@@ -25,10 +25,5 @@ public class ResultadoNegocio
     {
         return await _repositorio.RegistrarResultadoAsync(createResultadoPruebaDto, idUsuario);
     }
-
-    public async Task<ResultadoPruebaDto?> ValidarResultadoAsync(ValidarResultadoDto validarResultadoDto, string idUsuario)
-    {
-        return await _repositorio.ValidarResultadoAsync(validarResultadoDto, idUsuario);
-    }
 }
 

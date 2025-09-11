@@ -389,50 +389,6 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        group.MapPost("/{id}/evaluar", async (MuestraNegocio negocio, string id, EvaluarMuestraDto evaluarDto, ClaimsPrincipal user) =>
-        {
-            try
-            {
-                var evaluadorId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (evaluadorId == null)
-                {
-                    return Results.Unauthorized();
-                }
-
-                // Asegurar que el ID de la muestra coincida
-                evaluarDto.MuestraId = id;
-
-                var resultado = await negocio.EvaluarMuestraAsync(evaluarDto, evaluadorId);
-                if (resultado == null)
-                {
-                    return Results.NotFound("Muestra no encontrada");
-                }
-
-                return Results.Ok(resultado);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(ex.Message);
-            }
-        })
-        .RequireAuthorization("RequireEvaluadorRole")
-        .WithName("EvaluateMuestra")
-        .WithSummary("Evaluate a sample")
-        .WithDescription("Performs evaluation of a sample, marking it as approved or rejected with observations. Requires evaluator role.")
-        .WithTags("Muestras", "Evaluator")
-        .WithOpenApi()
-        .Accepts<EvaluarMuestraDto>("application/json")
-        .Produces<object>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound)
-        .ProducesProblem(StatusCodes.Status500InternalServerError);
-        
         // API.Extensions/MuestraRoutes.cs (dentro de MapMuestraRoutes)
         group.MapPost("/pruebas/{id:int}/evaluar", async (MuestraNegocio negocio, int id, EvaluarPruebaDto body, ClaimsPrincipal user) =>
             {
