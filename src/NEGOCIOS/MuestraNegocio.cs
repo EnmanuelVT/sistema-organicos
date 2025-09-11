@@ -1,4 +1,5 @@
 using DB.Datos.Repositorios;
+using ENTIDAD.DTOs.Documentos;
 using ENTIDAD.DTOs.Muestras;
 using Models;
 
@@ -82,5 +83,11 @@ public class MuestraNegocio
             new EvaluarPruebaDto { IdPrueba = idPrueba, Aprobado = dto.Aprobado, Observaciones = dto.Observaciones, /* (id va en la ruta) */ },
             evaluadorId
         );
+    }
+
+    public async Task<DocumentoDto?> GenerarDocumentoPreliminarAsync(int idPrueba, string analistaId,
+        string? observaciones = null)
+    {
+        return await _repositorio.GenerarDocumentoPreliminarAsync(idPrueba, analistaId, observaciones);
     }
 }

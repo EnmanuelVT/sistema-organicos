@@ -36,7 +36,8 @@ public static class AppDataSeeder
         {
             context.EstadoDocumentos.AddRange(
                 new EstadoDocumento { IdEstadoDocumento = 1, Nombre = "Rechazado" },
-                new EstadoDocumento { IdEstadoDocumento = 2, Nombre = "Aprobado" }
+                new EstadoDocumento { IdEstadoDocumento = 2, Nombre = "Aprobado" },
+                new EstadoDocumento { IdEstadoDocumento = 3, Nombre = "Preliminar" }
             );
         }
 

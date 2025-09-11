@@ -300,156 +300,245 @@ public class MuestraRepositorio
     }
     
     public async Task<EvaluarPruebaResponseDto?> EvaluarPruebaAsync(EvaluarPruebaDto dto, string evaluadorId)
-{
-    using var tx = await _context.Database.BeginTransactionAsync();
-    try
     {
-        const byte EN_ESPERA = 3;
-        const byte CERTIFICADA = 5;
-        const byte EN_ANALISIS = 2;
+        using var tx = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            const byte EN_ESPERA = 3;
+            const byte CERTIFICADA = 5;
+            const byte EN_ANALISIS = 2;
 
-        // 1) Traer la Prueba con todo
+            // 1) Traer la Prueba con todo
+            var prueba = await _context.Pruebas
+                .Include(p => p.IdMuestraNavigation)
+                .ThenInclude(m => m.Tpmst)
+                .Include(p => p.ResultadoPruebas)
+                .FirstOrDefaultAsync(p => p.IdPrueba == dto.IdPrueba);
+
+            if (prueba is null) return null;
+
+            var muestra = prueba.IdMuestraNavigation!;
+            if (muestra.EstadoActual != EN_ESPERA)
+                throw new Exception("La muestra debe estar en 'En espera' para ser evaluada.");
+
+            if (prueba.ResultadoPruebas is null || !prueba.ResultadoPruebas.Any())
+                throw new Exception("La prueba no contiene resultados registrados.");
+
+            DocumentoDto? documentoCreado = null;
+
+            if (dto.Aprobado)
+            {
+                // 2) Validar resultados (opcional pero recomendado)
+                foreach (var r in prueba.ResultadoPruebas)
+                {
+                    r.EstadoValidacion = "VALIDADO";
+                    r.ValidadoPor = evaluadorId;
+
+                    // (Opcional) Calcula CumpleNorma aquí:
+                    var norma = await _context.ParametroNormas
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(n => n.IdParametro == r.IdParametro && n.TpmstId == muestra.TpmstId);
+
+                    if (norma != null)
+                    {
+                        r.CumpleNorma = Cumple(norma, r.ValorObtenido.Value);
+                        if (string.IsNullOrEmpty(r.Unidad) && !string.IsNullOrEmpty(norma.Unidad))
+                            r.Unidad = norma.Unidad;
+                    }
+                }
+                await _context.SaveChangesAsync();
+
+                // 3) Generar Documento desde la Prueba (Excel -> PDF)
+                var version = await _context.Documentos
+                    .Where(d => d.IdMuestra == muestra.MstCodigo)
+                    .CountAsync() + 1;
+
+                var outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "certificados");
+                var pdfPath = await _documentBuilder.CrearCertificadoAsync(
+                    _context,
+                    muestra,
+                    prueba.ResultadoPruebas,
+                    version,
+                    outputDir);
+
+                var bytes = await File.ReadAllBytesAsync(pdfPath);
+                var nuevoDocumento = new Documento
+                {
+                    IdMuestra         = muestra.MstCodigo,
+                    IdTipoDoc         = 1, // Certificado
+                    IdEstadoDocumento = 2, // Aprobado
+                    Version           = version,
+                    FechaCreacion     = DateTime.Now,
+                    RutaArchivo       = pdfPath,
+                    DocPdf            = bytes
+                };
+                _context.Documentos.Add(nuevoDocumento);
+
+                muestra.EstadoActual = CERTIFICADA;
+                await _context.SaveChangesAsync();
+
+                documentoCreado = new DocumentoDto
+                {
+                    IdDocumento       = nuevoDocumento.IdDocumento,
+                    IdMuestra         = nuevoDocumento.IdMuestra,
+                    IdTipoDoc         = nuevoDocumento.IdTipoDoc,
+                    IdEstadoDocumento = nuevoDocumento.IdEstadoDocumento,
+                    Version           = nuevoDocumento.Version,
+                    FechaCreacion     = nuevoDocumento.FechaCreacion,
+                    RutaArchivo       = nuevoDocumento.RutaArchivo,
+                    DocPdf            = nuevoDocumento.DocPdf
+                };
+            }
+            else
+            {
+                // Rechazada: vuelve a "En análisis" y registra observación
+                muestra.EstadoActual = EN_ANALISIS;
+
+                _context.BitacoraMuestras.Add(new BitacoraMuestra
+                {
+                    IdMuestra = muestra.MstCodigo,
+                    IdAnalista = evaluadorId, // quien registra la observación (evaluador)
+                    FechaAsignacion = DateTime.Now,
+                    Observaciones = dto.Observaciones ?? "Prueba rechazada por el evaluador"
+                });
+                await _context.SaveChangesAsync();
+            }
+
+            // Auditoría
+            _context.Auditoria.Add(new Auditorium
+            {
+                IdUsuario   = evaluadorId,
+                Accion      = dto.Aprobado ? "EVALUAR_PRUEBA_APROBADA" : "EVALUAR_PRUEBA_RECHAZADA",
+                Descripcion = $"PRB={dto.IdPrueba}, MST={muestra.MstCodigo}, Resultado={dto.Aprobado}, Obs={dto.Observaciones}",
+                FechaAccion = DateTime.Now
+            });
+            await _context.SaveChangesAsync();
+
+            await tx.CommitAsync();
+
+            return new EvaluarPruebaResponseDto
+            {
+                IdPrueba = dto.IdPrueba,
+                Muestra = new MuestraDto
+                {
+                    MstCodigo = muestra.MstCodigo,
+                    TpmstId = muestra.TpmstId,
+                    Nombre = muestra.Nombre,
+                    Origen = muestra.Origen,
+                    CondicionesAlmacenamiento = muestra.CondicionesAlmacenamiento,
+                    CondicionesTransporte = muestra.CondicionesTransporte,
+                    EstadoActual = muestra.EstadoActual,
+                    FechaRecepcion = muestra.FechaRecepcion,
+                    FechaSalidaEstimada = muestra.FechaSalidaEstimada
+                },
+                Documento = documentoCreado
+            };
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
+    }
+    
+    public async Task<DocumentoDto?> GenerarDocumentoPreliminarAsync(int idPrueba, string analistaId, string? observaciones = null)
+    {
+        // Estados del negocio (solo para claridad local; no mutamos la muestra aquí)
+        const byte EN_ANALISIS = 2;
+        const int  TIPO_DOC_INFORME = 2;
+        const int  ESTADO_DOC_PRELIMINAR = 3; // de la semilla
+
+        // 1) Traer la prueba con su muestra y resultados
         var prueba = await _context.Pruebas
             .Include(p => p.IdMuestraNavigation)
             .ThenInclude(m => m.Tpmst)
             .Include(p => p.ResultadoPruebas)
-            .FirstOrDefaultAsync(p => p.IdPrueba == dto.IdPrueba);
+            .FirstOrDefaultAsync(p => p.IdPrueba == idPrueba);
 
-        if (prueba is null) return null;
+        if (prueba is null)
+            throw new Exception($"No existe la prueba {idPrueba}.");
 
         var muestra = prueba.IdMuestraNavigation!;
-        if (muestra.EstadoActual != EN_ESPERA)
-            throw new Exception("La muestra debe estar en 'En espera' para ser evaluada.");
+        if (muestra is null)
+            throw new Exception($"La prueba {idPrueba} no tiene muestra asociada.");
+
+        // Recomendado, pero opcional: permitir informe preliminar solo si la muestra está "En análisis"
+        if (muestra.EstadoActual != EN_ANALISIS)
+        {
+            // Si deseas permitir en otros estados, comenta este guard.
+            throw new Exception("Solo se pueden generar informes preliminares cuando la muestra está 'En análisis'.");
+        }
 
         if (prueba.ResultadoPruebas is null || !prueba.ResultadoPruebas.Any())
             throw new Exception("La prueba no contiene resultados registrados.");
 
-        DocumentoDto? documentoCreado = null;
+        // 2) Calcular versión de informe preliminar para esta muestra
+        var version = await _context.Documentos
+            .Where(d => d.IdMuestra == muestra.MstCodigo && d.IdTipoDoc == TIPO_DOC_INFORME)
+            .CountAsync() + 1;
 
-        if (dto.Aprobado)
+        // 3) Generar PDF usando el DocumentBuilder (sin stored procedures)
+        var outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "informes");
+        Directory.CreateDirectory(outputDir);
+
+        // Nota: reutilizamos el método que construye el Excel->PDF. El nombre del método no afecta el contenido.
+        var pdfPath = await _documentBuilder.CrearCertificadoAsync(
+            _context,
+            muestra,
+            prueba.ResultadoPruebas, // <- IEnumerable<ResultadoPrueba>
+            version,
+            outputDir
+        );
+
+        var bytes = await File.ReadAllBytesAsync(pdfPath);
+
+        // 4) Persistir Documento como "Preliminar"
+        var nuevoDocumento = new Documento
         {
-            // 2) Validar resultados (opcional pero recomendado)
-            foreach (var r in prueba.ResultadoPruebas)
-            {
-                r.EstadoValidacion = "VALIDADO";
-                r.ValidadoPor = evaluadorId;
+            IdMuestra         = muestra.MstCodigo,
+            IdTipoDoc         = TIPO_DOC_INFORME,       // Informe (no certificado)
+            IdEstadoDocumento = ESTADO_DOC_PRELIMINAR,  // Preliminar
+            Version           = version,
+            FechaCreacion     = DateTime.Now,
+            RutaArchivo       = pdfPath,
+            DocPdf            = bytes
+        };
+        _context.Documentos.Add(nuevoDocumento);
 
-                // (Opcional) Calcula CumpleNorma aquí:
-                var norma = await _context.ParametroNormas
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(n => n.IdParametro == r.IdParametro && n.TpmstId == muestra.TpmstId);
-
-                if (norma != null)
-                {
-                    r.CumpleNorma = Cumple(norma, r.ValorObtenido.Value);
-                    if (string.IsNullOrEmpty(r.Unidad) && !string.IsNullOrEmpty(norma.Unidad))
-                        r.Unidad = norma.Unidad;
-                }
-            }
-            await _context.SaveChangesAsync();
-
-            // 3) Generar Documento desde la Prueba (Excel -> PDF)
-            var version = await _context.Documentos
-                .Where(d => d.IdMuestra == muestra.MstCodigo)
-                .CountAsync() + 1;
-
-            var outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "certificados");
-            var pdfPath = await _documentBuilder.CrearCertificadoAsync(
-                _context,
-                muestra,
-                prueba.ResultadoPruebas,
-                version,
-                outputDir);
-
-            var bytes = await File.ReadAllBytesAsync(pdfPath);
-            var nuevoDocumento = new Documento
-            {
-                IdMuestra         = muestra.MstCodigo,
-                IdTipoDoc         = 1, // Certificado
-                IdEstadoDocumento = 2, // Aprobado
-                Version           = version,
-                FechaCreacion     = DateTime.Now,
-                RutaArchivo       = pdfPath,
-                DocPdf            = bytes
-            };
-            _context.Documentos.Add(nuevoDocumento);
-
-            muestra.EstadoActual = CERTIFICADA;
-            await _context.SaveChangesAsync();
-
-            documentoCreado = new DocumentoDto
-            {
-                IdDocumento       = nuevoDocumento.IdDocumento,
-                IdMuestra         = nuevoDocumento.IdMuestra,
-                IdTipoDoc         = nuevoDocumento.IdTipoDoc,
-                IdEstadoDocumento = nuevoDocumento.IdEstadoDocumento,
-                Version           = nuevoDocumento.Version,
-                FechaCreacion     = nuevoDocumento.FechaCreacion,
-                RutaArchivo       = nuevoDocumento.RutaArchivo,
-                DocPdf            = nuevoDocumento.DocPdf
-            };
-        }
-        else
-        {
-            // Rechazada: vuelve a "En análisis" y registra observación
-            muestra.EstadoActual = EN_ANALISIS;
-
-            _context.BitacoraMuestras.Add(new BitacoraMuestra
-            {
-                IdMuestra = muestra.MstCodigo,
-                IdAnalista = evaluadorId, // quien registra la observación (evaluador)
-                FechaAsignacion = DateTime.Now,
-                Observaciones = dto.Observaciones ?? "Prueba rechazada por el evaluador"
-            });
-            await _context.SaveChangesAsync();
-        }
-
-        // Auditoría
+        // 5) Auditoría
         _context.Auditoria.Add(new Auditorium
         {
-            IdUsuario   = evaluadorId,
-            Accion      = dto.Aprobado ? "EVALUAR_PRUEBA_APROBADA" : "EVALUAR_PRUEBA_RECHAZADA",
-            Descripcion = $"PRB={dto.IdPrueba}, MST={muestra.MstCodigo}, Resultado={dto.Aprobado}, Obs={dto.Observaciones}",
+            IdUsuario   = analistaId,
+            Accion      = "GENERAR_DOCUMENTO_PRELIMINAR",
+            Descripcion = $"PRB={idPrueba}, MST={muestra.MstCodigo}, v{version}, Obs={(observaciones ?? "-")}",
             FechaAccion = DateTime.Now
         });
+
         await _context.SaveChangesAsync();
 
-        await tx.CommitAsync();
-
-        return new EvaluarPruebaResponseDto
+        // 6) DTO de salida
+        return new DocumentoDto
         {
-            IdPrueba = dto.IdPrueba,
-            Muestra = new MuestraDto
-            {
-                MstCodigo = muestra.MstCodigo,
-                TpmstId = muestra.TpmstId,
-                Nombre = muestra.Nombre,
-                Origen = muestra.Origen,
-                CondicionesAlmacenamiento = muestra.CondicionesAlmacenamiento,
-                CondicionesTransporte = muestra.CondicionesTransporte,
-                EstadoActual = muestra.EstadoActual,
-                FechaRecepcion = muestra.FechaRecepcion,
-                FechaSalidaEstimada = muestra.FechaSalidaEstimada
-            },
-            Documento = documentoCreado
+            IdDocumento       = nuevoDocumento.IdDocumento,
+            IdMuestra         = nuevoDocumento.IdMuestra,
+            IdTipoDoc         = nuevoDocumento.IdTipoDoc,
+            IdEstadoDocumento = nuevoDocumento.IdEstadoDocumento,
+            Version           = nuevoDocumento.Version,
+            FechaCreacion     = nuevoDocumento.FechaCreacion,
+            RutaArchivo       = nuevoDocumento.RutaArchivo,
+            DocPdf            = nuevoDocumento.DocPdf
         };
     }
-    catch
+
+
+    // Helper de norma
+    private static bool Cumple(ParametroNorma n, decimal valor)
     {
-        await tx.RollbackAsync();
-        throw;
+        // Caso "Presencia/25g" => en tus datos de semillas lo marcas con min=0 y max=0
+        if (n.ValorMin == 0 && n.ValorMax == 0) return valor == 0;
+
+        if (n.ValorMin.HasValue && valor < n.ValorMin.Value) return false;
+        if (n.ValorMax.HasValue && valor > n.ValorMax.Value) return false;
+        return true;
     }
-}
-
-// Helper de norma
-private static bool Cumple(ParametroNorma n, decimal valor)
-{
-    // Caso "Presencia/25g" => en tus datos de semillas lo marcas con min=0 y max=0
-    if (n.ValorMin == 0 && n.ValorMax == 0) return valor == 0;
-
-    if (n.ValorMin.HasValue && valor < n.ValorMin.Value) return false;
-    if (n.ValorMax.HasValue && valor > n.ValorMax.Value) return false;
-    return true;
-}
-
 }
