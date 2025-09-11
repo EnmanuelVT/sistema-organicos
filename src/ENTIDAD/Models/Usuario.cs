@@ -14,6 +14,8 @@ public partial class Usuario : IdentityUser
 
     public string? Apellido { get; set; }
 
+    public string? Password { get; set; }
+
     public string? RazonSocial { get; set; }
 
     public string? Direccion { get; set; }

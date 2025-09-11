@@ -47,9 +47,10 @@ namespace NEGOCIOS
                 UsCedula = userDto.UsCedula,
                 Nombre = userDto.Nombre,
                 Apellido = userDto.Apellido,
+                Password = userDto.Password
             };
 
-            var result = await _userManager.CreateAsync(usuario, userDto.Password);
+            var result = await _userManager.CreateAsync(usuario, usuario.Password);
             if (result.Succeeded)
             {
                 if (userDto.Role == null)
