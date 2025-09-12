@@ -13,7 +13,7 @@ public partial class Usuario : IdentityUser
     public string? Nombre { get; set; }
 
     public string? Apellido { get; set; }
-
+    
     public string? Password { get; set; }
 
     public string? RazonSocial { get; set; }
