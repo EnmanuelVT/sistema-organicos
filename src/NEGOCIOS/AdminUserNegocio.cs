@@ -31,7 +31,8 @@ namespace NEGOCIOS
                     Role = (await _userManager.GetRolesAsync(usuario)).FirstOrDefault(),
                     UsCedula = usuario.UsCedula,
                     Nombre = usuario.Nombre,
-                    Apellido = usuario.Apellido
+                    Apellido = usuario.Apellido,
+                    Estado = usuario.Estado
                 });
             }
 
@@ -102,6 +103,10 @@ namespace NEGOCIOS
             if (!string.IsNullOrEmpty(userDto.Email)) 
             {
                 usuario.Email = userDto.Email;
+            }
+            if (userDto.Estado != null) 
+            {
+                usuario.Estado = userDto.Estado;
             }
 
             // change role if necessary

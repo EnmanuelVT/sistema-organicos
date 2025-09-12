@@ -22,6 +22,8 @@ public partial class Usuario : IdentityUser
 
     public string? Telefono { get; set; }
 
+    public bool? Estado { get; set; }
+
     public string? Contacto { get; set; }
 
     public virtual ICollection<Auditorium> Auditoria { get; set; } = new List<Auditorium>();

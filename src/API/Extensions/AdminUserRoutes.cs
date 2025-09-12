@@ -60,7 +60,7 @@ namespace API.Extensions
                 try
                 {
                     await negocio.ActualizarUsuarioAsync(userDto);
-                    return Results.NoContent();
+                    return Results.Ok();
                 }
                 catch (Exception ex)
                 {

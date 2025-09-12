@@ -20,5 +20,6 @@ namespace ENTIDAD.DTOs.Users
         public string? UsCedula { get; set; }
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
+        public bool? Estado { get; set; }
     }
 }

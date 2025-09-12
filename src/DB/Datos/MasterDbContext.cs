@@ -89,6 +89,9 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
             entity.Property(e => e.Telefono)
                 .HasMaxLength(30)
                 .IsUnicode(false);
+            entity.Property(e => e.Estado)
+                .IsUnicode(false)
+                .HasColumnName("estado");
         });
 
         modelBuilder.Entity<Auditorium>(entity =>
