@@ -10,11 +10,7 @@ public partial class Prueba
 
     public string NombrePrueba { get; set; } = null!;
 
-    public byte TipoMuestraAsociada { get; set; }
-
     public virtual Muestra IdMuestraNavigation { get; set; }
 
     public virtual ICollection<ResultadoPrueba> ResultadoPruebas { get; set; } = new List<ResultadoPrueba>();
-
-    public virtual TipoMuestra TipoMuestraAsociadaNavigation { get; set; } = null!;
 }

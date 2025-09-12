@@ -11,6 +11,5 @@ public partial class TipoMuestra
 
     public virtual ICollection<Muestra> Muestras { get; set; } = new List<Muestra>();
 
-    public virtual ICollection<Prueba> Pruebas { get; set; } = new List<Prueba>();
     public virtual ICollection<ParametroNorma> ParametroNormas { get; set; } = new List<ParametroNorma>();
 }

@@ -5,6 +5,4 @@ public class CreatePruebaDto
     public string IdMuestra { get; set; }
 
     public string NombrePrueba { get; set; } = null!;
-
-    public byte TipoMuestraAsociada { get; set; }
 }

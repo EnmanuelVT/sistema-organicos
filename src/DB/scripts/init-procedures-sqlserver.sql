@@ -138,6 +138,24 @@ WHERE MST_CODIGO = @o_MST_CODIGO;
 END
 GO
 
+CREATE OR ALTER PROCEDURE sp_crear_prueba
+    @p_nombre_prueba VARCHAR(120),
+    @p_id_muestra VARCHAR(30),
+    @p_id_usuario VARCHAR(450)
+AS
+BEGIN
+    DECLARE @new_id_prueba INT;
+
+    INSERT INTO Prueba (nombre_prueba, id_muestra)
+    VALUES (@p_nombre_prueba, @p_id_muestra);
+    SET @new_id_prueba = SCOPE_IDENTITY();
+
+    INSERT INTO Auditoria (id_usuario, accion, descripcion) VALUES (@p_id_usuario, 'CREAR_PRUEBA', CONCAT('PRB=',
+                                                                                                          CAST(@new_id_prueba AS VARCHAR(10))));
+END
+go
+
+
 -- 6.5 Generar registro de documento
 CREATE   PROCEDURE sp_generar_documento
     @p_MST_CODIGO VARCHAR(30),

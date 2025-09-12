@@ -21,7 +21,6 @@ public class PruebaRepositorio
                 IdPrueba = p.IdPrueba,
                 IdMuestra = p.IdMuestra,
                 NombrePrueba = p.NombrePrueba,
-                TipoMuestraAsociada = p.TipoMuestraAsociada
             })
             .ToListAsync();
     }
@@ -29,9 +28,8 @@ public class PruebaRepositorio
     public async Task<PruebaDto?> CrearPruebaAsync(CreatePruebaDto createPruebaDto, string idUsuario)
     {
         var result = await _context.Database.ExecuteSqlRawAsync(
-            "EXEC sp_crear_prueba @p_nombre_prueba = {0}, @p_tipo_muestra_asociada = {1}, @p_id_muestra = {2}, @p_id_usuario = {3}",
+            "EXEC sp_crear_prueba @p_nombre_prueba = {0}, @p_id_muestra = {1}, @p_id_usuario = {2}",
             createPruebaDto.NombrePrueba,
-            createPruebaDto.TipoMuestraAsociada,
             createPruebaDto.IdMuestra,
             idUsuario
         );
@@ -48,7 +46,6 @@ public class PruebaRepositorio
                 IdPrueba = p.IdPrueba,
                 IdMuestra = p.IdMuestra,
                 NombrePrueba = p.NombrePrueba,
-                TipoMuestraAsociada = p.TipoMuestraAsociada
             })
             .FirstOrDefaultAsync();
     }

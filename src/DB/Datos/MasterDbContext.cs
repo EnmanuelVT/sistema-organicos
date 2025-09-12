@@ -409,24 +409,16 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
 
             entity.ToTable("Prueba");
 
-            entity.HasIndex(e => new { e.NombrePrueba, e.TipoMuestraAsociada }, "uk_prueba").IsUnique();
-
             entity.Property(e => e.IdPrueba).HasColumnName("id_prueba");
             entity.Property(e => e.NombrePrueba)
                 .HasMaxLength(120)
                 .IsUnicode(false)
                 .HasColumnName("nombre_prueba");
-            entity.Property(e => e.TipoMuestraAsociada).HasColumnName("tipo_muestra_asociada");
             entity.Property(e => e.IdMuestra)
                 .HasMaxLength(30)
                 .IsUnicode(false)
                 .HasColumnName("id_muestra");
 
-            entity.HasOne(d => d.TipoMuestraAsociadaNavigation).WithMany(p => p.Pruebas)
-                .HasForeignKey(d => d.TipoMuestraAsociada)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_prueba_tipo");
-            
             entity.HasOne(p => p.IdMuestraNavigation)
                 .WithMany(m => m.Pruebas)
                 .HasForeignKey(p => p.IdMuestra)
