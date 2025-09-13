@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      DB_SERVER: "sqlserver"
+      DB_PORT: "1433"
+      DB_DATABASE: "master"
+      DB_USER: "sa"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "sqlcmd -S localhost -U $DB_USER -P $SA_PASSWORD -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # entidad:
+  #   build:
+  #     context: ./src/ENTIDAD
+  #     dockerfile: Dockerfile
+  #   No ports or environment needed for class library
+
+  # db-init:
+  #   build:
+  #     context: .
+  #     dockerfile: ./src/DB/Dockerfile
+  #   depends_on:
+  #     sqlserver :
+  #       condition: service_healthy
+  #     entidad:
+  #       condition: service_started
+  #   environment:
+  #     CONNECTION_STRING: "Server=sqlserver,${DB_PORT};Database=${DB_DATABASE};User Id=${DB_USER};Password=${SA_PASSWORD};"
+  #   volumes:
+  #     - ./scripts:/scripts:ro
+  #   command: ["dotnet", "DB.dll"]
+
+volumes:
+  sqlserver_data:

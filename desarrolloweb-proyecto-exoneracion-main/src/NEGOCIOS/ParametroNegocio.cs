@@ -1,0 +1,24 @@
+using DB.Datos.Repositorios;
+using ENTIDAD.DTOs.Parametros;
+
+namespace NEGOCIOS;
+
+public class ParametroNegocio
+{
+    public readonly ParametroRepositorio _repositorio;
+
+    public ParametroNegocio(ParametroRepositorio repositorio)
+    {
+        _repositorio = repositorio;
+    }
+    
+    public async Task<IEnumerable<ParametroDto>> ObtenerParametrosPorTipoMuestraAsync(int tpmstId)
+    {
+        return await _repositorio.ObtenerParametrosPorTipoMuestraAsync(tpmstId);
+    }
+    
+    public async Task<ParametroDto?> AgregarParametroATipoMuestra(CreateParametroDto createParametroATipoDto, string idUsuario)
+    {
+        return await _repositorio.AgregarParametroATipoMuestra(createParametroATipoDto, idUsuario);
+    }
+}
