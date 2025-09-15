@@ -1,117 +1,97 @@
+// src/routes/admin-asignaciones.tsx
 import { useEffect, useState } from "react";
-import { getAllMuestras, assignAnalystToMuestra } from "../api/muestras";
-import { getAllUsers } from "../api/users";
-import type { MuestraDto, UserDto } from "../types/domain";
+import { getAllMuestras, assignAnalystToMuestra } from "@/api/muestras";
+import * as usersApi from "@/api/users";
+import { normalizeRole } from "@/utils/roles";
+import type { MuestraDto, UserDto } from "@/types/api";
 
 export default function AdminAsignaciones() {
   const [muestras, setMuestras] = useState<MuestraDto[]>([]);
-  const [users, setUsers] = useState<UserDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedAnalista, setSelectedAnalista] = useState("");
-  const [selectedMuestra, setSelectedMuestra] = useState("");
+  const [analistas, setAnalistas] = useState<UserDto[]>([]);
+  const [selMuestra, setSelMuestra] = useState<string>("");
+  const [selAnalista, setSelAnalista] = useState<string>("");
+  const [obs, setObs] = useState("");
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [muestrasData, usersData] = await Promise.all([
-        getAllMuestras(),
-        getAllUsers()
-      ]);
-      setMuestras(muestrasData);
-      setUsers(usersData);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
-    setLoading(false);
-  };
+  useEffect(() => {
+    (async () => {
+      const ms = await getAllMuestras();
+      setMuestras(ms);
+      const users = await usersApi.getAllUsers();
+      setAnalistas(users.filter(u => normalizeRole(u.role) === "ANALISTA"));
+    })();
+  }, []);
 
-  useEffect(() => { loadData(); }, []);
-
-  const asignarAnalista = async (mstCodigo: string) => {
-    if (!selectedAnalista) {
-      alert('Seleccione un analista');
+  async function asignar() {
+    if (!selMuestra || !selAnalista) {
+      alert("Seleccione muestra y analista");
       return;
     }
-    
-    try {
-      await assignAnalystToMuestra({
-        mstCodigo,
-        idAnalista: selectedAnalista,
-        observaciones: `Asignado por administrador`
-      });
-      await loadData(); // Reload data
-      alert('Analista asignado exitosamente');
-    } catch (error) {
-      console.error('Error assigning analyst:', error);
-      alert('Error al asignar analista');
-    }
-  };
+    await assignAnalystToMuestra({ mstCodigo: selMuestra, idAnalista: selAnalista, observaciones: obs || "" });
+    alert("Asignado correctamente");
+  }
 
-  const analistas = users.filter(u => u.role === 'Analista');
-  const evaluadores = users.filter(u => u.role === 'EVALUADOR');
+  const estadoTxt = (n?: number) => (typeof n === "number" ? String(n) : "-");
 
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-xl font-semibold">Asignaciones de Muestras</h1>
+    <div className="max-w-5xl mx-auto p-6 space-y-4">
+      <h1 className="text-xl font-semibold">Asignaciones (ADMIN)</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Seleccionar Analista:</label>
-          <select 
-            className="border p-2 w-full" 
-            value={selectedAnalista} 
-            onChange={e => setSelectedAnalista(e.target.value)}
-          >
-            <option value="">-- Seleccionar Analista --</option>
-            {analistas.map(a => (
-              <option key={a.id} value={a.id}>
-                {a.nombre || a.userName} ({a.email})
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="grid md:grid-cols-3 gap-3">
+        <select className="border rounded px-3 py-2" value={selMuestra} onChange={e => setSelMuestra(e.target.value)}>
+          <option value="">-- Seleccione muestra --</option>
+          {muestras.map(m => (
+            <option key={m.mstCodigo} value={m.mstCodigo ?? ""}>
+              {m.mstCodigo} · {m.nombre}
+            </option>
+          ))}
+        </select>
+
+        <select className="border rounded px-3 py-2" value={selAnalista} onChange={e => setSelAnalista(e.target.value)}>
+          <option value="">-- Seleccione analista --</option>
+          {analistas.map(a => (
+            <option key={a.id ?? a.email} value={a.id ?? ""}>
+              {a.userName} · {a.email}
+            </option>
+          ))}
+        </select>
+
+        <input
+          className="border rounded px-3 py-2"
+          placeholder="Observaciones (opcional)"
+          value={obs}
+          onChange={(e) => setObs(e.target.value)}
+        />
       </div>
 
-      {loading ? <div>Cargando…</div> : (
-        <div className="overflow-x-auto">
-          <table className="text-sm min-w-full border border-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left px-4 py-2 border-b">Código</th>
-                <th className="text-left px-4 py-2 border-b">Nombre</th>
-                <th className="text-left px-4 py-2 border-b">Origen</th>
-                <th className="text-left px-4 py-2 border-b">Estado</th>
-                <th className="text-left px-4 py-2 border-b">Fecha</th>
-                <th className="text-left px-4 py-2 border-b">Acciones</th>
+      <button className="bg-gray-900 text-white rounded px-4 py-2" onClick={asignar}>
+        Asignar
+      </button>
+
+      <div className="border rounded mt-6">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="text-left p-2">Código</th>
+              <th className="text-left p-2">Nombre</th>
+              <th className="text-left p-2">Tipo</th>
+              <th className="text-left p-2">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {muestras.map((m) => (
+              <tr key={m.mstCodigo} className="border-t">
+                <td className="p-2">{m.mstCodigo}</td>
+                <td className="p-2">{m.nombre}</td>
+                <td className="p-2">{m.tpmstId}</td>
+                <td className="p-2">{estadoTxt(m.estadoActual)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {muestras.map(m => (
-                <tr key={m.mstCodigo} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2 font-medium">{m.mstCodigo}</td>
-                  <td className="px-4 py-2">{m.nombre}</td>
-                  <td className="px-4 py-2">{m.origen}</td>
-                  <td className="px-4 py-2">
-                    <span className="px-2 py-1 bg-gray-100 rounded text-xs">
-                      {m.estadoActual}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2">{new Date(m.fechaRecepcion).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">
-                    <button 
-                      className="border border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-50" 
-                      onClick={() => asignarAnalista(m.mstCodigo)}
-                      disabled={!selectedAnalista}
-                    >
-                      Asignar Analista
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+            {muestras.length === 0 && (
+              <tr><td className="p-3" colSpan={4}>Sin muestras.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

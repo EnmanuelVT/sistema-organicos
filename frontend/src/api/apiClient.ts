@@ -1,30 +1,37 @@
 // src/api/apiClient.ts
-import axios from 'axios';
+import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7232';
+const baseURL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+const useCookies =
+  String(import.meta.env.VITE_USE_COOKIES).toLowerCase() === "true";
 
-// Read the SAME key used in auth.ts
-const TOKEN_KEY = import.meta.env.VITE_TOKEN_STORAGE_KEY || 'accessToken';
-
-const api = axios.create({ baseURL });
+export const api = axios.create({
+  baseURL,
+  withCredentials: useCookies,
+  headers: { "Content-Type": "application/json", Accept: "application/json" },
+  timeout: 20000,
+});
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY);
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (!useCookies) {
+    const token = localStorage.getItem("auth.token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
 api.interceptors.response.use(
   (res) => res,
-  async (err) => {
-    if (err.response?.status === 401) {
-      // Optional: try refresh here using REFRESH_KEY & /refresh
-      localStorage.removeItem(TOKEN_KEY);
-      // redirect user to login route
-      window.location.href = '/login';
+  (err) => {
+    const status = err?.response?.status;
+    if (status === 401 || status === 403) {
+      localStorage.removeItem("auth.token");
+      localStorage.removeItem("auth.user");
+      if (typeof window !== "undefined") window.location.href = "/login";
     }
     return Promise.reject(err);
   }
 );
 
+// Export default para imports existentes
 export default api;

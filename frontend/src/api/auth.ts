@@ -1,68 +1,38 @@
 // src/api/auth.ts
-import api from './apiClient';
-import { UserDto } from '../types/domain';
+import api from "@/api/apiClient";
+import type { AccessTokenResponse, UserDto } from "@/types/api";
 
-export type Role = 'Admin' | 'ANALISTA' | 'EVALUADOR' | 'SOLICITANTE';
+export type LoginRequest = {
+  email: string;
+  password: string;
+  twoFactorCode?: string | null;
+  twoFactorRecoveryCode?: string | null;
+};
 
-interface LoginResponse {
-  tokenType: string;
-  accessToken: string;
-  expiresIn: number;
-  refreshToken: string;
-}
+const LOGIN_URL   = "/login";
+const REFRESH_URL = "/refresh";
+const ME_URL      = "/api/usuarios/me";
+const LOGOUT_URL  = "/logout"; // si no existe en tu back, no pasa nada: lo ignoramos en try/catch
 
-// Use the same base URL as apiClient; you can override specifically for auth if needed.
-const AUTH_BASE =
-  import.meta.env.VITE_AUTH_BASE_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:5062';
-
-// Storage key must match apiClient
-const TOKEN_KEY = import.meta.env.VITE_TOKEN_STORAGE_KEY || 'accessToken';
-const REFRESH_KEY = import.meta.env.VITE_REFRESH_TOKEN_STORAGE_KEY || 'refreshToken';
-
-export async function login(email: string, password: string) {
-  const res = await fetch(`${AUTH_BASE}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', accept: 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) throw new Error(`Login failed: ${res.status}`);
-  const data = (await res.json()) as LoginResponse;
-
-  // Persist using the SAME key apiClient reads
-  localStorage.setItem(TOKEN_KEY, data.accessToken);
-  localStorage.setItem(REFRESH_KEY, data.refreshToken);
-
+/** POST /login -> { accessToken, refreshToken, expiresIn, tokenType? } */
+export async function login(req: LoginRequest) {
+  const { data } = await api.post<AccessTokenResponse>(LOGIN_URL, req);
   return data;
 }
 
-export async function register(email: string, password: string) {
-  const { data } = await api.post('/register', { email, password });
+/** POST /refresh -> { accessToken, refreshToken, expiresIn } */
+export async function refresh(refreshToken: string) {
+  const { data } = await api.post<AccessTokenResponse>(REFRESH_URL, { refreshToken });
   return data;
 }
 
-export async function getCurrentUser() {
-  const { data } = await api.get('/api/usuarios/me');
-  return data as UserDto;
-}
-
-export async function refreshToken(refreshToken: string) {
-  const { data } = await api.post('/refresh', { refreshToken });
-  return data as LoginResponse;
-}
-
-export async function forgotPassword(email: string) {
-  const { data } = await api.post('/forgotPassword', { email });
-  return data;
-}
-
-export async function resetPassword(email: string, resetCode: string, newPassword: string) {
-  const { data } = await api.post('/resetPassword', { email, resetCode, newPassword });
-  return data;
-}
-
-// Legacy compatibility
+/** GET /api/usuarios/me -> UserDto */
 export async function me() {
-  return getCurrentUser();
+  const { data } = await api.get<UserDto>(ME_URL);
+  return data;
+}
+
+/** POST /logout (opcional) */
+export async function logout() {
+  try { await api.post(LOGOUT_URL, {}); } catch {}
 }

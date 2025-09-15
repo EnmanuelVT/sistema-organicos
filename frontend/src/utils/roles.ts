@@ -11,13 +11,13 @@ const MAP_VARIANTS: Record<string, AppRole> = {
   'SOLICITANTE': 'SOLICITANTE',
 };
 
-export function normalizeRole(raw?: string | null): AppRole | undefined {
-  if (!raw) return undefined;
+export function normalizeRole(raw?: string | null): AppRole {
+  if (!raw) return 'SOLICITANTE';                  // default cuando viene nulo
   const key = raw.toString().trim().toUpperCase();
-  return MAP_VARIANTS[key];
+  return MAP_VARIANTS[key] ?? 'SOLICITANTE';        // fallback seguro
 }
 
 export function hasAnyRole(userRole: string | undefined | null, roles: AppRole[]): boolean {
   const norm = normalizeRole(userRole);
-  return !!norm && roles.includes(norm);
+  return roles.includes(norm);
 }

@@ -1,144 +1,129 @@
-// Updated types to match real API schemas
-export type Role = 'SOLICITANTE' | 'ANALISTA' | 'EVALUADOR' | 'Admin'
+// src/types/domain.ts
 
+// Roles que usa el front; incluimos ADMIN y Admin por compatibilidad con normalización
+export type Role = 'SOLICITANTE' | 'ANALISTA' | 'EVALUADOR' | 'ADMIN' | 'Admin';
+
+// ===== Usuario =====
 export interface UserDto {
-  id: string
-  userName: string
-  email: string
-  role: string
-  usCedula?: string
-  nombre?: string
-  apellido?: string
+  id: string;
+  userName?: string;
+  email: string;
+  role: string; // el backend puede devolver variantes; el front lo normaliza
+  usCedula?: string;
+  nombre?: string;
+  apellido?: string;
 }
 
+// ===== Muestras =====
 export interface MuestraDto {
-  mstCodigo: string
-  tpmstId: number
-  nombre: string
-  origen: string
-  condicionesAlmacenamiento?: string
-  condicionesTransporte?: string
-  estadoActual: number
-  fechaRecepcion: string
-  fechaSalidaEstimada?: string
+  // Importante: usar el mismo shape en TODO el archivo (mismo tipo, no opcional)
+  mstCodigo: string;
+  tpmstId: number;
+  nombre: string;
+  origen: string;
+  condicionesAlmacenamiento?: string;
+  condicionesTransporte?: string;
+  fechaRecepcion?: string; // ISO string
+  estado?: string | boolean; // por si el backend expone string o bool
+  solicitanteId?: string;
+  analistaId?: string;
+  evaluadorId?: string;
+  estadoActual?: string;
+
 }
 
 export interface CreateMuestraDto {
-  mstCodigo: string
-  tpmstId: number
-  nombre: string
-  origen: string
-  condicionesAlmacenamiento?: string
-  condicionesTransporte?: string
-  estadoActual: number
+  // Mantener idéntico modificador que en MuestraDto si coincide por nombre
+  mstCodigo: string;
+  tpmstId: number;
+  nombre: string;
+  origen: string;
+  condicionesAlmacenamiento?: string;
+  condicionesTransporte?: string;
+  fechaRecepcion?: string; // ISO string
 }
 
-export interface ParametroDto {
-  idParametro: number
-  tpmstId?: number
-  nombreParametro?: string
-  valorMin?: number
-  valorMax?: number
-  unidad?: string
-}
-
-export interface PruebaDto {
-  idPrueba: number
-  idMuestra: string
-  nombrePrueba?: string
-  tipoMuestraAsociada: number
-}
-
-export interface CreatePruebaDto {
-  idMuestra: string
-  nombrePrueba?: string
-  tipoMuestraAsociada: number
-}
-
-export interface ResultadoPruebaDto {
-  idResultado: number
-  idPrueba: number
-  idParametro: number
-  idMuestra: string
-  valorObtenido?: number
-  unidad?: string
-  cumpleNorma?: boolean
-  fechaRegistro: string
-  validadoPor?: string
-  estadoValidacion?: string
-}
-
-export interface CreateResultadoPruebaDto {
-  idMuestra: string
-  idPrueba: number
-  idParametro: number
-  valorObtenido?: number
-  unidad?: string
-}
-
+// Asignaciones y cambios de estado
 export interface AsignarAnalistaEnMuestraDto {
-  mstCodigo?: string
-  idAnalista?: string
-  observaciones?: string
+  mstCodigo: string;
+  analistaId: string;
+}
+
+export interface AsignarEvaluadorEnMuestraDto {
+  mstCodigo: string;
+  evaluadorId: string;
 }
 
 export interface AsignarEstadoMuestraDto {
-  mstCodigo?: string
-  estadoMuestra?: number
-  observaciones?: string
+  mstCodigo: string;
+  estado: string; // 'Pendiente' | 'EnProceso' | 'Aprobada' | 'Rechazada' (ajusta si tienes enum)
 }
+
+// Alias de compatibilidad: si el front importa CambiarEstadoMuestraDto, que funcione igual
+export type CambiarEstadoMuestraDto = AsignarEstadoMuestraDto;
 
 export interface EvaluarMuestraDto {
-  muestraId?: string
-  aprobado: boolean
-  observaciones?: string
+  mstCodigo: string;
+  aprobado: boolean;
+  observaciones?: string;
 }
 
-export interface ValidarResultadoDto {
-  idResultado?: number
-  accion?: string
-  observaciones?: string
+// ===== Parámetros / Ensayos =====
+export interface ParametroDto {
+  idParametro: number;
+  nombreParametro: string;
+  valorMin?: number;
+  valorMax?: number;
+  unidad?: string;
+  tpmstId?: number; // id del tipo de muestra al que pertenece, si aplica
 }
 
-// Legacy types for backward compatibility
-export type TipoMuestra = 'ALIMENTO' | 'AGUA' | 'BEBIDA_ALCOHOLICA'
-
-export interface Solicitante {
-  nombre: string
-  razonSocial?: string
-  direccion: string
-  contacto: string
+// Estructura con la que se envían parámetros en CreatePruebaDto
+export interface PruebaParametroInput {
+  idParametro: number;
+  valorObtenido: number;
 }
 
-export interface TestRegistro {
-  nombre: string
-  unidad?: string
-  valor: number
+export interface CreatePruebaDto {
+  mstCodigo: string;
+  nombrePrueba: string;
+  tipoMuestraAsociada: number;
+  parametros: PruebaParametroInput[];
 }
 
-export interface Muestra {
-  id: string
-  codigo: string
-  tipo: TipoMuestra
-  fechaRecepcion: string
-  origen: string
-  condiciones: string
-  solicitante: Solicitante
-  solicitanteId?: string
-  responsableTecnicoId: string
-  estado: 'RECIBIDA'|'EN_ANALISIS'|'EVALUADA'|'CERTIFICADA'
-  analistaId?: string
-  evaluadorId?: string
-  observaciones?: string
-  tests: { nombre: string, unidad?: string, valor: number }[]
+// Respuesta típica de creación/consulta de prueba (mínimo necesario para el front)
+export interface PruebaDto {
+  id?: number;
+  mstCodigo: string;
+  nombrePrueba: string;
+  tipoMuestraAsociada: number;
+  resultados?: Array<{
+    idParametro: number;
+    valorObtenido: number;
+    unidad?: string;
+  }>;
+  creadoEn?: string; // ISO
 }
 
+// Si lo usas en alguna parte, lo dejamos minimalista
+export interface ResultadoPruebaDto {
+  mstCodigo: string;
+  nombrePrueba: string;
+  resultados: Array<{
+    idParametro: number;
+    valorObtenido: number;
+    unidad?: string;
+  }>;
+}
+
+// ===== Documentos =====
 export interface Documento {
-  id: string
-  muestraId: string
-  tipo: 'CERTIFICADO'|'INFORME'
-  version: number
-  url: string
-  creadoPor: string
-  creadoEn: string
+  id?: string;
+  muestraId?: string;
+  mstCodigo?: string;  // por si tu backend identifica por código
+  tipo: 'CERTIFICADO' | 'INFORME';
+  version: number;
+  url?: string;
+  creadoPor?: string;
+  creadoEn?: string; // ISO
 }

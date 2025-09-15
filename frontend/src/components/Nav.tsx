@@ -1,41 +1,57 @@
+// src/components/Nav.tsx
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/auth";
+import { useAuthStore } from "@/store/auth";
+import { normalizeRole } from "@/utils/roles";
 
 export default function Nav() {
-  const { user, logout } = useAuthStore();
   const nav = useNavigate();
-
-  if (!user) return null;
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const role = normalizeRole(user?.role);
 
   return (
-    <header className="border-b bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
-        <Link to="/" className="font-semibold">Sistema de Trazabilidad</Link>
-        <nav className="flex gap-3 text-sm">
-          <Link to="/muestras">Muestras</Link>
-          {(user.role === "SOLICITANTE" || user.role === "ADMIN") && (
-            <Link to="/muestras/nueva">Nueva muestra</Link>
-          )}
-          {user.role === "ADMIN" && (
-            <Link to="/admin/asignaciones">Asignaciones</Link>
-          )}
-          {user.role === "ANALISTA" && (
-            <Link to="/analista/mis-muestras">Mis muestras</Link>
-          )}
-          {user.role === "EVALUADOR" && (
-            <Link to="/evaluador/bandeja">Bandeja evaluación</Link>
-          )}
-        </nav>
-        <div className="ml-auto text-sm flex items-center gap-3">
-          <span className="opacity-70">{user.nombre || user.userName} ({user.role})</span>
+    <div className="w-full bg-gray-900 text-white">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
+        <Link to="/" className="font-semibold">Sistema</Link>
+
+        <div className="flex-1" />
+
+        {/* Menú por rol */}
+        {role === "ADMIN" && (
+          <nav className="flex gap-3">
+            <Link to="/admin/users" className="hover:underline">Usuarios</Link>
+          </nav>
+        )}
+
+        {role === "ANALISTA" && (
+          <nav className="flex gap-3">
+            <Link to="/analista" className="hover:underline">Mis muestras</Link>
+          </nav>
+        )}
+
+        {role === "EVALUADOR" && (
+          <nav className="flex gap-3">
+            <Link to="/evaluador" className="hover:underline">Bandeja</Link>
+          </nav>
+        )}
+
+        {role === "SOLICITANTE" && (
+          <nav className="flex gap-3">
+            <Link to="/solicitante" className="hover:underline">Mis muestras</Link>
+          </nav>
+        )}
+
+        {/* Usuario / Logout */}
+        <div className="border-l pl-4 flex items-center gap-3">
+          <span className="text-sm opacity-80">{user?.email} · {role}</span>
           <button
-            onClick={() => { logout(); nav("/login"); }}
-            className="border px-3 py-1 rounded"
+            className="bg-white/10 hover:bg-white/20 rounded px-3 py-1 text-sm"
+            onClick={async () => { await logout(); nav("/login"); }}
           >
-            Salir
+            Cerrar sesión
           </button>
         </div>
       </div>
-    </header>
+    </div>
   );
 }

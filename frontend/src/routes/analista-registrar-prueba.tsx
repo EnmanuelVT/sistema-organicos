@@ -1,121 +1,57 @@
-// src/pages/analista-registrar-prueba.tsx
-import { useParams, useNavigate } from "react-router-dom";
+// src/routes/analista-registrar-prueba.tsx
 import { useState } from "react";
-import { registrarEnsayo } from "@/api/ensayos";
-
-type Parametro = { idParametro: number; valorObtenido: number };
+import { registrarPrueba } from "@/api/ensayos";                    // alias -> create
+import { getParametrosByTipoMuestra } from "@/api/ensayos";         // re-export desde parametros
+import type { ParametroDto } from "@/types/api";
 
 export default function AnalistaRegistrarPrueba() {
-  const { mstCodigo } = useParams<{ mstCodigo: string }>();
-  const nav = useNavigate();
+  const [mstCodigo, setMstCodigo] = useState("");
+  const [nombrePrueba, setNombrePrueba] = useState("");
+  const [tipoId, setTipoId] = useState<number>(0);
+  const [params, setParams] = useState<ParametroDto[]>([]);
 
-  const codigo = (mstCodigo ?? "").trim();
-  const [nombrePrueba, setNombrePrueba] = useState("Análisis X");
-  const [tipoMuestraAsociada, setTipo] = useState<number>(1);
-  const [parametros, setParametros] = useState<Parametro[]>([]);
-  const [valor, setValor] = useState<number>(0);
-  const [idParam, setIdParam] = useState<number>(1);
-  const [saving, setSaving] = useState(false);
+  async function cargarParametros() {
+    if (!tipoId) return alert("Ingresa tipo de muestra");
+    const p = await getParametrosByTipoMuestra(Number(tipoId));
+    setParams(p);
+  }
 
-  const paramMissing = !codigo;
-
-  const add = () => {
-    if (!idParam && idParam !== 0) return;
-    setParametros((prev) => [
-      ...prev,
-      { idParametro: Number(idParam), valorObtenido: Number(valor) },
-    ]);
-    setIdParam(1);
-    setValor(0);
-  };
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (paramMissing) return;
-
-    try {
-      setSaving(true);
-      await registrarEnsayo(codigo, {
-        nombrePrueba,
-        tipoMuestraAsociada,
-        parametros,
-      });
-      nav(`/muestras/${encodeURIComponent(codigo)}`);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (paramMissing) {
-    return (
-      <div className="p-6 text-red-600">
-        Falta el parámetro <code>mstCodigo</code> en la URL. Debes navegar a{" "}
-        <code>/analista/muestras/:mstCodigo/prueba</code>.
-      </div>
-    );
+  async function guardar() {
+    if (!mstCodigo || !nombrePrueba) return alert("Completa los campos");
+    await registrarPrueba({ idMuestra: mstCodigo, nombrePrueba });
+    setNombrePrueba("");
+    alert("Prueba creada");
   }
 
   return (
-    <form onSubmit={submit} className="p-6 space-y-3 max-w-xl">
-      <h1 className="text-xl font-semibold">Registrar ensayo para {codigo}</h1>
+    <div className="max-w-3xl mx-auto p-6 space-y-3">
+      <h1 className="text-xl font-semibold">Registrar Prueba (Analista)</h1>
 
-      <label className="block">
-        <span className="sr-only">Nombre de la prueba</span>
-        <input
-          className="border p-2 w-full"
-          value={nombrePrueba}
-          onChange={(e) => setNombrePrueba(e.target.value)}
-          placeholder="Nombre de la prueba"
-        />
-      </label>
+      <input className="border rounded px-3 py-2 w-full" placeholder="Código de muestra"
+        value={mstCodigo} onChange={(e) => setMstCodigo(e.target.value)} />
+      <input className="border rounded px-3 py-2 w-full" placeholder="Nombre de la prueba"
+        value={nombrePrueba} onChange={(e) => setNombrePrueba(e.target.value)} />
 
-      <label className="block">
-        <span className="text-sm">Tipo de muestra asociada</span>
-        <select
-          className="border p-2 w-full"
-          value={tipoMuestraAsociada}
-          onChange={(e) => setTipo(Number(e.target.value))}
-        >
-          <option value={1}>AGUA</option>
-          <option value={2}>ALIMENTO</option>
-          <option value={3}>BEBIDA</option>
-        </select>
-      </label>
-
-      <div className="border p-3 rounded space-y-2">
-        <div className="flex gap-2">
-          <input
-            className="border p-2 w-24"
-            type="number"
-            min={1}
-            placeholder="Id parámetro"
-            value={idParam}
-            onChange={(e) => setIdParam(Number(e.target.value))}
-          />
-          <input
-            className="border p-2 w-32"
-            type="number"
-            placeholder="Valor"
-            value={valor}
-            onChange={(e) => setValor(Number(e.target.value))}
-          />
-          <button type="button" onClick={add} className="border px-3 py-2">
-            Agregar
-          </button>
-        </div>
-
-        <ul className="text-sm">
-          {parametros.map((p, i) => (
-            <li key={`${p.idParametro}-${i}`}>
-              Param {p.idParametro}: {p.valorObtenido}
-            </li>
-          ))}
-        </ul>
+      <div className="flex gap-2">
+        <input className="border rounded px-3 py-2" placeholder="Tipo de muestra (tpmstId)"
+          value={tipoId || ""} onChange={(e) => setTipoId(Number(e.target.value))} />
+        <button className="bg-gray-900 text-white rounded px-4 py-2" onClick={cargarParametros}>Cargar parámetros</button>
       </div>
 
-      <button disabled={saving} className="border px-4 py-2">
-        {saving ? "Guardando…" : "Guardar"}
+      {params.length > 0 && (
+        <div className="border rounded p-3">
+          <div className="font-medium mb-2">Parámetros del tipo</div>
+          <ul className="list-disc pl-5 text-sm">
+            {params.map((p) => (
+              <li key={p.idParametro}>{p.nombreParametro} · {p.unidad}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <button className="bg-green-600 text-white rounded px-4 py-2" onClick={guardar}>
+        Guardar prueba
       </button>
-    </form>
+    </div>
   );
 }

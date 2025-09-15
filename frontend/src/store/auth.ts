@@ -1,77 +1,100 @@
-import { create } from 'zustand'
-import { UserDto } from '../types/domain'
-import { login as apiLogin, getCurrentUser as apiGetCurrentUser } from '../api/auth'
-import { normalizeRole } from '../utils/roles'
+// src/store/auth.ts
+import { create } from "zustand";
+import * as authApi from "@/api/auth";
+import { normalizeRole, type AppRole } from "@/utils/roles";
 
-export type Role = 'SOLICITANTE' | 'ANALISTA' | 'EVALUADOR' | 'ADMIN'
+export type User = {
+  id: string;
+  email: string;
+  userName: string;
+  role: AppRole; // ADMIN | ANALISTA | EVALUADOR | SOLICITANTE
+};
 
-type User = {
-  id: string
-  email: string
-  role: string // keep original for debugging
-  roleNorm?: ReturnType<typeof normalizeRole> // normalized
-}
+type AuthState = {
+  user: User | null;
+  token: string | null;           // JWT accessToken
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  fetchMe: () => Promise<void>;
+  logout: () => Promise<void>;
+};
 
-interface AuthState {
-  token: string | null
-  user: User,
-  isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<void>
-  logout: () => void
-  getCurrentUser: () => Promise<void>
-  setUser: (u: User) => void
-}
+let refreshTimer: number | null = null;
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  token: localStorage.getItem('token'),
-  user: null,
-  isAuthenticated: !!localStorage.getItem('token'),
-
-  setUser: (u) => set({ user: { ...u, roleNorm: normalizeRole(u.role) } }),
-
-  login: async (email: string, password: string) => {
+// Programa un refresh ~60s antes de expirar
+function scheduleRefresh(expiresIn?: number) {
+  if (refreshTimer) window.clearTimeout(refreshTimer);
+  if (!expiresIn || expiresIn <= 0) return;
+  const ms = Math.max(5_000, (expiresIn - 60) * 1000);
+  refreshTimer = window.setTimeout(async () => {
     try {
-      const response = await apiLogin(email, password)
-      const token = response.accessToken
+      const rt = localStorage.getItem("auth.refresh");
+      if (!rt) throw new Error("No refresh token");
+      const r = await authApi.refresh(rt); // POST /refresh { refreshToken }
+      if (r?.accessToken) localStorage.setItem("auth.token", r.accessToken);
+      if (r?.refreshToken) localStorage.setItem("auth.refresh", r.refreshToken);
+      scheduleRefresh(r?.expiresIn);
+      // Opcional: revalidar perfil si lo necesitas
+      // await useAuthStore.getState().fetchMe();
+    } catch {
+      localStorage.removeItem("auth.token");
+      localStorage.removeItem("auth.refresh");
+      localStorage.removeItem("auth.user");
+      window.location.href = "/login";
+    }
+  }, ms);
+}
 
-      localStorage.setItem('token', token)
-      if (response.refreshToken) {
-        localStorage.setItem('refreshToken', response.refreshToken)
-      }
+export const useAuthStore = create<AuthState>((set) => ({
+  user: JSON.parse(localStorage.getItem("auth.user") || "null"),
+  token: localStorage.getItem("auth.token"),
+  loading: false,
 
-      set({ token, isAuthenticated: true })
+  login: async (email, password) => {
+    set({ loading: true });
+    try {
+      // 1) Login: { tokenType?, accessToken, refreshToken, expiresIn }
+      const r = await authApi.login({ email, password });
 
-      // Get user info
-      await get().getCurrentUser()
-    } catch (error) {
-      throw error
+      if (r?.accessToken) localStorage.setItem("auth.token", r.accessToken);
+      if (r?.refreshToken) localStorage.setItem("auth.refresh", r.refreshToken);
+      scheduleRefresh(r?.expiresIn);
+
+      // 2) Perfil para conocer el rol
+      const me = await authApi.me();
+      const user: User = {
+        id: me.id || "",
+        email: me.email,
+        userName: me.userName,
+        role: normalizeRole(me.role), // <- si viene nulo => SOLICITANTE
+      };
+      localStorage.setItem("auth.user", JSON.stringify(user));
+
+      set({ user, token: r?.accessToken || null, loading: false });
+    } catch (e) {
+      set({ loading: false });
+      throw e;
     }
   },
 
-  getCurrentUser: async () => {
-    try {
-      const token = get().token
-      if (!token) return
-
-      const user = await apiGetCurrentUser()
-      set({ user })
-    } catch (error) {
-      console.error('Failed to get current user:', error)
-      // If getting user fails, logout
-      get().logout()
-    }
+  fetchMe: async () => {
+    const me = await authApi.me();
+    const user: User = {
+      id: me.id || "",
+      email: me.email,
+      userName: me.userName,
+      role: normalizeRole(me.role),
+    };
+    localStorage.setItem("auth.user", JSON.stringify(user));
+    set({ user });
   },
 
-  logout: () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('refreshToken')
-    set({ token: null, user: null, isAuthenticated: false })
+  logout: async () => {
+    try { await authApi.logout(); } catch {}
+    localStorage.removeItem("auth.token");
+    localStorage.removeItem("auth.refresh");
+    localStorage.removeItem("auth.user");
+    if (refreshTimer) window.clearTimeout(refreshTimer);
+    set({ user: null, token: null });
   },
-}))
-
-// Initialize user on app start
-const token = localStorage.getItem('token')
-if (token) {
-  useAuthStore.getState().getCurrentUser()
-}
-
+}));

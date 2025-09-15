@@ -1,98 +1,103 @@
-// src/api/apiMuestras.ts  (o muestras.ts)
-import api from './apiClient';
-import type { MuestraDto, CreateMuestraDto, AsignarAnalistaEnMuestraDto, AsignarEstadoMuestraDto, EvaluarMuestraDto } from '../types/domain';
+// src/api/muestras.ts
+import api from "@/api/apiClient";
+import type {
+  MuestraDto,
+  CreateMuestraDto,
+  AsignarAnalistaEnMuestraDto,
+  AsignarEstadoMuestraDto,
+} from "@/types/api";
 
-// Get all samples (admin/analyst access)
-export async function getAllMuestras() {
-  const { data } = await api.get('/api/muestras');
-  return data as MuestraDto[];
-}
-
-// Get current user's samples  
-export async function getMyMuestras() {
-  const { data } = await api.get('/api/muestras/me');
-  return data as MuestraDto[];
-}
-
-// Get samples by user ID (analyst access)
-export async function getMuestrasByUser(userId: string) {
-  const { data } = await api.get(`/api/muestras/usuario/${userId}`);
-  return data as MuestraDto[];
-}
-
-// Get samples assigned to current analyst
-export async function getMyAssignedMuestras() {
-  const { data } = await api.get('/api/muestras/analista/me');
-  return data as MuestraDto[];
-}
-
-// Get samples assigned to specific analyst (admin access)
-export async function getMuestrasByAnalyst(analystId: string) {
-  const { data } = await api.get(`/api/muestras/analista/${analystId}`);
-  return data as MuestraDto[];
-}
-
-// Get sample by ID
-export async function getMuestraById(id: string) {
-  const { data } = await api.get(`/api/muestras/${id}`);
-  return data as MuestraDto;
-}
-
-// Create new sample
-export async function createMuestra(payload: CreateMuestraDto) {
-  const { data } = await api.post('/api/muestras', payload);
+/** GET /api/muestras */
+export async function getAll() {
+  const { data } = await api.get<MuestraDto[]>("/api/muestras");
   return data;
 }
 
-// Update existing sample (analyst access)
-export async function updateMuestra(id: string, payload: CreateMuestraDto) {
-  const { data } = await api.put(`/api/muestras/${id}`, payload);
+/** POST /api/muestras */
+export async function create(dto: CreateMuestraDto) {
+  const { data } = await api.post("/api/muestras", dto);
   return data;
 }
 
-// Assign analyst to sample
-export async function assignAnalystToMuestra(payload: AsignarAnalistaEnMuestraDto) {
-  const { data } = await api.patch('/api/muestras/asignar-analista', payload);
+/** GET /api/muestras/me */
+export async function getMine() {
+  const { data } = await api.get<MuestraDto[]>("/api/muestras/me");
   return data;
 }
 
-// Change sample status
-export async function changeMuestraStatus(payload: AsignarEstadoMuestraDto) {
-  const { data } = await api.patch('/api/muestras/cambiar-estado', payload);
+/** GET /api/muestras/usuario/{id} */
+export async function getByUser(userId: string) {
+  const { data } = await api.get<MuestraDto[]>(`/api/muestras/usuario/${userId}`);
   return data;
 }
 
-// Evaluate sample (evaluator access)
-export async function evaluateMuestra(id: string, payload: EvaluarMuestraDto) {
-  const { data } = await api.post(`/api/muestras/${id}/evaluar`, payload);
+/** GET /api/muestras/analista/me */
+export async function getAssignedToMe() {
+  const { data } = await api.get<MuestraDto[]>("/api/muestras/analista/me");
   return data;
 }
 
-// Get sample audit trail (admin access)
-export async function getMuestraAudit(id: string) {
-  const { data } = await api.get(`/api/muestras/Auditoria${id}`);
+/** GET /api/muestras/analista/{id} */
+export async function getByAnalyst(analystId: string) {
+  const { data } = await api.get<MuestraDto[]>(`/api/muestras/analista/${analystId}`);
   return data;
 }
 
-// Legacy compatibility functions
-export async function listMuestras() {
-  return getAllMuestras();
+/** GET /api/muestras/{id} */
+export async function getById(id: string) {
+  const { data } = await api.get<MuestraDto>(`/api/muestras/${id}`);
+  return data;
 }
 
-export async function getMuestra(id: string) {
-  return getMuestraById(id);
+/** PUT /api/muestras/{id} */
+export async function update(id: string, dto: CreateMuestraDto) {
+  const { data } = await api.put(`/api/muestras/${id}`, dto);
+  return data;
 }
 
-export async function listMuestrasByAnalista(analistaId: string) {
-  return getMuestrasByAnalyst(analistaId);
+/** PATCH /api/muestras/asignar-analista */
+export async function assignAnalyst(payload: AsignarAnalistaEnMuestraDto) {
+  const { data } = await api.patch("/api/muestras/asignar-analista", payload);
+  return data;
 }
 
-export async function listMuestrasByEvaluador(evaluadorId: string) {
-  // This would need to be implemented based on business logic
-  // For now, return samples assigned to evaluator
-  return getMyAssignedMuestras();
+/** PATCH /api/muestras/cambiar-estado */
+export async function changeStatus(payload: AsignarEstadoMuestraDto) {
+  const { data } = await api.patch("/api/muestras/cambiar-estado", payload);
+  return data;
 }
 
-export async function listMuestrasBySolicitante(solicitanteId: string) {
-  return getMuestrasByUser(solicitanteId);
-}
+/* ====================== ALIASES DE COMPATIBILIDAD ====================== */
+export const getAllMuestras = getAll;
+export const getMuestras = getAll;
+export const listMuestras = getAll;
+export const obtenerMuestras = getAll;
+
+export const crearMuestra = create;
+export const nuevaMuestra = create;
+export const createMuestra = create;               // <— faltaba
+
+export const getMisMuestras = getMine;
+export const misMuestras = getMine;
+export const getMyMuestras = getMine;              // <— faltaba
+
+export const getMuestrasAsignadas = getAssignedToMe;
+export const muestrasAsignadas = getAssignedToMe;
+export const getMyAssignedMuestras = getAssignedToMe; // <— por si lo usas
+
+export const getMuestrasPorUsuario = getByUser;
+export const getMuestrasPorAnalista = getByAnalyst;
+
+export const getMuestraById = getById;
+export const obtenerMuestra = getById;
+
+export const updateMuestra = update;
+export const actualizarMuestra = update;
+export const editarMuestra = update;
+
+export const assignAnalystToMuestra = assignAnalyst;
+export const asignarAnalista = assignAnalyst;
+export const asignarAnalistaEnMuestra = assignAnalyst;
+
+export const cambiarEstadoMuestra = changeStatus;
+export const cambiarEstado = changeStatus;
