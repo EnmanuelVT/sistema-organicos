@@ -13,7 +13,7 @@ namespace API.Common
             options.AddPolicy(AdminPolicy, policy =>
                 policy.RequireRole("Admin"));
             options.AddPolicy(Analista, policy =>
-                policy.RequireRole("Analista", "Admin"));
+                policy.RequireRole("Analista", "Evaluador", "Admin"));
             options.AddPolicy(Solicitante, policy =>
                 policy.RequireRole("Solicitante", "Admin"));
             options.AddPolicy(Evaluador, policy =>
