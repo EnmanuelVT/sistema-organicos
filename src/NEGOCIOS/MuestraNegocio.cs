@@ -13,7 +13,7 @@ public class MuestraNegocio
         _repositorio = repositorio;
     }
 
-    public async Task<Muestra?> ObtenerMuestraPorIdAsync(string id)
+    public async Task<MuestraDto?> ObtenerMuestraPorIdAsync(string id)
     {
         return await _repositorio.ObtenerMuestraPorIdAsync(id);
     }
@@ -67,6 +67,11 @@ public class MuestraNegocio
     public async Task<MuestraDto?> ModificarMuestraAsync(Muestra muestraActualizada)
     {
         return await _repositorio.ModificarMuestraAsync(muestraActualizada);
+    }
+
+    public async Task<IEnumerable<DocumentoDto?>> ObtenerDocumentosPorMuestraAsync(string idMuestra)
+    {
+        return await _repositorio.ObtenerDocumentosPorMuestraAsync(idMuestra);
     }
 
     // NEGOCIOS/MuestraNegocio.cs

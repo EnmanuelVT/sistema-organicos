@@ -8,18 +8,18 @@ namespace API.Extensions;
 
 public static class MuestraRoutes
 {
-    public static RouteGroupBuilder MapMuestraRoutes(this IEndpointRouteBuilder routes) 
+    public static RouteGroupBuilder MapMuestraRoutes(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/muestras").RequireAuthorization();
 
-        group.MapGet("/", async (MuestraNegocio negocio) => 
+        group.MapGet("/", async (MuestraNegocio negocio) =>
         {
-            try 
+            try
             {
                 var muestras = await negocio.ObtenerTodasLasMuestrasAsync();
                 return Results.Ok(muestras);
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 return Results.Problem(ex.Message);
             }
@@ -35,19 +35,19 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        group.MapGet("/me", async (MuestraNegocio negocio, ClaimsPrincipal user) => 
+        group.MapGet("/me", async (MuestraNegocio negocio, ClaimsPrincipal user) =>
         {
-            try 
+            try
             {
                 var usuarioId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (usuarioId == null) 
+                if (usuarioId == null)
                 {
                     return Results.Unauthorized();
                 }
                 var muestras = await negocio.ObtenerMuestrasPorUsuario(usuarioId);
                 return Results.Ok(muestras);
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 return Results.Problem(ex.Message);
             }
@@ -61,14 +61,14 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status401Unauthorized)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        group.MapGet("/usuario/{id}", async (MuestraNegocio negocio, ClaimsPrincipal user, string id) => 
+        group.MapGet("/usuario/{id}", async (MuestraNegocio negocio, ClaimsPrincipal user, string id) =>
         {
-            try 
+            try
             {
                 var muestras = await negocio.ObtenerMuestrasPorUsuario(id);
                 return Results.Ok(muestras);
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 return Results.Problem(ex.Message);
             }
@@ -84,19 +84,19 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        group.MapGet("/analista/me", async (MuestraNegocio negocio, ClaimsPrincipal user) => 
+        group.MapGet("/analista/me", async (MuestraNegocio negocio, ClaimsPrincipal user) =>
         {
-            try 
+            try
             {
                 var analistaId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (analistaId == null) 
+                if (analistaId == null)
                 {
                     return Results.Unauthorized();
                 }
                 var muestras = await negocio.ObtenerMuestrasPorAnalista(analistaId);
                 return Results.Ok(muestras);
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 return Results.Problem(ex.Message);
             }
@@ -112,14 +112,14 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        group.MapGet("/analista/{id}", async (MuestraNegocio negocio, ClaimsPrincipal user, string id) => 
+        group.MapGet("/analista/{id}", async (MuestraNegocio negocio, ClaimsPrincipal user, string id) =>
         {
-            try 
+            try
             {
                 var muestras = await negocio.ObtenerMuestrasPorAnalista(id);
                 return Results.Ok(muestras);
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 return Results.Problem(ex.Message);
             }
@@ -135,18 +135,18 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        group.MapGet("/{id}", async (MuestraNegocio negocio, string id) => 
+        group.MapGet("/{id}", async (MuestraNegocio negocio, string id) =>
         {
-            try 
+            try
             {
                 var muestra = await negocio.ObtenerMuestraPorIdAsync(id);
-                if (muestra == null) 
+                if (muestra == null)
                 {
                     return Results.NotFound();
                 }
                 return Results.Ok(muestra);
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 return Results.Problem(ex.Message);
             }
@@ -261,12 +261,12 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        group.MapPost("/", async (MuestraNegocio negocio, CreateMuestraDto muestraDto, ClaimsPrincipal user) => 
+        group.MapPost("/", async (MuestraNegocio negocio, CreateMuestraDto muestraDto, ClaimsPrincipal user) =>
         {
-            try 
+            try
             {
                 var usuarioId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (usuarioId == null) 
+                if (usuarioId == null)
                 {
                     return Results.Unauthorized();
                 }
@@ -274,8 +274,8 @@ public static class MuestraRoutes
                 var creadaMuestra = await negocio.CrearMuestraAsync(muestraDto, usuarioId);
                 if (creadaMuestra == null) throw new Exception("No se pudo crear la muestra");
                 return Results.Created($"/api/muestras/{creadaMuestra.MstCodigo}", (object?)creadaMuestra);
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 return Results.Problem(ex.Message);
             }
@@ -351,12 +351,12 @@ public static class MuestraRoutes
         .Produces(StatusCodes.Status401Unauthorized)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
-        group.MapPut("/{id}", async (MuestraNegocio negocio, string id, CreateMuestraDto muestraDto) => 
+        group.MapPut("/{id}", async (MuestraNegocio negocio, string id, CreateMuestraDto muestraDto) =>
         {
-            try 
+            try
             {
                 var muestraExistente = await negocio.ObtenerMuestraPorIdAsync(id);
-                if (muestraExistente == null) 
+                if (muestraExistente == null)
                 {
                     return Results.NotFound();
                 }
@@ -367,10 +367,19 @@ public static class MuestraRoutes
                 muestraExistente.CondicionesAlmacenamiento = muestraDto.CondicionesAlmacenamiento;
                 muestraExistente.CondicionesTransporte = muestraDto.CondicionesTransporte;
 
-                var actualizadaMuestra = await negocio.ModificarMuestraAsync(muestraExistente);
+                var muestraEntity = new Muestra
+                {
+                    MstCodigo = muestraExistente.MstCodigo,
+                    Nombre = muestraExistente.Nombre,
+                    TpmstId = muestraExistente.TpmstId,
+                    Origen = muestraExistente.Origen,
+                    CondicionesAlmacenamiento = muestraExistente.CondicionesAlmacenamiento,
+                    CondicionesTransporte = muestraExistente.CondicionesTransporte,
+                };
+                var actualizadaMuestra = await negocio.ModificarMuestraAsync(muestraEntity);
                 return Results.Ok(actualizadaMuestra);
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 return Results.Problem(ex.Message);
             }
@@ -425,7 +434,72 @@ public static class MuestraRoutes
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        group.MapPost("/pruebas/{id:int}/documentos/preliminar",
+            async (MuestraNegocio negocio,
+                   int id,
+                   ClaimsPrincipal user,
+                   GenerarPreliminarRequest? body) =>
+            {
+                try
+                {
+                    var analistaId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (string.IsNullOrEmpty(analistaId))
+                        return Results.Unauthorized();
+
+                    var doc = await negocio.GenerarDocumentoPreliminarAsync(
+                        idPrueba: id,
+                        analistaId: analistaId,
+                        observaciones: body?.Observaciones
+                    );
+
+                    if (doc is null)
+                        return Results.NotFound($"No se pudo generar el documento preliminar para la prueba {id}.");
+
+                    // Devolvemos 201 con Location del recurso creado
+                    return Results.Created($"/api/documentos/{doc.IdDocumento}", doc);
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem(ex.Message);
+                }
+            })
+            .RequireAuthorization("RequireAnalistaRole")
+            .WithName("GenerarDocumentoPreliminar")
+            .WithSummary("Generar documento preliminar de una prueba")
+            .WithDescription("Permite al analista generar un documento preliminar (no certificado) a partir de los resultados de una prueba. No cambia el estado de la muestra.")
+            .WithTags("Muestras", "Pruebas", "Documentos", "Analyst")
+            .WithOpenApi()
+            .Accepts<GenerarPreliminarRequest>("application/json")
+            .Produces<DocumentoDto>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
         
+        group.MapGet("/{id}/documentos", async (MuestraNegocio negocio, string id) => 
+        {
+            try
+            {
+                var documentos = await negocio.ObtenerDocumentosPorMuestraAsync(id);
+                return Results.Ok(documentos);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        })
+        .WithName("GetDocumentosByMuestra")
+        .WithSummary("Get documents by sample ID")
+        .WithDescription("Retrieves all documents associated with a specific sample ID.")
+        .WithTags("Muestras", "Documentos")
+        .WithOpenApi();
+
         group.MapPost("/pruebas/{id:int}/documentos/preliminar",
             async (MuestraNegocio negocio,
                    int id,
