@@ -126,6 +126,8 @@ app.MapMuestraRoutes();
 app.MapResultadoRoutes();
 app.MapPruebaRoutes();
 app.MapParametroRoutes();
+app.MapAuditoriaRoutes();
+app.MapTrazabilidadRoutes();
 
 // In Program.cs or Startup.cs
 using (var scope = app.Services.CreateScope())

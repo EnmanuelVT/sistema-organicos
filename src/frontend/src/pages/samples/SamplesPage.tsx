@@ -3,6 +3,7 @@ import { useAuthStore } from "@/store/auth";
 import { hasRole, getStateDisplayName, getStateColor } from "@/utils/roles";
 import { getAllSamples, getMySamples, getAssignedSamples } from "@/api/samples";
 import { TestTube, Plus, Search, Filter, Settings, FileText } from "lucide-react";
+import { UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -10,6 +11,7 @@ import ErrorMessage from "@/components/ErrorMessage";
 import EmptyState from "@/components/EmptyState";
 import ChangeStatusModal from "@/components/ChangeStatusModal";
 import DocumentsModal from "@/components/DocumentsModal";
+import AssignAnalystModal from "@/components/AssignAnalystModal";
 
 export default function SamplesPage() {
   const { user } = useAuthStore();
@@ -17,6 +19,7 @@ export default function SamplesPage() {
   const [statusFilter, setStatusFilter] = useState<number | "">("");
   const [selectedSampleForStatus, setSelectedSampleForStatus] = useState<{code: string, status: number} | null>(null);
   const [selectedSampleForDocs, setSelectedSampleForDocs] = useState<string | null>(null);
+  const [selectedSampleForAssign, setSelectedSampleForAssign] = useState<string | null>(null);
 
   const { data: samples, isLoading, error } = useQuery({
     queryKey: ["samples"],
@@ -132,6 +135,14 @@ export default function SamplesPage() {
         />
       )}
 
+      {selectedSampleForAssign && (
+        <AssignAnalystModal
+          isOpen={true}
+          onClose={() => setSelectedSampleForAssign(null)}
+          sampleCode={selectedSampleForAssign}
+        />
+      )}
+
       {/* Samples Table */}
       <div className="card">
         {filteredSamples.length === 0 ? (
@@ -204,6 +215,16 @@ export default function SamplesPage() {
                             title="Cambiar estado"
                           >
                             <Settings className="h-4 w-4" />
+                          </button>
+                        )}
+                        
+                        {hasRole(user?.role, ["ADMIN"]) && (
+                          <button
+                            onClick={() => setSelectedSampleForAssign(sample.mstCodigo!)}
+                            className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
+                            title="Asignar analista"
+                          >
+                            <UserCheck className="h-4 w-4" />
                           </button>
                         )}
                         

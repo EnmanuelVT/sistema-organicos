@@ -13,6 +13,8 @@ import CreateResultPage from "@/pages/results/CreateResultPage";
 import EvaluationPage from "@/pages/evaluation/EvaluationPage";
 import UsersPage from "@/pages/admin/UsersPage";
 import ParametersPage from "@/pages/admin/ParametersPage";
+import AuditPage from "@/pages/admin/AuditPage";
+import TraceabilityPage from "@/pages/admin/TraceabilityPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import RoleRoute from "@/components/RoleRoute";
 
@@ -143,6 +145,28 @@ export default function App() {
             <ProtectedRoute>
               <RoleRoute allowedRoles={["ADMIN"]}>
                 <ParametersPage />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/audit"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["ADMIN"]}>
+                <AuditPage />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/traceability"
+          element={
+            <ProtectedRoute>
+              <RoleRoute allowedRoles={["ADMIN"]}>
+                <TraceabilityPage />
               </RoleRoute>
             </ProtectedRoute>
           }

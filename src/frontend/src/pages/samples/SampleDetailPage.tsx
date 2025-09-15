@@ -4,6 +4,7 @@ import { getSampleById } from "@/api/samples";
 import { getTestsBySample } from "@/api/tests";
 import { getResultsBySample } from "@/api/results";
 import { ArrowLeft, TestTube, FlaskConical, BarChart3, Calendar, MapPin, Settings, FileText } from "lucide-react";
+import { Users } from "lucide-react";
 import { getStateDisplayName, getStateColor } from "@/utils/roles";
 import { useAuthStore } from "@/store/auth";
 import { hasRole } from "@/utils/roles";
@@ -11,6 +12,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
 import ChangeStatusModal from "@/components/ChangeStatusModal";
 import DocumentsModal from "@/components/DocumentsModal";
+import AssignAnalystModal from "@/components/AssignAnalystModal";
 import { useState } from "react";
 
 export default function SampleDetailPage() {
@@ -18,6 +20,7 @@ export default function SampleDetailPage() {
   const { user } = useAuthStore();
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
 
   const { data: sample, isLoading: loadingSample, error: sampleError } = useQuery({
     queryKey: ["sample", id],
@@ -298,6 +301,16 @@ export default function SampleDetailPage() {
                 </button>
               )}
               
+              {hasRole(user?.role, ["ADMIN"]) && (
+                <button
+                  onClick={() => setShowAssignModal(true)}
+                  className="w-full btn-secondary text-center"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Asignar Analista
+                </button>
+              )}
+              
               <button
                 onClick={() => setShowDocumentsModal(true)}
                 className="w-full btn-secondary text-center"
@@ -336,6 +349,12 @@ export default function SampleDetailPage() {
         onClose={() => setShowStatusModal(false)}
         sampleCode={sample.mstCodigo!}
         currentStatus={sample.estadoActual}
+      />
+
+      <AssignAnalystModal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        sampleCode={sample.mstCodigo!}
       />
 
       <DocumentsModal

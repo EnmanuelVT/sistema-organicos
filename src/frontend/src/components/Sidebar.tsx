@@ -10,6 +10,8 @@ import {
   Users,
   Settings,
   Beaker,
+  Shield,
+  GitBranch,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -56,6 +58,16 @@ const adminNavigation = [
     name: "Parámetros",
     href: "/admin/parameters",
     icon: Settings,
+  },
+  {
+    name: "Auditoría",
+    href: "/admin/audit",
+    icon: Shield,
+  },
+  {
+    name: "Trazabilidad",
+    href: "/admin/traceability",
+    icon: GitBranch,
   },
 ];
 
