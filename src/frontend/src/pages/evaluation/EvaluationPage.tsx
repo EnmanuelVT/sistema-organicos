@@ -2,12 +2,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllSamples } from "@/api/samples";
 import { getResultsBySample } from "@/api/results";
 import { evaluateTest } from "@/api/tests";
-import { CheckCircle, XCircle, Search, AlertTriangle, BarChart3 } from "lucide-react";
+import { CheckCircle, XCircle, Search, AlertTriangle, BarChart3, FileText } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
 import EmptyState from "@/components/EmptyState";
+import DocumentsModal from "@/components/DocumentsModal";
 
 interface EvaluationForm {
   observaciones: string;
@@ -18,6 +19,7 @@ export default function EvaluationPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSample, setSelectedSample] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
 
   const { register, handleSubmit, reset } = useForm<EvaluationForm>();
 
@@ -245,6 +247,16 @@ export default function EvaluationPage() {
                     )}
                   </button>
                 </div>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => setShowDocumentsModal(true)}
+                    className="w-full btn-secondary"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Ver Documentos
+                  </button>
+                </div>
               </form>
             </div>
           ) : (
@@ -255,6 +267,15 @@ export default function EvaluationPage() {
           )}
         </div>
       </div>
+
+      {/* Documents Modal */}
+      {selectedSample && (
+        <DocumentsModal
+          isOpen={showDocumentsModal}
+          onClose={() => setShowDocumentsModal(false)}
+          sampleCode={selectedSample}
+        />
+      )}
     </div>
   );
 }

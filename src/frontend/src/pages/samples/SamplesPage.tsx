@@ -2,17 +2,21 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth";
 import { hasRole, getStateDisplayName, getStateColor } from "@/utils/roles";
 import { getAllSamples, getMySamples, getAssignedSamples } from "@/api/samples";
-import { TestTube, Plus, Search, Filter } from "lucide-react";
+import { TestTube, Plus, Search, Filter, Settings, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
 import EmptyState from "@/components/EmptyState";
+import ChangeStatusModal from "@/components/ChangeStatusModal";
+import DocumentsModal from "@/components/DocumentsModal";
 
 export default function SamplesPage() {
   const { user } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<number | "">("");
+  const [selectedSampleForStatus, setSelectedSampleForStatus] = useState<{code: string, status: number} | null>(null);
+  const [selectedSampleForDocs, setSelectedSampleForDocs] = useState<string | null>(null);
 
   const { data: samples, isLoading, error } = useQuery({
     queryKey: ["samples"],
@@ -110,6 +114,24 @@ export default function SamplesPage() {
         </div>
       </div>
 
+      {/* Modals */}
+      {selectedSampleForStatus && (
+        <ChangeStatusModal
+          isOpen={true}
+          onClose={() => setSelectedSampleForStatus(null)}
+          sampleCode={selectedSampleForStatus.code}
+          currentStatus={selectedSampleForStatus.status}
+        />
+      )}
+
+      {selectedSampleForDocs && (
+        <DocumentsModal
+          isOpen={true}
+          onClose={() => setSelectedSampleForDocs(null)}
+          sampleCode={selectedSampleForDocs}
+        />
+      )}
+
       {/* Samples Table */}
       <div className="card">
         {filteredSamples.length === 0 ? (
@@ -164,12 +186,35 @@ export default function SamplesPage() {
                       {new Date(sample.fechaRecepcion).toLocaleDateString()}
                     </td>
                     <td className="py-3 px-4">
-                      <Link
-                        to={`/samples/${sample.mstCodigo}`}
-                        className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                      >
-                        Ver detalles
-                      </Link>
+                      <div className="flex items-center space-x-2">
+                        <Link
+                          to={`/samples/${sample.mstCodigo}`}
+                          className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                        >
+                          Ver detalles
+                        </Link>
+                        
+                        {hasRole(user?.role, ["ANALISTA", "EVALUADOR", "ADMIN"]) && (
+                          <button
+                            onClick={() => setSelectedSampleForStatus({
+                              code: sample.mstCodigo!,
+                              status: sample.estadoActual
+                            })}
+                            className="p-1 text-gray-400 hover:text-warning-600 transition-colors"
+                            title="Cambiar estado"
+                          >
+                            <Settings className="h-4 w-4" />
+                          </button>
+                        )}
+                        
+                        <button
+                          onClick={() => setSelectedSampleForDocs(sample.mstCodigo!)}
+                          className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
+                          title="Ver documentos"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

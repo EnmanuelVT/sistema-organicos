@@ -1,16 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAllSamples } from "@/api/samples";
 import { getTestsBySample } from "@/api/tests";
-import { FlaskConical, Plus, Search } from "lucide-react";
+import { FlaskConical, Plus, Search, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
 import EmptyState from "@/components/EmptyState";
+import DocumentsModal from "@/components/DocumentsModal";
 
 export default function TestsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSample, setSelectedSample] = useState<string>("");
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
 
   const { data: samples, isLoading: loadingSamples, error: samplesError } = useQuery({
     queryKey: ["samples"],
@@ -132,12 +134,21 @@ export default function TestsPage() {
                       <h3 className="font-medium text-gray-900">{test.nombrePrueba}</h3>
                       <p className="text-sm text-gray-500">ID: {test.idPrueba}</p>
                     </div>
-                    <Link
-                      to={`/results/create?test=${test.idPrueba}&sample=${selectedSample}`}
-                      className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                    >
-                      Agregar Resultado
-                    </Link>
+                    <div className="flex items-center space-x-2">
+                      <Link
+                        to={`/results/create?test=${test.idPrueba}&sample=${selectedSample}`}
+                        className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                      >
+                        Agregar Resultado
+                      </Link>
+                      <button
+                        onClick={() => setShowDocumentsModal(true)}
+                        className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
+                        title="Ver documentos"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -160,6 +171,16 @@ export default function TestsPage() {
           )}
         </div>
       </div>
+
+      {/* Documents Modal */}
+      {selectedSample && (
+        <DocumentsModal
+          isOpen={showDocumentsModal}
+          onClose={() => setShowDocumentsModal(false)}
+          sampleCode={selectedSample}
+          tests={tests}
+        />
+      )}
     </div>
   );
 }

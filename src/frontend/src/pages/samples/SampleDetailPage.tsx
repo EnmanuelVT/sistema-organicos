@@ -3,13 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 import { getSampleById } from "@/api/samples";
 import { getTestsBySample } from "@/api/tests";
 import { getResultsBySample } from "@/api/results";
-import { ArrowLeft, TestTube, FlaskConical, BarChart3, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, TestTube, FlaskConical, BarChart3, Calendar, MapPin, Settings, FileText } from "lucide-react";
 import { getStateDisplayName, getStateColor } from "@/utils/roles";
+import { useAuthStore } from "@/store/auth";
+import { hasRole } from "@/utils/roles";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
+import ChangeStatusModal from "@/components/ChangeStatusModal";
+import DocumentsModal from "@/components/DocumentsModal";
+import { useState } from "react";
 
 export default function SampleDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuthStore();
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
 
   const { data: sample, isLoading: loadingSample, error: sampleError } = useQuery({
     queryKey: ["sample", id],
@@ -261,20 +269,42 @@ export default function SampleDetailPage() {
           <div className="card">
             <h3 className="font-semibold text-gray-900 mb-4">Acciones</h3>
             <div className="space-y-2">
-              <Link
-                to={`/tests/create?sample=${sample.mstCodigo}`}
-                className="w-full btn-primary text-center"
-              >
-                <FlaskConical className="h-4 w-4 mr-2" />
-                Nueva Prueba
-              </Link>
-              <Link
-                to={`/results/create?sample=${sample.mstCodigo}`}
+              {hasRole(user?.role, ["ANALISTA", "ADMIN"]) && (
+                <>
+                  <Link
+                    to={`/tests/create?sample=${sample.mstCodigo}`}
+                    className="w-full btn-primary text-center"
+                  >
+                    <FlaskConical className="h-4 w-4 mr-2" />
+                    Nueva Prueba
+                  </Link>
+                  <Link
+                    to={`/results/create?sample=${sample.mstCodigo}`}
+                    className="w-full btn-secondary text-center"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Nuevo Resultado
+                  </Link>
+                </>
+              )}
+              
+              {hasRole(user?.role, ["ANALISTA", "EVALUADOR", "ADMIN"]) && (
+                <button
+                  onClick={() => setShowStatusModal(true)}
+                  className="w-full btn-secondary text-center"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Cambiar Estado
+                </button>
+              )}
+              
+              <button
+                onClick={() => setShowDocumentsModal(true)}
                 className="w-full btn-secondary text-center"
               >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Nuevo Resultado
-              </Link>
+                <FileText className="h-4 w-4 mr-2" />
+                Ver Documentos
+              </button>
             </div>
           </div>
 
@@ -299,6 +329,21 @@ export default function SampleDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <ChangeStatusModal
+        isOpen={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+        sampleCode={sample.mstCodigo!}
+        currentStatus={sample.estadoActual}
+      />
+
+      <DocumentsModal
+        isOpen={showDocumentsModal}
+        onClose={() => setShowDocumentsModal(false)}
+        sampleCode={sample.mstCodigo!}
+        tests={tests}
+      />
     </div>
   );
 }

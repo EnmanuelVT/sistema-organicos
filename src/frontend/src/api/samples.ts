@@ -45,3 +45,8 @@ export async function changeStatus(payload: AsignarEstadoMuestraDto): Promise<an
   const { data } = await api.patch("/api/muestras/cambiar-estado", payload);
   return data;
 }
+
+export async function getDocumentsBySample(sampleId: string): Promise<any[]> {
+  const { data } = await api.get(`/api/muestras/${sampleId}/documentos`);
+  return data;
+}
