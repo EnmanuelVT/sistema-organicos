@@ -73,17 +73,40 @@ export default function DocumentsModal({
     setError(null);
   };
 
-  const downloadDocument = (document: any) => {
-    if (document.docPdf) {
-      const blob = new Blob([new Uint8Array(document.docPdf)], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${sampleCode}_v${document.version}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+  const downloadDocument = (doc: any) => {
+    if (doc.docPdf) {
+      try {
+        let pdfData;
+        
+        // Check if docPdf is base64 string
+        if (typeof doc.docPdf === 'string') {
+          // If it's a base64 string, decode it
+          const base64Data = doc.docPdf.startsWith('data:') 
+            ? doc.docPdf.split(',')[1] 
+            : doc.docPdf;
+          pdfData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+        } else if (Array.isArray(doc.docPdf)) {
+          // If it's already a byte array
+          pdfData = new Uint8Array(doc.docPdf);
+        } else {
+          // If it's some other format, try to convert
+          pdfData = new Uint8Array(doc.docPdf);
+        }
+        
+        const blob = new Blob([pdfData], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${sampleCode}_v${doc.version}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error downloading PDF:', error);
+        console.log('PDF data type:', typeof doc.docPdf);
+        console.log('PDF data sample:', doc.docPdf);
+      }
     }
   };
 
