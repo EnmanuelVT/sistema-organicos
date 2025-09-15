@@ -500,53 +500,6 @@ public static class MuestraRoutes
         .WithTags("Muestras", "Documentos")
         .WithOpenApi();
 
-        group.MapPost("/pruebas/{id:int}/documentos/preliminar",
-            async (MuestraNegocio negocio,
-                   int id,
-                   ClaimsPrincipal user,
-                   GenerarPreliminarRequest? body) =>
-            {
-                try
-                {
-                    var analistaId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                    if (string.IsNullOrEmpty(analistaId))
-                        return Results.Unauthorized();
-
-                    var doc = await negocio.GenerarDocumentoPreliminarAsync(
-                        idPrueba: id,
-                        analistaId: analistaId,
-                        observaciones: body?.Observaciones
-                    );
-
-                    if (doc is null)
-                        return Results.NotFound($"No se pudo generar el documento preliminar para la prueba {id}.");
-
-                    // Devolvemos 201 con Location del recurso creado
-                    return Results.Created($"/api/documentos/{doc.IdDocumento}", doc);
-                }
-                catch (ArgumentException ex)
-                {
-                    return Results.BadRequest(ex.Message);
-                }
-                catch (Exception ex)
-                {
-                    return Results.Problem(ex.Message);
-                }
-            })
-            .RequireAuthorization("RequireAnalistaRole")
-            .WithName("GenerarDocumentoPreliminar")
-            .WithSummary("Generar documento preliminar de una prueba")
-            .WithDescription("Permite al analista generar un documento preliminar (no certificado) a partir de los resultados de una prueba. No cambia el estado de la muestra.")
-            .WithTags("Muestras", "Pruebas", "Documentos", "Analyst")
-            .WithOpenApi()
-            .Accepts<GenerarPreliminarRequest>("application/json")
-            .Produces<DocumentoDto>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status403Forbidden)
-            .Produces(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
-
         return group;
     }
 }
