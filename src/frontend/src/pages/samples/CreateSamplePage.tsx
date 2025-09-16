@@ -7,6 +7,7 @@ import { ArrowLeft, TestTube } from "lucide-react";
 import { Link } from "react-router-dom";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
+import { useAuthStore } from "@/store/auth"
 import type { CreateMuestraDto } from "@/types/api";
 
 interface FormValues {
@@ -20,20 +21,33 @@ interface FormValues {
 export default function CreateSamplePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuthStore(); // <— leer rol de usuario
   const [error, setError] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
 
+
   const createMutation = useMutation({
     mutationFn: createSample,
     onSuccess: (data) => {
+      // refrescar listado
       queryClient.invalidateQueries({ queryKey: ["samples"] });
-      navigate(`/samples/${data.mstCodigo}`);
+
+      // REGLA:
+      // - SOLICITANTE → vuelve a la lista de “Mis muestras”
+      // - Otros roles → va al detalle recien creado
+      if (user?.role === "SOLICITANTE") {
+        navigate("/samples", { replace: true });
+      } else {
+        // data.mstCodigo es el ID (string)
+        navigate(`/samples/${data.mstCodigo}`, { replace: true });
+      }
     },
     onError: (error: any) => {
       setError(error?.response?.data?.message || "Error al crear la muestra");
     },
   });
+
 
   const onSubmit = (values: FormValues) => {
     setError(null);

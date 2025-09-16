@@ -7,13 +7,14 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
 import { Link } from "react-router-dom";
 
+
 export default function DashboardPage() {
   const { user } = useAuthStore();
 
   const { data: allSamples, isLoading: loadingAll } = useQuery({
     queryKey: ["samples", "all"],
     queryFn: getAllSamples,
-    enabled: hasRole(user?.role, ["ADMIN", "ANALISTA", "EVALUADOR"]),
+    enabled: hasRole(user?.role, ["ADMIN", "EVALUADOR"]), // <— ANALISTA ya NO ve todas
   });
 
   const { data: mySamples, isLoading: loadingMy } = useQuery({
@@ -28,7 +29,13 @@ export default function DashboardPage() {
     enabled: hasRole(user?.role, ["ANALISTA"]),
   });
 
-  const samples = allSamples || mySamples || assignedSamples || [];
+  // 🔧 Punto clave: elegir fuente en función del rol
+  const samples = hasRole(user?.role, ["SOLICITANTE"])
+    ? (mySamples ?? [])
+    : hasRole(user?.role, ["ANALISTA"])
+    ? (assignedSamples ?? [])
+    : (allSamples ?? []); // ADMIN y EVALUADOR
+
   const isLoading = loadingAll || loadingMy || loadingAssigned;
 
   const stats = [
