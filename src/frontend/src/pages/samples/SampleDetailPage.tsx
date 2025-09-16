@@ -18,6 +18,7 @@ import { useState } from "react";
 export default function SampleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuthStore();
+  const isSolicitante = user?.role === "SOLICITANTE";
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showDocumentsModal, setShowDocumentsModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -31,13 +32,13 @@ export default function SampleDetailPage() {
   const { data: tests, isLoading: loadingTests } = useQuery({
     queryKey: ["tests", id],
     queryFn: () => getTestsBySample(id!),
-    enabled: !!id,
+    enabled: !!id && !isSolicitante,
   });
 
   const { data: results, isLoading: loadingResults } = useQuery({
     queryKey: ["results", id],
     queryFn: () => getResultsBySample(id!),
-    enabled: !!id,
+    enabled: !!id && !isSolicitante,
   });
 
   if (loadingSample) {
@@ -182,6 +183,7 @@ export default function SampleDetailPage() {
           </div>
 
           {/* Tests */}
+          {!isSolicitante && (
           <div className="card">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
@@ -219,8 +221,10 @@ export default function SampleDetailPage() {
               </div>
             )}
           </div>
+          )}
 
           {/* Results */}
+          {!isSolicitante && (
           <div className="card">
             <div className="flex items-center space-x-3 mb-6">
               <div className="p-2 bg-warning-100 rounded-lg">
@@ -265,6 +269,7 @@ export default function SampleDetailPage() {
               </div>
             )}
           </div>
+          )}
         </div>
 
         {/* Sidebar */}
