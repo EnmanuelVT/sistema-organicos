@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllSamples } from "@/api/samples";
+import { getAllSamples, getAssignedSamples } from "@/api/samples";
 import { getTestsBySample } from "@/api/tests";
 import { FlaskConical, Plus, Search, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -8,15 +8,22 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
 import EmptyState from "@/components/EmptyState";
 import DocumentsModal from "@/components/DocumentsModal";
+import { useAuthStore } from "@/store/auth";
+import { hasRole } from "@/utils/roles";
 
 export default function TestsPage() {
+  const { user } = useAuthStore();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSample, setSelectedSample] = useState<string>("");
   const [showDocumentsModal, setShowDocumentsModal] = useState(false);
 
   const { data: samples, isLoading: loadingSamples, error: samplesError } = useQuery({
-    queryKey: ["samples"],
-    queryFn: getAllSamples,
+    queryKey: ["samples", hasRole(user?.role, ["ADMIN"]) ? "all" : "assigned"],
+    queryFn: () =>
+      hasRole(user?.role, ["ADMIN"])
+        ? getAllSamples()
+        : getAssignedSamples(), // ANALISTA restringido a asignadas
   });
 
   const { data: tests, isLoading: loadingTests, error: testsError } = useQuery({

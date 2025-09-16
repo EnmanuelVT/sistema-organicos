@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllSamples } from "@/api/samples";
+import { getAllSamples, getAssignedSamples } from "@/api/samples";
 import { getResultsBySample } from "@/api/results";
 import { BarChart3, Plus, Search } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -7,14 +7,20 @@ import { useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
 import EmptyState from "@/components/EmptyState";
+import { useAuthStore } from "@/store/auth";
+import { hasRole } from "@/utils/roles";
 
 export default function ResultsPage() {
+  const { user } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSample, setSelectedSample] = useState<string>("");
 
   const { data: samples, isLoading: loadingSamples, error: samplesError } = useQuery({
-    queryKey: ["samples"],
-    queryFn: getAllSamples,
+    queryKey: ["samples", hasRole(user?.role, ["ADMIN"]) ? "all" : "assigned"],
+    queryFn: () =>
+      hasRole(user?.role, ["ADMIN"])
+        ? getAllSamples()
+        : getAssignedSamples(),
   });
 
   const { data: results, isLoading: loadingResults, error: resultsError } = useQuery({

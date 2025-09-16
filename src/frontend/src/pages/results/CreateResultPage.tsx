@@ -3,12 +3,14 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { createResult } from "@/api/results";
-import { getAllSamples } from "@/api/samples";
+import { getAllSamples, getAssignedSamples } from "@/api/samples";
 import { getTestsBySample } from "@/api/tests";
 import { getParametersBySampleType } from "@/api/parameters";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
+import { useAuthStore } from "@/store/auth";
+import { hasRole } from "@/utils/roles";
 import type { CreateResultadoPruebaDto } from "@/types/api";
 
 interface FormValues {
@@ -20,6 +22,7 @@ interface FormValues {
 }
 
 export default function CreateResultPage() {
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -29,10 +32,14 @@ export default function CreateResultPage() {
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>();
   const watchedSample = watch("idMuestra");
 
-  const { data: samples, isLoading: loadingSamples } = useQuery({
-    queryKey: ["samples"],
-    queryFn: getAllSamples,
+  const { data: samples, isLoading: loadingSamples, error: samplesError } = useQuery({
+    queryKey: ["samples", hasRole(user?.role, ["ADMIN"]) ? "all" : "assigned"],
+    queryFn: () =>
+      hasRole(user?.role, ["ADMIN"])
+        ? getAllSamples()
+        : getAssignedSamples(),
   });
+
 
   const { data: tests } = useQuery({
     queryKey: ["tests", watchedSample],

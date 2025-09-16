@@ -3,11 +3,13 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { createTest } from "@/api/tests";
-import { getAllSamples } from "@/api/samples";
+import { getAllSamples, getAssignedSamples } from "@/api/samples";
 import { ArrowLeft, FlaskConical } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
 import type { CreatePruebaDto } from "@/types/api";
+import { useAuthStore } from "@/store/auth";
+import { hasRole } from "@/utils/roles";
 
 interface FormValues {
   idMuestra: string;
@@ -15,6 +17,7 @@ interface FormValues {
 }
 
 export default function CreateTestPage() {
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -22,9 +25,12 @@ export default function CreateTestPage() {
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>();
 
-  const { data: samples, isLoading: loadingSamples } = useQuery({
-    queryKey: ["samples"],
-    queryFn: getAllSamples,
+  const { data: samples, isLoading: loadingSamples, error: samplesError } = useQuery({
+    queryKey: ["samples", hasRole(user?.role, ["ADMIN"]) ? "all" : "assigned"],
+    queryFn: () =>
+      hasRole(user?.role, ["ADMIN"])
+        ? getAllSamples()
+        : getAssignedSamples(),
   });
 
   const createMutation = useMutation({
