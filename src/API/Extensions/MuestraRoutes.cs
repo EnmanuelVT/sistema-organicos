@@ -367,7 +367,17 @@ public static class MuestraRoutes
                 muestraExistente.CondicionesAlmacenamiento = muestraDto.CondicionesAlmacenamiento;
                 muestraExistente.CondicionesTransporte = muestraDto.CondicionesTransporte;
 
-                var actualizadaMuestra = await negocio.ModificarMuestraAsync(muestraExistente);
+                var muestraEntity = new Muestra
+                {
+                    MstCodigo = muestraExistente.MstCodigo,
+                    Nombre = muestraExistente.Nombre,
+                    TpmstId = muestraExistente.TpmstId,
+                    Origen = muestraExistente.Origen,
+                    CondicionesAlmacenamiento = muestraExistente.CondicionesAlmacenamiento,
+                    CondicionesTransporte = muestraExistente.CondicionesTransporte,
+                };
+
+                var actualizadaMuestra = await negocio.ModificarMuestraAsync(muestraEntity);
                 return Results.Ok(actualizadaMuestra);
             } 
             catch (Exception ex) 
@@ -472,6 +482,24 @@ public static class MuestraRoutes
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("/{id}/documentos", async (MuestraNegocio negocio, string id) => 
+        {
+            try
+            {
+                var documentos = await negocio.ObtenerDocumentosPorMuestraAsync(id);
+                return Results.Ok(documentos);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        })
+        .WithName("GetDocumentosByMuestra")
+        .WithSummary("Get documents by sample ID")
+        .WithDescription("Retrieves all documents associated with a specific sample ID.")
+        .WithTags("Muestras", "Documentos")
+        .WithOpenApi();
 
         return group;
     }

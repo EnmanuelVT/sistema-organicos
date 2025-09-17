@@ -307,12 +307,25 @@ public class MuestraRepositorio
         return muestraDto;
     }
 
-    public async Task<Muestra?> ObtenerMuestraPorIdAsync(string id)
+    public async Task<MuestraDto?> ObtenerMuestraPorIdAsync(string id)
     {
         return await _context.Muestras
-            .Include<Muestra, object>(m => m.Tpmst)
-            .Include<Muestra, object>(m => m.EstadoActualNavigation)
-            .FirstOrDefaultAsync(m => m.MstCodigo == id);
+            .Include(m => m.Tpmst)
+            .Include(m => m.EstadoActualNavigation)
+            .Where(m => m.MstCodigo == id)
+            .Select(m => new MuestraDto
+            {
+                MstCodigo = m.MstCodigo,
+                TpmstId = m.TpmstId,
+                Nombre = m.Nombre,
+                Origen = m.Origen,
+                CondicionesAlmacenamiento = m.CondicionesAlmacenamiento,
+                CondicionesTransporte = m.CondicionesTransporte,
+                EstadoActual = m.EstadoActual,
+                FechaRecepcion = m.FechaRecepcion,
+                FechaSalidaEstimada = m.FechaSalidaEstimada
+            })
+            .FirstOrDefaultAsync();
     }
     
     public async Task<EvaluarPruebaResponseDto?> EvaluarPruebaAsync(EvaluarPruebaDto dto, string evaluadorId)
@@ -546,6 +559,23 @@ public class MuestraRepositorio
         };
     }
 
+    public async Task<IEnumerable<DocumentoDto?>> ObtenerDocumentosPorMuestraAsync(string mstCodigo)
+    {
+        return await _context.Documentos
+            .Where(d => d.IdMuestra == mstCodigo)
+            .Select(d => new DocumentoDto
+            {
+                IdDocumento       = d.IdDocumento,
+                IdMuestra         = d.IdMuestra,
+                IdTipoDoc         = d.IdTipoDoc,
+                IdEstadoDocumento = d.IdEstadoDocumento,
+                Version           = d.Version,
+                FechaCreacion     = d.FechaCreacion,
+                RutaArchivo       = d.RutaArchivo,
+                DocPdf            = d.DocPdf
+            })
+            .ToListAsync();
+    }
 
     // Helper de norma
     private static bool Cumple(ParametroNorma n, decimal valor)
