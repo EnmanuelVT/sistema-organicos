@@ -367,7 +367,17 @@ public static class MuestraRoutes
                 muestraExistente.CondicionesAlmacenamiento = muestraDto.CondicionesAlmacenamiento;
                 muestraExistente.CondicionesTransporte = muestraDto.CondicionesTransporte;
 
-                var actualizadaMuestra = await negocio.ModificarMuestraAsync(muestraExistente);
+                var muestraEntity = new Muestra
+                {
+                    MstCodigo = muestraExistente.MstCodigo,
+                    Nombre = muestraExistente.Nombre,
+                    TpmstId = muestraExistente.TpmstId,
+                    Origen = muestraExistente.Origen,
+                    CondicionesAlmacenamiento = muestraExistente.CondicionesAlmacenamiento,
+                    CondicionesTransporte = muestraExistente.CondicionesTransporte,
+                };
+
+                var actualizadaMuestra = await negocio.ModificarMuestraAsync(muestraEntity);
                 return Results.Ok(actualizadaMuestra);
             } 
             catch (Exception ex) 
