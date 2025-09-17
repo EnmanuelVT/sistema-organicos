@@ -73,7 +73,6 @@ public class MuestraNegocio
     {
         return await _repositorio.ObtenerDocumentosPorMuestraAsync(idMuestra);
     }
-
     // NEGOCIOS/MuestraNegocio.cs
     public async Task<EvaluarPruebaResponseDto?> EvaluarPruebaAsync(int idPrueba, EvaluarPruebaDto dto, string evaluadorId)
     {

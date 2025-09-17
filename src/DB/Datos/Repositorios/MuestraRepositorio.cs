@@ -312,6 +312,7 @@ public class MuestraRepositorio
         return await _context.Muestras
             .Include(m => m.Tpmst)
             .Include(m => m.EstadoActualNavigation)
+            .Where(m => m.MstCodigo == id)
             .Select(m => new MuestraDto
             {
                 MstCodigo = m.MstCodigo,
@@ -321,8 +322,10 @@ public class MuestraRepositorio
                 CondicionesAlmacenamiento = m.CondicionesAlmacenamiento,
                 CondicionesTransporte = m.CondicionesTransporte,
                 EstadoActual = m.EstadoActual,
+                FechaRecepcion = m.FechaRecepcion,
+                FechaSalidaEstimada = m.FechaSalidaEstimada
             })
-            .FirstOrDefaultAsync(m => m.MstCodigo == id);
+            .FirstOrDefaultAsync();
     }
     
     public async Task<EvaluarPruebaResponseDto?> EvaluarPruebaAsync(EvaluarPruebaDto dto, string evaluadorId)
