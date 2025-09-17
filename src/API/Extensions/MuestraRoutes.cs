@@ -483,6 +483,24 @@ public static class MuestraRoutes
             .Produces(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
+        group.MapGet("/{id}/documentos", async (MuestraNegocio negocio, string id) => 
+        {
+            try
+            {
+                var documentos = await negocio.ObtenerDocumentosPorMuestraAsync(id);
+                return Results.Ok(documentos);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        })
+        .WithName("GetDocumentosByMuestra")
+        .WithSummary("Get documents by sample ID")
+        .WithDescription("Retrieves all documents associated with a specific sample ID.")
+        .WithTags("Muestras", "Documentos")
+        .WithOpenApi();
+
         return group;
     }
 }
