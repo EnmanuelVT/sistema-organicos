@@ -40,8 +40,19 @@ AS
 BEGIN
 UPDATE Muestra SET estado_actual = @p_nuevo_estado WHERE MST_CODIGO = @p_MST_CODIGO;
 
-INSERT INTO Historial_Trazabilidad (id_muestra, id_usuario, estado, observaciones)
-VALUES (@p_MST_CODIGO, @p_id_usuario, @p_nuevo_estado, @p_observaciones);
+IF EXISTS (SELECT 1 FROM Historial_Trazabilidad WHERE id_muestra = @p_MST_CODIGO)
+BEGIN
+    UPDATE Historial_Trazabilidad
+    SET estado = @p_nuevo_estado,
+        id_usuario = @p_id_usuario,
+        observaciones = @p_observaciones
+    WHERE id_muestra = @p_MST_CODIGO;
+END
+ELSE
+BEGIN
+    INSERT INTO Historial_Trazabilidad (id_muestra, id_usuario, estado, observaciones)
+    VALUES (@p_MST_CODIGO, @p_id_usuario, @p_nuevo_estado, @p_observaciones);
+END
 
 INSERT INTO Auditoria (id_usuario, accion, descripcion)
 VALUES (@p_id_usuario, 'CAMBIAR_ESTADO', CONCAT('MST=',@p_MST_CODIGO,', ESTADO=',CAST(@p_nuevo_estado AS VARCHAR(10))));
