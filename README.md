@@ -27,14 +27,21 @@ Ejecuta el script de procedimientos almacenados en la base de datos creada:
 src/db/scripts/init-procedures-sqlserver.sql
 ```
 
-## 3. Iniciar el Backend (.NET 9)
+## 3. Poner las tablas en la BD
+
+```powershell
+cd src/db
+dotnet ef database update
+```
+
+## 4. Iniciar el Backend (.NET 9)
 
 ```powershell
 cd src/api
 dotnet run
 ```
 
-## 4. Iniciar el Frontend (Node.js)
+## 5. Iniciar el Frontend (Node.js)
 
 ```powershell
 cd src/frontend
