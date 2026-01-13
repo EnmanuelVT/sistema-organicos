@@ -6,6 +6,7 @@ namespace API.Common
     {
         public const string AdminPolicy = "RequireAdminRole";
         public const string Analista = "RequireAnalistaRole";
+        public const string AnalistaOrEvaluador = "RequireAnalistaOrEvaluadorRole";
         public const string Solicitante = "RequireSolicitanteRole";
         public const string Evaluador = "RequireEvaluadorRole";
         public static void AddAuthorizationPolicies(AuthorizationOptions options)
@@ -14,6 +15,8 @@ namespace API.Common
                 policy.RequireRole("Admin"));
             options.AddPolicy(Analista, policy =>
                 policy.RequireRole("Analista", "Admin"));
+            options.AddPolicy(AnalistaOrEvaluador, policy =>
+                policy.RequireRole("Analista", "Evaluador", "Admin"));
             options.AddPolicy(Solicitante, policy =>
                 policy.RequireRole("Solicitante", "Admin"));
             options.AddPolicy(Evaluador, policy =>

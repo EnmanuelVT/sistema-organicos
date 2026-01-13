@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using ENTIDAD.DTOs.Documentos;
 using ENTIDAD.DTOs.Muestras;
+using API.Common;
 using Models;
 using NEGOCIOS;
 
@@ -24,10 +25,10 @@ public static class MuestraRoutes
                 return Results.Problem(ex.Message);
             }
         })
-        .RequireAuthorization("RequireAnalistaRole")
+        .RequireAuthorization(AuthorizationPolicies.AnalistaOrEvaluador)
         .WithName("GetAllMuestras")
         .WithSummary("Get all samples")
-        .WithDescription("Retrieves a list of all samples in the system. Requires analyst role.")
+        .WithDescription("Retrieves a list of all samples in the system. Requires analyst or evaluator role.")
         .WithTags("Muestras")
         .WithOpenApi()
         .Produces<List<MuestraDto>>(StatusCodes.Status200OK)

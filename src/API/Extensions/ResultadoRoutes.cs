@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using ENTIDAD.DTOs.ResultadosPruebas;
 using NEGOCIOS;
+using API.Common;
 
 namespace API.Extensions;
 
@@ -22,11 +23,11 @@ public static class ResultadoRoutes
                 return Results.Problem(ex.Message);
             }
         })
-        .RequireAuthorization("RequireAnalistaRole")
+        .RequireAuthorization(AuthorizationPolicies.AnalistaOrEvaluador)
         .WithName("GetResultadosByMuestra")
         .WithSummary("Get test results by sample ID")
-        .WithDescription("Retrieves all test results associated with a specific sample. Requires analyst role.")
-        .WithTags("Resultados", "Analyst")
+        .WithDescription("Retrieves all test results associated with a specific sample. Requires analyst or evaluator role.")
+        .WithTags("Resultados")
         .WithOpenApi()
         .Produces<List<ResultadoPruebaDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -50,11 +51,11 @@ public static class ResultadoRoutes
                 return Results.Problem(ex.Message);
             }
         })
-        .RequireAuthorization("RequireAnalistaRole")
+        .RequireAuthorization(AuthorizationPolicies.AnalistaOrEvaluador)
         .WithName("GetResultadoById")
         .WithSummary("Get test result by ID")
-        .WithDescription("Retrieves a specific test result by its unique identifier. Requires analyst role.")
-        .WithTags("Resultados", "Analyst")
+        .WithDescription("Retrieves a specific test result by its unique identifier. Requires analyst or evaluator role.")
+        .WithTags("Resultados")
         .WithOpenApi()
         .Produces<ResultadoPruebaDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
