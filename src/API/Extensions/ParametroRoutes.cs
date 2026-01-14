@@ -35,6 +35,29 @@ public static class ParametroRoutes
         .Produces(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status500InternalServerError);
 
+        group.MapGet("/prueba/{idPrueba}", async (ParametroNegocio negocio, int idPrueba) =>
+        {
+            try
+            {
+                var parametros = await negocio.ObtenerParametrosPorPruebaAsync(idPrueba);
+                return Results.Ok(parametros);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        })
+        .RequireAuthorization("RequireAnalistaRole")
+        .WithName("GetParametrosByPrueba")
+        .WithSummary("Get parameters by test")
+        .WithDescription("Retrieves parameters for a specific test (Prueba), filtered by sample type + test type when available. Requires analyst role.")
+        .WithTags("Parametros", "Analyst")
+        .WithOpenApi()
+        .Produces<List<ParametroDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status500InternalServerError);
+
         group.MapPost("/tipo-muestra", async (ParametroNegocio negocio, CreateParametroDto createParametroATipoMuestraDto, ClaimsPrincipal user) =>
         {
             try

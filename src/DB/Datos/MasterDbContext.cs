@@ -35,6 +35,10 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
 
     public virtual DbSet<Prueba> Pruebas { get; set; }
 
+    public virtual DbSet<TipoPrueba> TipoPruebas { get; set; }
+
+    public virtual DbSet<TipoMuestraTipoPrueba> TipoMuestraTipoPruebas { get; set; }
+
     public virtual DbSet<ResultadoPrueba> ResultadoPruebas { get; set; }
 
     public virtual DbSet<TipoDocumento> TipoDocumentos { get; set; }
@@ -399,11 +403,64 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
             entity.Property(e => e.TpmstId)
                 .HasColumnName("tpmst_id");
 
+            entity.Property(e => e.TipoPruebaId)
+                .HasColumnName("tipo_prueba_id");
+
             entity.HasOne(t => t.TipoMuestraAsociadaNavigation)
                 .WithMany(p => p.ParametroNormas)
                 .HasForeignKey("tmpst_id")
                 .HasConstraintName("fk_parametro_tipo")
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.TipoPrueba)
+                .WithMany(p => p.ParametroNormas)
+                .HasForeignKey(d => d.TipoPruebaId)
+                .HasConstraintName("fk_parametro_tipo_prueba")
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
+        modelBuilder.Entity<TipoPrueba>(entity =>
+        {
+            entity.HasKey(e => e.IdTipoPrueba).HasName("PK_Tipo_Prueba");
+
+            entity.ToTable("Tipo_Prueba");
+
+            entity.HasIndex(e => e.Codigo, "UQ_Tipo_Prueba_codigo").IsUnique();
+            entity.HasIndex(e => e.Nombre, "UQ_Tipo_Prueba_nombre").IsUnique();
+
+            entity.Property(e => e.IdTipoPrueba)
+                .HasColumnName("id_tipo_prueba");
+            entity.Property(e => e.Codigo)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("codigo");
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(120)
+                .IsUnicode(false)
+                .HasColumnName("nombre");
+        });
+
+        modelBuilder.Entity<TipoMuestraTipoPrueba>(entity =>
+        {
+            entity.HasKey(e => new { e.TpmstId, e.TipoPruebaId }).HasName("PK_Tipo_Muestra_Tipo_Prueba");
+
+            entity.ToTable("Tipo_Muestra_Tipo_Prueba");
+
+            entity.Property(e => e.TpmstId).HasColumnName("tpmst_id");
+            entity.Property(e => e.TipoPruebaId).HasColumnName("tipo_prueba_id");
+            entity.Property(e => e.Orden).HasColumnName("orden");
+
+            entity.HasOne(d => d.Tpmst)
+                .WithMany(p => p.TipoMuestraTipoPruebas)
+                .HasForeignKey(d => d.TpmstId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_tmt_tp_tipo_muestra");
+
+            entity.HasOne(d => d.TipoPrueba)
+                .WithMany(p => p.TipoMuestraTipoPruebas)
+                .HasForeignKey(d => d.TipoPruebaId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_tmt_tp_tipo_prueba");
         });
 
         modelBuilder.Entity<Prueba>(entity =>
@@ -422,10 +479,19 @@ public partial class MasterDbContext : IdentityDbContext<Usuario>
                 .IsUnicode(false)
                 .HasColumnName("id_muestra");
 
+            entity.Property(e => e.TipoPruebaId)
+                .HasColumnName("tipo_prueba_id");
+
             entity.HasOne(p => p.IdMuestraNavigation)
                 .WithMany(m => m.Pruebas)
                 .HasForeignKey(p => p.IdMuestra)
                 .HasConstraintName("fk_prueba_muestra");
+
+            entity.HasOne(p => p.TipoPrueba)
+                .WithMany(t => t.Pruebas)
+                .HasForeignKey(p => p.TipoPruebaId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_prueba_tipo_prueba");
         });
 
         modelBuilder.Entity<ResultadoPrueba>(entity =>

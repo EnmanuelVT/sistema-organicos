@@ -250,3 +250,104 @@ INSERT INTO Auditoria (id_usuario, accion, descripcion)
 VALUES (@p_id_usuario, 'REGISTRAR_RESULTADO', CONCAT('MST=',@p_MST_CODIGO,', PRB=',CAST(@p_id_prueba AS VARCHAR(10))));
 END
 go
+
+-----------------------------------------------------------------------------
+-- Trigger: Generar pruebas automáticamente al crear una muestra
+-- Cubre tanto dbo.sp_crear_muestra como INSERT directo en dbo.Muestra.
+-- Asignación de pruebas según tipo de muestra:
+--   - Alimento (TPMST_ID=2): análisis microbiológico, físico-químico, etiquetado
+--   - Agua (TPMST_ID=1): parámetros fisicoquímicos, microbiológicos
+--   - Bebida alcohólica (TPMST_ID=3): graduación alcohólica, metales pesados, etiquetado
+-----------------------------------------------------------------------------
+CREATE OR ALTER TRIGGER dbo.trg_muestra_generar_pruebas
+ON dbo.Muestra
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @outerTranCount INT = @@TRANCOUNT;
+
+    -- En un trigger normalmente ya hay una transacción abierta; usamos SAVEPOINT.
+    IF @outerTranCount > 0
+        SAVE TRAN trg_muestra_generar_pruebas;
+    ELSE
+        BEGIN TRAN;
+
+    BEGIN TRY
+        -- Agua (1)
+        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra)
+        SELECT v.nombre_prueba, i.MST_CODIGO
+        FROM inserted i
+        CROSS APPLY (VALUES
+            ('Parámetros fisicoquímicos'),
+            ('Microbiológicos')
+        ) v(nombre_prueba)
+        WHERE i.TPMST_ID = 1
+          AND NOT EXISTS (
+              SELECT 1
+              FROM dbo.Prueba p
+              WHERE p.id_muestra = i.MST_CODIGO
+                AND p.nombre_prueba = v.nombre_prueba
+          );
+
+        -- Alimento (2)
+        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra)
+        SELECT v.nombre_prueba, i.MST_CODIGO
+        FROM inserted i
+        CROSS APPLY (VALUES
+            ('Análisis microbiológico'),
+            ('Análisis físico-químico'),
+            ('Etiquetado')
+        ) v(nombre_prueba)
+        WHERE i.TPMST_ID = 2
+          AND NOT EXISTS (
+              SELECT 1
+              FROM dbo.Prueba p
+              WHERE p.id_muestra = i.MST_CODIGO
+                AND p.nombre_prueba = v.nombre_prueba
+          );
+
+        -- Bebida alcohólica (3)
+        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra)
+        SELECT v.nombre_prueba, i.MST_CODIGO
+        FROM inserted i
+        CROSS APPLY (VALUES
+            ('Graduación alcohólica'),
+            ('Metales pesados'),
+            ('Etiquetado')
+        ) v(nombre_prueba)
+        WHERE i.TPMST_ID = 3
+          AND NOT EXISTS (
+              SELECT 1
+              FROM dbo.Prueba p
+              WHERE p.id_muestra = i.MST_CODIGO
+                AND p.nombre_prueba = v.nombre_prueba
+          );
+
+        IF @outerTranCount = 0
+            COMMIT;
+    END TRY
+    BEGIN CATCH
+        DECLARE @ErrMsg NVARCHAR(2048) = ERROR_MESSAGE();
+        DECLARE @ErrSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrState INT = ERROR_STATE();
+
+        IF XACT_STATE() <> 0
+        BEGIN
+            IF @outerTranCount = 0
+                ROLLBACK;
+            ELSE
+                ROLLBACK TRAN trg_muestra_generar_pruebas;
+        END
+
+        -- Re-lanza el error (compatible con más entornos que THROW)
+        IF @ErrSeverity IS NULL OR @ErrSeverity < 11 SET @ErrSeverity = 16;
+        IF @ErrSeverity > 18 SET @ErrSeverity = 16;
+        IF @ErrState IS NULL OR @ErrState < 1 SET @ErrState = 1;
+
+        RAISERROR(@ErrMsg, @ErrSeverity, @ErrState);
+    END CATCH
+END
+GO

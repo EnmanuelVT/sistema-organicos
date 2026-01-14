@@ -6,6 +6,8 @@ public class ParametroDto
 
     public byte? TpmstId { get; set; }
 
+    public int? TipoPruebaId { get; set; }
+
     public string NombreParametro { get; set; } = null!;
 
     public decimal? ValorMin { get; set; }

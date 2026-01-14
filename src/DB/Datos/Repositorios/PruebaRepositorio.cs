@@ -21,6 +21,7 @@ public class PruebaRepositorio
                 IdPrueba = p.IdPrueba,
                 IdMuestra = p.IdMuestra,
                 NombrePrueba = p.NombrePrueba,
+                TipoPruebaId = p.TipoPruebaId
             })
             .ToListAsync();
     }
@@ -46,6 +47,7 @@ public class PruebaRepositorio
                 IdPrueba = p.IdPrueba,
                 IdMuestra = p.IdMuestra,
                 NombrePrueba = p.NombrePrueba,
+                TipoPruebaId = p.TipoPruebaId
             })
             .FirstOrDefaultAsync();
     }
