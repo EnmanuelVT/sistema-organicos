@@ -3,11 +3,12 @@ using ENTIDAD.Models;
 namespace API.Seed;
 
 using DB.Datos;
+using Microsoft.AspNetCore.Identity;
 using Models;
 
 public static class AppDataSeeder
 {
-    public static async Task SeedAsync(MasterDbContext context)
+    public static async Task SeedAsync(MasterDbContext context, RoleManager<IdentityRole>? roleManager = null)
     {
         int? GetTipoPruebaId(string codigo, string? nombreFallback = null)
         {
@@ -29,6 +30,63 @@ public static class AppDataSeeder
             }
         }
 
+        void EnsureTipoMuestraTipoPrueba(byte tpmstId, int? tipoPruebaId, int orden)
+        {
+            if (tipoPruebaId == null)
+            {
+                return;
+            }
+
+            var existing = context.TipoMuestraTipoPruebas
+                .FirstOrDefault(t => t.TpmstId == tpmstId && t.TipoPruebaId == tipoPruebaId.Value);
+
+            if (existing == null)
+            {
+                context.TipoMuestraTipoPruebas.Add(new TipoMuestraTipoPrueba
+                {
+                    TpmstId = tpmstId,
+                    TipoPruebaId = tipoPruebaId.Value,
+                    Orden = orden
+                });
+            }
+            else if (existing.Orden != orden)
+            {
+                existing.Orden = orden;
+            }
+        }
+
+        void UpsertParametroNorma(
+            string nombreParametro,
+            string? unidad,
+            byte tpmstId,
+            int? tipoPruebaId,
+            decimal? valorMin,
+            decimal? valorMax)
+        {
+            var existing = context.ParametroNormas
+                .FirstOrDefault(p => p.TpmstId == tpmstId && p.NombreParametro == nombreParametro);
+
+            if (existing == null)
+            {
+                context.ParametroNormas.Add(new ParametroNorma
+                {
+                    NombreParametro = nombreParametro,
+                    Unidad = unidad,
+                    TpmstId = tpmstId,
+                    TipoPruebaId = tipoPruebaId,
+                    ValorMin = valorMin,
+                    ValorMax = valorMax
+                });
+            }
+            else
+            {
+                existing.Unidad = unidad;
+                existing.TipoPruebaId = tipoPruebaId;
+                existing.ValorMin = valorMin;
+                existing.ValorMax = valorMax;
+            }
+        }
+
         // Seed TipoMuestra
         if (!context.TipoMuestras.Any())
         {
@@ -39,17 +97,18 @@ public static class AppDataSeeder
             );
         }
 
-    // Seed TipoPrueba está en la migración (SeedTipoPrueba)
-    // Aun así, aseguramos que existan los tipos mínimos para que los parámetros queden relacionados.
-    await EnsureTipoPruebaAsync("PAR_FQ", "Parámetros fisicoquímicos");
-    await EnsureTipoPruebaAsync("MICRO", "Microbiológicos");
-    await EnsureTipoPruebaAsync("AN_MICRO", "Análisis microbiológico");
-    await EnsureTipoPruebaAsync("GRAD", "Graduación alcohólica");
+        // Seed TipoPrueba
+        await EnsureTipoPruebaAsync("PAR_FQ", "Parámetros fisicoquímicos");
+        await EnsureTipoPruebaAsync("MICRO", "Microbiológicos");
+        await EnsureTipoPruebaAsync("AN_MICRO", "Análisis microbiológico");
+        await EnsureTipoPruebaAsync("AN_FQ", "Análisis físico-químico");
+        await EnsureTipoPruebaAsync("ETIQ", "Etiquetado");
+        await EnsureTipoPruebaAsync("GRAD", "Graduación alcohólica");
+        await EnsureTipoPruebaAsync("METALES", "Metales pesados");
 
-    var tipoPruebaParFqId = GetTipoPruebaId("PAR_FQ", "Parámetros fisicoquímicos");
-    var tipoPruebaMicroId = GetTipoPruebaId("MICRO", "Microbiológicos");
-    var tipoPruebaAnalisisMicroId = GetTipoPruebaId("AN_MICRO", "Análisis microbiológico");
-    var tipoPruebaGraduacionId = GetTipoPruebaId("GRAD", "Graduación alcohólica");
+        var tipoPruebaParFqId = GetTipoPruebaId("PAR_FQ", "Parámetros fisicoquímicos");
+        var tipoPruebaMicroId = GetTipoPruebaId("MICRO", "Microbiológicos");
+        var tipoPruebaAnalisisMicroId = GetTipoPruebaId("AN_MICRO", "Análisis microbiológico");
 
         // Seed EstadoMuestra
         if (!context.EstadoMuestras.Any())
@@ -82,80 +141,78 @@ public static class AppDataSeeder
             );
         }
 
-        if (!context.ParametroNormas.Any())
-        {
-            // Agua:
-            // - Analisis fisioquimico:
-            //   - ph (6.5 - 8.5)
-            //   - Solidos Totales (500 - 1500 mg/L)
-            //   - Dureza (negativo)
-            // Analisis microbiologico:
-            //  - Recuento de Microorganismos (0 - 200 UFC/mL)
-            //  - Coliformes Totales (0 - 10 NMP/100mL)
+        // Agua:
+        // - Analisis fisioquimico:
+        //   - ph (6.5 - 8.5)
+        //   - Solidos Totales (500 - 1500 mg/L)
+        //   - Dureza (negativo)
+        // Analisis microbiologico:
+        //  - Recuento de Microorganismos (0 - 200 UFC/mL)
+        //  - Coliformes Totales (0 - 10 NMP/100mL)
 
-            // Alimento:
-            // Todo lo que esta va en microbiologico
+        // Alimento:
+        // Todo lo que esta va en microbiologico
 
-            // Alcohol:
-            // Todo lo que esta va en fisioquimico
-            
+        // Alcohol:
+        // Todo lo que esta va en fisioquimico
 
-            context.ParametroNormas.AddRange(
-                // Agua
-                new ParametroNorma { NombreParametro = "ph", Unidad = "litros", TpmstId = 1, TipoPruebaId = tipoPruebaParFqId, ValorMin = 4, ValorMax = 10 },
-                new ParametroNorma { NombreParametro = "Sólidos Totales", Unidad = "mg/L", TpmstId = 1, TipoPruebaId = tipoPruebaParFqId, ValorMin = 500, ValorMax = 1500 },
-                new ParametroNorma { NombreParametro = "Dureza", Unidad = "mg/L", TpmstId = 1, TipoPruebaId = tipoPruebaParFqId, ValorMin = 100, ValorMax = 300 },
-                new ParametroNorma { NombreParametro = "Recuento de Microorganismos", Unidad = "UFC/mL", TpmstId = 1, TipoPruebaId = tipoPruebaMicroId, ValorMin = 0, ValorMax = 500 },
-                new ParametroNorma { NombreParametro = "Coliformes Totales", Unidad = "NMP/100mL", TpmstId = 1, TipoPruebaId = tipoPruebaMicroId, ValorMin = 0, ValorMax = 10 },
-                
-                // Alimento
-                new ParametroNorma { NombreParametro = "Recuento de Microorganismos", Unidad = "UFC/g", TpmstId = 2, TipoPruebaId = tipoPruebaAnalisisMicroId, ValorMin = 0, ValorMax = 100000 },
-                new ParametroNorma { NombreParametro = "Coliformes Totales", Unidad = "NMP/g", TpmstId = 2, TipoPruebaId = tipoPruebaAnalisisMicroId, ValorMin = 0, ValorMax = 100 },
-                new ParametroNorma { NombreParametro = "E. coli", Unidad = "NMP/g", TpmstId = 2, TipoPruebaId = tipoPruebaAnalisisMicroId, ValorMin = 0, ValorMax = 10 },
-                new ParametroNorma { NombreParametro = "Salmonella spp.", Unidad = "Presencia/25g", TpmstId = 2, TipoPruebaId = tipoPruebaAnalisisMicroId, ValorMin = 0, ValorMax = 0 },
-                new ParametroNorma { NombreParametro = "Estafilococos aureus", Unidad = "UFC/g", TpmstId = 2, TipoPruebaId = tipoPruebaAnalisisMicroId, ValorMin = 0, ValorMax = 100 },
-                new ParametroNorma { NombreParametro = "Hongos", Unidad = "UFC/g", TpmstId = 2, TipoPruebaId = tipoPruebaAnalisisMicroId, ValorMin = 0, ValorMax = 1000 },
-                new ParametroNorma { NombreParametro = "Levaduras", Unidad = "UFC/g", TpmstId = 2, TipoPruebaId = tipoPruebaAnalisisMicroId, ValorMin = 0, ValorMax = 1000 },
-                new ParametroNorma { NombreParametro = "Esterilidad Comercial", Unidad = "Presencia/25g", TpmstId = 2, TipoPruebaId = tipoPruebaAnalisisMicroId, ValorMin = 0, ValorMax = 0 },
-                new ParametroNorma { NombreParametro = "Listeria monocytogenes", Unidad = "Presencia/25g", TpmstId = 2, TipoPruebaId = tipoPruebaAnalisisMicroId, ValorMin = 0, ValorMax = 0 },
-                
-                // Bebida alcoholica
-                // Grado Alcohólico
-                new ParametroNorma { NombreParametro = "Grado Alcohólico", Unidad = "% vol", TpmstId = 3, TipoPruebaId = tipoPruebaGraduacionId, ValorMin = 5, ValorMax = 40 }
-            );
-        }
+        // Agua
+        UpsertParametroNorma("ph", "pH", 1, tipoPruebaParFqId, 6.5m, 8.5m);
+        UpsertParametroNorma("Sólidos Totales", "mg/L", 1, tipoPruebaParFqId, 500m, 1500m);
+        UpsertParametroNorma("Dureza", "mg/L", 1, tipoPruebaParFqId, 0m, 0m);
+        UpsertParametroNorma("Recuento de Microorganismos", "UFC/mL", 1, tipoPruebaMicroId, 0m, 200m);
+        UpsertParametroNorma("Coliformes Totales", "NMP/100mL", 1, tipoPruebaMicroId, 0m, 10m);
 
-        // Backfill: si existen parámetros sin tipo de prueba, asignarlos según reglas del seeder
-        // (Esto es importante porque el frontend ahora filtra estrictamente por tipo de prueba.)
-        var parametrosSinTipo = context.ParametroNormas
+        // Alimento
+        UpsertParametroNorma("Recuento de Microorganismos", "UFC/g", 2, tipoPruebaAnalisisMicroId, 0m, 100000m);
+        UpsertParametroNorma("Coliformes Totales", "NMP/g", 2, tipoPruebaAnalisisMicroId, 0m, 100m);
+        UpsertParametroNorma("E. coli", "NMP/g", 2, tipoPruebaAnalisisMicroId, 0m, 10m);
+        UpsertParametroNorma("Salmonella spp.", "Presencia/25g", 2, tipoPruebaAnalisisMicroId, 0m, 0m);
+        UpsertParametroNorma("Estafilococos aureus", "UFC/g", 2, tipoPruebaAnalisisMicroId, 0m, 100m);
+        UpsertParametroNorma("Hongos", "UFC/g", 2, tipoPruebaAnalisisMicroId, 0m, 1000m);
+        UpsertParametroNorma("Levaduras", "UFC/g", 2, tipoPruebaAnalisisMicroId, 0m, 1000m);
+        UpsertParametroNorma("Esterilidad Comercial", "Presencia/25g", 2, tipoPruebaAnalisisMicroId, 0m, 0m);
+        UpsertParametroNorma("Listeria monocytogenes", "Presencia/25g", 2, tipoPruebaAnalisisMicroId, 0m, 0m);
+
+        // Bebida alcoholica
+        // Grado Alcohólico
+        UpsertParametroNorma("Grado Alcohólico", "% vol", 3, tipoPruebaParFqId, 5m, 40m);
+
+        // Seed Tipo_Muestra_Tipo_Prueba
+        EnsureTipoMuestraTipoPrueba(1, tipoPruebaParFqId, 1);
+        EnsureTipoMuestraTipoPrueba(1, tipoPruebaMicroId, 2);
+
+        EnsureTipoMuestraTipoPrueba(2, tipoPruebaAnalisisMicroId, 1);
+
+        EnsureTipoMuestraTipoPrueba(3, tipoPruebaParFqId, 1);
+
+        // Backfill: si existen pruebas sin tipo de prueba, asignarlas por nombre
+        var pruebasSinTipo = context.Pruebas
             .Where(p => p.TipoPruebaId == null)
             .ToList();
 
-        if (parametrosSinTipo.Count > 0)
+        if (pruebasSinTipo.Count > 0)
         {
-            foreach (var p in parametrosSinTipo)
+            var tiposPorNombre = context.TipoPruebas
+                .ToDictionary(t => t.Nombre, t => t.IdTipoPrueba);
+
+            foreach (var p in pruebasSinTipo)
             {
-                if (p.TpmstId == 1)
+                if (tiposPorNombre.TryGetValue(p.NombrePrueba, out var tipoId))
                 {
-                    if (p.NombreParametro == "ph" || p.NombreParametro == "Sólidos Totales" || p.NombreParametro == "Dureza")
-                    {
-                        p.TipoPruebaId = tipoPruebaParFqId;
-                    }
-                    else if (p.NombreParametro == "Recuento de Microorganismos" || p.NombreParametro == "Coliformes Totales")
-                    {
-                        p.TipoPruebaId = tipoPruebaMicroId;
-                    }
+                    p.TipoPruebaId = tipoId;
                 }
-                else if (p.TpmstId == 2)
+            }
+        }
+
+        if (roleManager != null)
+        {
+            string[] roleNames = { "Solicitante", "Analista", "Evaluador", "Admin" };
+            foreach (var roleName in roleNames)
+            {
+                if (!await roleManager.RoleExistsAsync(roleName))
                 {
-                    p.TipoPruebaId = tipoPruebaAnalisisMicroId;
-                }
-                else if (p.TpmstId == 3)
-                {
-                    if (p.NombreParametro == "Grado Alcohólico")
-                    {
-                        p.TipoPruebaId = tipoPruebaGraduacionId;
-                    }
+                    await roleManager.CreateAsync(new IdentityRole(roleName));
                 }
             }
         }

@@ -13,36 +13,7 @@ namespace DB.Migrations
             migrationBuilder.Sql(@"
 SET NOCOUNT ON;
 
--- 1) Seed de tipos de prueba base (idempotente)
-IF NOT EXISTS (SELECT 1 FROM dbo.Tipo_Prueba WHERE codigo = 'PAR_FQ' OR nombre = N'Parámetros fisicoquímicos')
-    INSERT INTO dbo.Tipo_Prueba (codigo, nombre) VALUES ('PAR_FQ', N'Parámetros fisicoquímicos');
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Tipo_Prueba WHERE codigo = 'MICRO' OR nombre = N'Microbiológicos')
-    INSERT INTO dbo.Tipo_Prueba (codigo, nombre) VALUES ('MICRO', N'Microbiológicos');
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Tipo_Prueba WHERE codigo = 'AN_MICRO' OR nombre = N'Análisis microbiológico')
-    INSERT INTO dbo.Tipo_Prueba (codigo, nombre) VALUES ('AN_MICRO', N'Análisis microbiológico');
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Tipo_Prueba WHERE codigo = 'AN_FQ' OR nombre = N'Análisis físico-químico')
-    INSERT INTO dbo.Tipo_Prueba (codigo, nombre) VALUES ('AN_FQ', N'Análisis físico-químico');
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Tipo_Prueba WHERE codigo = 'ETIQ' OR nombre = N'Etiquetado')
-    INSERT INTO dbo.Tipo_Prueba (codigo, nombre) VALUES ('ETIQ', N'Etiquetado');
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Tipo_Prueba WHERE codigo = 'GRAD' OR nombre = N'Graduación alcohólica')
-    INSERT INTO dbo.Tipo_Prueba (codigo, nombre) VALUES ('GRAD', N'Graduación alcohólica');
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Tipo_Prueba WHERE codigo = 'METALES' OR nombre = N'Metales pesados')
-    INSERT INTO dbo.Tipo_Prueba (codigo, nombre) VALUES ('METALES', N'Metales pesados');
-
--- 2) Backfill: asignar tipo_prueba_id a pruebas existentes basadas en nombre_prueba
-UPDATE p
-SET p.tipo_prueba_id = tp.id_tipo_prueba
-FROM dbo.Prueba p
-INNER JOIN dbo.Tipo_Prueba tp ON tp.nombre = p.nombre_prueba
-WHERE p.tipo_prueba_id IS NULL;
-
--- 3) Trigger actualizado: insertar también tipo_prueba_id
+-- Trigger actualizado: insertar también tipo_prueba_id
 EXEC(N'
 CREATE OR ALTER TRIGGER dbo.trg_muestra_generar_pruebas
 ON dbo.Muestra
