@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { createTest } from "@/api/tests";
+import { createTest, getTestTypes } from "@/api/tests";
 import { getAllSamples, getAssignedSamples } from "@/api/samples";
 import { ArrowLeft, FlaskConical } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -13,6 +13,7 @@ import { hasRole } from "@/utils/roles";
 
 interface FormValues {
   idMuestra: string;
+  tipoPruebaId: number;
   nombrePrueba: string;
 }
 
@@ -23,7 +24,8 @@ export default function CreateTestPage() {
   const [searchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>();
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>();
+  const watchedTipoPruebaId = watch("tipoPruebaId");
 
   const { data: samples, isLoading: loadingSamples, error: samplesError } = useQuery({
     queryKey: ["samples", hasRole(user?.role, ["ADMIN"]) ? "all" : "assigned"],
@@ -32,6 +34,23 @@ export default function CreateTestPage() {
         ? getAllSamples()
         : getAssignedSamples(),
   });
+
+  const { data: testTypes, isLoading: loadingTestTypes } = useQuery({
+    queryKey: ["testTypes"],
+    queryFn: () => getTestTypes(),
+  });
+
+  // If user selects a test type and name is empty, auto-fill with type name
+  useEffect(() => {
+    if (!watchedTipoPruebaId || !testTypes || testTypes.length === 0) return;
+    const selected = testTypes.find(t => t.idTipoPrueba === watchedTipoPruebaId);
+    if (!selected) return;
+
+    const currentName = watch("nombrePrueba");
+    if (!currentName) {
+      setValue("nombrePrueba", selected.nombre);
+    }
+  }, [watchedTipoPruebaId, testTypes, setValue]);
 
   const createMutation = useMutation({
     mutationFn: createTest,
@@ -56,6 +75,7 @@ export default function CreateTestPage() {
     setError(null);
     const payload: CreatePruebaDto = {
       idMuestra: values.idMuestra,
+      tipoPruebaId: Number(values.tipoPruebaId),
       nombrePrueba: values.nombrePrueba,
     };
     createMutation.mutate(payload);
@@ -122,6 +142,34 @@ export default function CreateTestPage() {
             />
             {errors.nombrePrueba && (
               <p className="mt-1 text-sm text-error-600">{errors.nombrePrueba.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="tipoPruebaId" className="block text-sm font-medium text-gray-700 mb-2">
+              Tipo de Prueba *
+            </label>
+            <select
+              {...register("tipoPruebaId", {
+                required: "Debe seleccionar un tipo de prueba",
+                valueAsNumber: true,
+                validate: (v) => (Number.isFinite(v) && v > 0) || "Debe seleccionar un tipo de prueba",
+              })}
+              className="input"
+              defaultValue=""
+            >
+              <option value="">Seleccionar tipo</option>
+              {testTypes?.map((t) => (
+                <option key={t.idTipoPrueba} value={t.idTipoPrueba}>
+                  {t.nombre} ({t.codigo})
+                </option>
+              ))}
+            </select>
+            {errors.tipoPruebaId && (
+              <p className="mt-1 text-sm text-error-600">{errors.tipoPruebaId.message}</p>
+            )}
+            {loadingTestTypes && (
+              <p className="mt-1 text-sm text-gray-500">Cargando tipos de prueba...</p>
             )}
           </div>
 

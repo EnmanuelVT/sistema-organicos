@@ -73,8 +73,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         email: me.email,
         userName: me.userName,
         role: normalizeRole(me.role),
-        nombre: me.nombre,
-        apellido: me.apellido,
+        nombre: me.nombre ?? undefined,
+        apellido: me.apellido ?? undefined,
       };
       localStorage.setItem("auth.user", JSON.stringify(user));
 
@@ -92,8 +92,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       email: me.email,
       userName: me.userName,
       role: normalizeRole(me.role),
-      nombre: me.nombre,
-      apellido: me.apellido,
+      nombre: me.nombre ?? undefined,
+      apellido: me.apellido ?? undefined,
     };
     localStorage.setItem("auth.user", JSON.stringify(user));
     set({ user });

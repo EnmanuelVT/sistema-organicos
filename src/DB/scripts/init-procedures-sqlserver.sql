@@ -152,13 +152,20 @@ GO
 CREATE OR ALTER PROCEDURE sp_crear_prueba
     @p_nombre_prueba VARCHAR(120),
     @p_id_muestra VARCHAR(30),
+    @p_tipo_prueba_id INT,
     @p_id_usuario VARCHAR(450)
 AS
 BEGIN
     DECLARE @new_id_prueba INT;
 
-    INSERT INTO Prueba (nombre_prueba, id_muestra)
-    VALUES (@p_nombre_prueba, @p_id_muestra);
+    IF (@p_tipo_prueba_id IS NULL OR @p_tipo_prueba_id <= 0)
+    BEGIN
+        RAISERROR('Debe indicar @p_tipo_prueba_id.', 16, 1);
+        RETURN;
+    END
+
+    INSERT INTO Prueba (nombre_prueba, id_muestra, tipo_prueba_id)
+    VALUES (@p_nombre_prueba, @p_id_muestra, @p_tipo_prueba_id);
     SET @new_id_prueba = SCOPE_IDENTITY();
 
     INSERT INTO Auditoria (id_usuario, accion, descripcion) VALUES (@p_id_usuario, 'CREAR_PRUEBA', CONCAT('PRB=',

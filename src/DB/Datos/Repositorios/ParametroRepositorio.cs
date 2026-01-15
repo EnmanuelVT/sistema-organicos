@@ -51,7 +51,7 @@ public class ParametroRepositorio
         if (pruebaInfo.TipoPruebaId != null)
         {
             var tipoPruebaId = pruebaInfo.TipoPruebaId;
-            query = query.Where(p => p.TipoPruebaId == null || p.TipoPruebaId == tipoPruebaId);
+            query = query.Where(p => p.TipoPruebaId == tipoPruebaId);
         }
 
         return await query

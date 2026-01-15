@@ -1,5 +1,5 @@
 import api from "@/api/client";
-import type { UserDto, CreateUserDto } from "@/frontend/src/types/api";
+import type { UserDto, CreateUserDto } from "@/types/api";
 
 export async function getAllUsers(): Promise<UserDto[]> {
   const { data } = await api.get<UserDto[]>("/api/admin/users");

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { getParametersBySampleType, addParameterToSampleType } from "@/api/parameters";
+import { getTestTypes } from "@/api/tests";
 import { Settings, Plus } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
@@ -10,6 +11,7 @@ import type { CreateParametroDto } from "@/types/api";
 
 interface ParameterForm {
   tpmstId: number;
+  tipoPruebaId: number;
   nombreParametro: string;
   valorMin: number;
   valorMax: number;
@@ -23,6 +25,11 @@ export default function ParametersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ParameterForm>();
+
+  const { data: testTypes, isLoading: loadingTestTypes } = useQuery({
+    queryKey: ["testTypes"],
+    queryFn: () => getTestTypes(),
+  });
 
   const { data: parameters, isLoading, error: parametersError } = useQuery({
     queryKey: ["parameters", selectedType],
@@ -47,6 +54,7 @@ export default function ParametersPage() {
     setError(null);
     const payload: CreateParametroDto = {
       tpmstId: selectedType,
+      tipoPruebaId: values.tipoPruebaId,
       nombreParametro: values.nombreParametro,
       valorMin: values.valorMin || null,
       valorMax: values.valorMax || null,
@@ -120,6 +128,33 @@ export default function ParametersPage() {
                 />
                 {errors.nombreParametro && (
                   <p className="mt-1 text-sm text-error-600">{errors.nombreParametro.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tipo de Prueba *
+                </label>
+                <select
+                  {...register("tipoPruebaId", {
+                    valueAsNumber: true,
+                    validate: (v) => (Number.isFinite(v) && v > 0) || "Debe seleccionar un tipo de prueba",
+                  })}
+                  className="input"
+                  defaultValue=""
+                >
+                  <option value="">Seleccionar tipo</option>
+                  {testTypes?.map((t) => (
+                    <option key={t.idTipoPrueba} value={t.idTipoPrueba}>
+                      {t.nombre} ({t.codigo})
+                    </option>
+                  ))}
+                </select>
+                {errors.tipoPruebaId && (
+                  <p className="mt-1 text-sm text-error-600">{errors.tipoPruebaId.message}</p>
+                )}
+                {loadingTestTypes && (
+                  <p className="mt-1 text-sm text-gray-500">Cargando tipos de prueba...</p>
                 )}
               </div>
 
@@ -232,6 +267,7 @@ export default function ParametersPage() {
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 font-medium text-gray-900">ID</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900">Nombre</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900">Tipo Prueba</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900">Rango</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900">Unidad</th>
                 </tr>
@@ -244,6 +280,11 @@ export default function ParametersPage() {
                     </td>
                     <td className="py-3 px-4 text-gray-700">
                       {param.nombreParametro}
+                    </td>
+                    <td className="py-3 px-4 text-gray-700">
+                      {param.tipoPruebaId
+                        ? (testTypes?.find(t => t.idTipoPrueba === param.tipoPruebaId)?.nombre ?? param.tipoPruebaId)
+                        : "(sin tipo)"}
                     </td>
                     <td className="py-3 px-4 text-gray-700">
                       {param.valorMin !== null && param.valorMax !== null

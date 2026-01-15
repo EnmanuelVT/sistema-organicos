@@ -94,6 +94,8 @@ builder.Services.AddScoped<PruebaNegocio>();
 builder.Services.AddScoped<PruebaRepositorio>();
 builder.Services.AddScoped<ParametroNegocio>();
 builder.Services.AddScoped<ParametroRepositorio>();
+builder.Services.AddScoped<TipoPruebaNegocio>();
+builder.Services.AddScoped<TipoPruebaRepositorio>();
 // Register the IDocumentBuilder implementation
 builder.Services.AddScoped<IDocumentBuilder, DocumentBuilder>(); // Replace DocumentBuilder with your actual implementation class name
 
@@ -126,6 +128,7 @@ app.MapMuestraRoutes();
 app.MapResultadoRoutes();
 app.MapPruebaRoutes();
 app.MapParametroRoutes();
+app.MapTipoPruebaRoutes();
 app.MapAuditoriaRoutes();
 app.MapTrazabilidadRoutes();
 

@@ -28,10 +28,16 @@ public class PruebaRepositorio
     
     public async Task<PruebaDto?> CrearPruebaAsync(CreatePruebaDto createPruebaDto, string idUsuario)
     {
+        if (createPruebaDto.TipoPruebaId <= 0)
+        {
+            throw new ArgumentException("TipoPruebaId es requerido.");
+        }
+
         var result = await _context.Database.ExecuteSqlRawAsync(
-            "EXEC sp_crear_prueba @p_nombre_prueba = {0}, @p_id_muestra = {1}, @p_id_usuario = {2}",
+            "EXEC sp_crear_prueba @p_nombre_prueba = {0}, @p_id_muestra = {1}, @p_tipo_prueba_id = {2}, @p_id_usuario = {3}",
             createPruebaDto.NombrePrueba,
             createPruebaDto.IdMuestra,
+            createPruebaDto.TipoPruebaId,
             idUsuario
         );
 
@@ -42,6 +48,7 @@ public class PruebaRepositorio
         
         return await _context.Pruebas
             .Where(p => p.IdMuestra == createPruebaDto.IdMuestra)
+            .OrderByDescending(p => p.IdPrueba)
             .Select(p => new PruebaDto
             {
                 IdPrueba = p.IdPrueba,

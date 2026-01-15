@@ -1,5 +1,5 @@
 import api from "@/api/client";
-import type { ResultadoPruebaDto, CreateResultadoPruebaDto } from "@/frontend/src/types/api";
+import type { ResultadoPruebaDto, CreateResultadoPruebaDto } from "@/types/api";
 
 export async function getResultsBySample(sampleId: string): Promise<ResultadoPruebaDto[]> {
   const { data } = await api.get<ResultadoPruebaDto[]>(`/api/resultados/muestra/${sampleId}`);

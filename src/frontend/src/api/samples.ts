@@ -4,7 +4,7 @@ import type {
   CreateMuestraDto,
   AsignarAnalistaEnMuestraDto,
   AsignarEstadoMuestraDto,
-} from "@/frontend/src/types/api";
+} from "@/types/api";
 
 export async function getAllSamples(): Promise<MuestraDto[]> {
   const { data } = await api.get<MuestraDto[]>("/api/muestras");

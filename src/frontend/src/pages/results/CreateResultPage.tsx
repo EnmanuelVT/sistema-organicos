@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { createResult } from "@/api/results";
 import { getAllSamples, getAssignedSamples } from "@/api/samples";
 import { getTestsBySample } from "@/api/tests";
-import { getParametersBySampleType } from "@/api/parameters";
+import { getParametersByTestId } from "@/api/parameters";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorMessage from "@/components/ErrorMessage";
@@ -15,8 +15,8 @@ import type { CreateResultadoPruebaDto } from "@/types/api";
 
 interface FormValues {
   idMuestra: string;
-  idPrueba: number;
-  idParametro: number;
+  idPrueba?: number;
+  idParametro?: number;
   valorObtenido: number;
   unidad: string;
 }
@@ -31,6 +31,8 @@ export default function CreateResultPage() {
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>();
   const watchedSample = watch("idMuestra");
+  const watchedTestId = watch("idPrueba");
+  const selectedTestId = watchedTestId ?? 0;
 
   const { data: samples, isLoading: loadingSamples, error: samplesError } = useQuery({
     queryKey: ["samples", hasRole(user?.role, ["ADMIN"]) ? "all" : "assigned"],
@@ -47,12 +49,10 @@ export default function CreateResultPage() {
     enabled: !!watchedSample,
   });
 
-  const selectedSampleData = samples?.find(s => s.mstCodigo === watchedSample);
-
   const { data: parameters } = useQuery({
-    queryKey: ["parameters", selectedSampleData?.tpmstId],
-    queryFn: () => getParametersBySampleType(selectedSampleData!.tpmstId),
-    enabled: !!selectedSampleData?.tpmstId,
+    queryKey: ["parameters", selectedTestId],
+    queryFn: () => getParametersByTestId(selectedTestId),
+    enabled: selectedTestId > 0,
   });
 
   const createMutation = useMutation({
@@ -65,6 +65,11 @@ export default function CreateResultPage() {
       setError(error?.response?.data?.message || "Error al crear el resultado");
     },
   });
+
+  // When test changes, clear parameter selection to avoid stale invalid value
+  useEffect(() => {
+    setValue("idParametro", undefined);
+  }, [watchedTestId, setValue]);
 
   // Set defaults from URL params
   useEffect(() => {
@@ -82,6 +87,10 @@ export default function CreateResultPage() {
 
   const onSubmit = (values: FormValues) => {
     setError(null);
+    if (!values.idPrueba || !values.idParametro) {
+      setError("Debe seleccionar una prueba y un parámetro");
+      return;
+    }
     const payload: CreateResultadoPruebaDto = {
       idMuestra: values.idMuestra,
       idPrueba: Number(values.idPrueba),
@@ -147,7 +156,10 @@ export default function CreateResultPage() {
                 Prueba *
               </label>
               <select
-                {...register("idPrueba", { required: "Debe seleccionar una prueba" })}
+                {...register("idPrueba", {
+                  required: "Debe seleccionar una prueba",
+                  valueAsNumber: true,
+                })}
                 className="input"
               >
                 <option value="">Seleccionar prueba</option>
@@ -163,13 +175,16 @@ export default function CreateResultPage() {
             </div>
           )}
 
-          {selectedSampleData && (
+          {selectedTestId > 0 && (
             <div>
               <label htmlFor="idParametro" className="block text-sm font-medium text-gray-700 mb-2">
                 Parámetro *
               </label>
               <select
-                {...register("idParametro", { required: "Debe seleccionar un parámetro" })}
+                {...register("idParametro", {
+                  required: "Debe seleccionar un parámetro",
+                  valueAsNumber: true,
+                })}
                 className="input"
               >
                 <option value="">Seleccionar parámetro</option>

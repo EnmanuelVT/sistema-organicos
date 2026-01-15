@@ -51,12 +51,20 @@ export interface CreateMuestraDto {
 export interface PruebaDto {
   idPrueba: number;
   idMuestra: string | null;
-  nombrePrueba: string | null;
+  tipoPruebaId?: number | null;
+  nombrePrueba: string;
 }
 
 export interface CreatePruebaDto {
   idMuestra: string | null;
-  nombrePrueba: string | null;
+  tipoPruebaId: number;
+  nombrePrueba: string;
+}
+
+export interface TipoPruebaDto {
+  idTipoPrueba: number;
+  codigo: string;
+  nombre: string;
 }
 
 export interface ResultadoPruebaDto {
@@ -83,6 +91,7 @@ export interface CreateResultadoPruebaDto {
 export interface ParametroDto {
   idParametro: number;
   tpmstId?: number | null;
+  tipoPruebaId?: number | null;
   nombreParametro?: string | null;
   valorMin?: number | null;
   valorMax?: number | null;
@@ -91,6 +100,7 @@ export interface ParametroDto {
 
 export interface CreateParametroDto {
   tpmstId?: number | null;
+  tipoPruebaId?: number | null;
   nombreParametro?: string | null;
   valorMin?: number | null;
   valorMax?: number | null;

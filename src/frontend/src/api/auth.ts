@@ -1,5 +1,5 @@
 import api from "@/api/client";
-import type { AccessTokenResponse, UserDto } from "@/frontend/src/types/api";
+import type { AccessTokenResponse, UserDto } from "@/types/api";
 
 export interface LoginRequest {
   email: string;

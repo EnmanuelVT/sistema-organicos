@@ -38,6 +38,11 @@ public static class PruebaRoutes
         {
             try
             {
+                if (createPruebaDto.TipoPruebaId <= 0)
+                {
+                    return Results.BadRequest(new { message = "Debe indicar el tipo de prueba (tipoPruebaId)." });
+                }
+
                 var usuarioId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (usuarioId == null)
                 {

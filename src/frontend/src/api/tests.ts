@@ -1,5 +1,5 @@
 import api from "@/api/client";
-import type { PruebaDto, CreatePruebaDto, EvaluarPruebaDto } from "@/frontend/src/types/api";
+import type { PruebaDto, CreatePruebaDto, EvaluarPruebaDto, TipoPruebaDto } from "@/types/api";
 
 export async function getTestsBySample(sampleId: string): Promise<PruebaDto[]> {
   const { data } = await api.get<PruebaDto[]>(`/api/pruebas/muestra/${sampleId}`);
@@ -8,6 +8,11 @@ export async function getTestsBySample(sampleId: string): Promise<PruebaDto[]> {
 
 export async function createTest(test: CreatePruebaDto): Promise<PruebaDto> {
   const { data } = await api.post<PruebaDto>("/api/pruebas", test);
+  return data;
+}
+
+export async function getTestTypes(): Promise<TipoPruebaDto[]> {
+  const { data } = await api.get<TipoPruebaDto[]>("/api/tipo-prueba");
   return data;
 }
 
