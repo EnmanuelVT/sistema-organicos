@@ -7,6 +7,8 @@ public class ResultadoPruebaDto
     public int IdPrueba { get; set; }
     public int IdParametro { get; set; }
 
+    public string? NombreParametro { get; set; }
+
     public string IdMuestra { get; set; } = null!;
 
     public decimal? ValorObtenido { get; set; }

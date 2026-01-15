@@ -25,41 +25,49 @@ AS
 
     public async Task<IEnumerable<ResultadoPruebaDto?>> ObtenerResultadosPorMuestraAsync(string idMuestra)
     {
-        return await _context.ResultadoPruebas
-            .Where(r => r.IdMuestra == idMuestra)
-            .Select(r => new ResultadoPruebaDto
-            {
-                IdMuestra = r.IdMuestra,
-                IdPrueba = r.IdPrueba,
-                IdParametro = r.IdParametro,
-                IdResultado = r.IdResultado,
-                ValorObtenido = r.ValorObtenido,
-                Unidad = r.Unidad,
-                CumpleNorma = r.CumpleNorma,
-                FechaRegistro = r.FechaRegistro,
-                ValidadoPor = r.ValidadoPor,
-                EstadoValidacion = r.EstadoValidacion
-            })
+        return await (
+                from r in _context.ResultadoPruebas
+                join p in _context.ParametroNormas on r.IdParametro equals p.IdParametro into paramJoin
+                from p in paramJoin.DefaultIfEmpty()
+                where r.IdMuestra == idMuestra
+                select new ResultadoPruebaDto
+                {
+                    IdMuestra = r.IdMuestra,
+                    IdPrueba = r.IdPrueba,
+                    IdParametro = r.IdParametro,
+                    NombreParametro = p != null ? p.NombreParametro : null,
+                    IdResultado = r.IdResultado,
+                    ValorObtenido = r.ValorObtenido,
+                    Unidad = r.Unidad,
+                    CumpleNorma = r.CumpleNorma,
+                    FechaRegistro = r.FechaRegistro,
+                    ValidadoPor = r.ValidadoPor,
+                    EstadoValidacion = r.EstadoValidacion
+                })
             .ToListAsync();
     }
     
     public async Task<ResultadoPruebaDto?> ObtenerResultadoPorIdAsync(long idResultado)
     {
-        return await _context.ResultadoPruebas
-            .Where(r => r.IdResultado == idResultado)
-            .Select(r => new ResultadoPruebaDto
-            {
-                IdMuestra = r.IdMuestra,
-                IdPrueba = r.IdPrueba,
-                IdParametro = r.IdParametro,
-                IdResultado = r.IdResultado,
-                ValorObtenido = r.ValorObtenido,
-                Unidad = r.Unidad,
-                CumpleNorma = r.CumpleNorma,
-                FechaRegistro = r.FechaRegistro,
-                ValidadoPor = r.ValidadoPor,
-                EstadoValidacion = r.EstadoValidacion
-            })
+        return await (
+                from r in _context.ResultadoPruebas
+                join p in _context.ParametroNormas on r.IdParametro equals p.IdParametro into paramJoin
+                from p in paramJoin.DefaultIfEmpty()
+                where r.IdResultado == idResultado
+                select new ResultadoPruebaDto
+                {
+                    IdMuestra = r.IdMuestra,
+                    IdPrueba = r.IdPrueba,
+                    IdParametro = r.IdParametro,
+                    NombreParametro = p != null ? p.NombreParametro : null,
+                    IdResultado = r.IdResultado,
+                    ValorObtenido = r.ValorObtenido,
+                    Unidad = r.Unidad,
+                    CumpleNorma = r.CumpleNorma,
+                    FechaRegistro = r.FechaRegistro,
+                    ValidadoPor = r.ValidadoPor,
+                    EstadoValidacion = r.EstadoValidacion
+                })
             .FirstOrDefaultAsync();
     }
 
@@ -82,25 +90,28 @@ AS
             return null;
         }
         
-        var resultadoEntry = await _context.ResultadoPruebas
-            .Where(r => r.IdMuestra == createResultadoPruebaDto.IdMuestra && r.IdPrueba == createResultadoPruebaDto.IdPrueba)
-            .OrderByDescending(r => r.FechaRegistro)
+        var resultadoDto = await (
+                from r in _context.ResultadoPruebas
+                join p in _context.ParametroNormas on r.IdParametro equals p.IdParametro into paramJoin
+                from p in paramJoin.DefaultIfEmpty()
+                where r.IdMuestra == createResultadoPruebaDto.IdMuestra && r.IdPrueba == createResultadoPruebaDto.IdPrueba
+                orderby r.FechaRegistro descending
+                select new ResultadoPruebaDto
+                {
+                    IdMuestra = r.IdMuestra,
+                    IdPrueba = r.IdPrueba,
+                    IdParametro = r.IdParametro,
+                    NombreParametro = p != null ? p.NombreParametro : null,
+                    IdResultado = r.IdResultado,
+                    ValorObtenido = r.ValorObtenido,
+                    Unidad = r.Unidad,
+                    CumpleNorma = r.CumpleNorma,
+                    FechaRegistro = r.FechaRegistro,
+                    ValidadoPor = r.ValidadoPor,
+                    EstadoValidacion = r.EstadoValidacion
+                })
             .FirstOrDefaultAsync();
-        
-        ResultadoPruebaDto resultadoPruebaDto = new ResultadoPruebaDto()
-        {
-            IdMuestra = resultadoEntry!.IdMuestra,
-            IdPrueba = resultadoEntry.IdPrueba,
-            IdParametro = resultadoEntry.IdParametro,
-            IdResultado = resultadoEntry.IdResultado,
-            ValorObtenido = resultadoEntry.ValorObtenido,
-            Unidad = resultadoEntry.Unidad,
-            CumpleNorma = resultadoEntry.CumpleNorma,
-            FechaRegistro = resultadoEntry.FechaRegistro,
-            ValidadoPor = resultadoEntry.ValidadoPor,
-            EstadoValidacion = resultadoEntry.EstadoValidacion
-        };
 
-        return resultadoPruebaDto;
+        return resultadoDto;
     }
 }

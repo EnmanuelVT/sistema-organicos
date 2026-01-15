@@ -71,6 +71,7 @@ export interface ResultadoPruebaDto {
   idResultado: number;
   idPrueba: number;
   idParametro: number;
+  nombreParametro?: string | null;
   idMuestra: string | null;
   valorObtenido?: number | null;
   unidad?: string | null;

@@ -247,7 +247,7 @@ export default function SampleDetailPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-medium text-gray-900">
-                          Parámetro {result.idParametro}
+                          Parámetro {result.nombreParametro || result.idParametro}
                         </h3>
                         <p className="text-sm text-gray-500">
                           Valor: {result.valorObtenido} {result.unidad}
