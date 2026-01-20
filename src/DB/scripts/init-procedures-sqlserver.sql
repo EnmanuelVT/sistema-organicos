@@ -24,6 +24,7 @@ AS
 BEGIN
 INSERT INTO Bitacora_Muestra (id_muestra, id_analista, observaciones)
 VALUES (@p_MST_CODIGO, @p_id_analista, @p_observaciones);
+UPDATE Muestra SET estado_actual = 2 WHERE MST_CODIGO = @p_MST_CODIGO;
 
 INSERT INTO Auditoria (id_usuario, accion, descripcion)
 VALUES (@p_id_analista, 'ASIGNAR_ANALISTA', CONCAT('MST=',@p_MST_CODIGO));
