@@ -377,7 +377,40 @@ public class MuestraRepositorio
                 }
                 await _context.SaveChangesAsync();
 
-                // 3) Generar Documento desde la Prueba (Excel -> PDF)
+                // 3) Reunir resultados de todos los tipos de prueba requeridos por el tipo de muestra
+                var tipoPruebaIds = await _context.TipoMuestraTipoPruebas
+                    .Where(t => t.TpmstId == muestra.TpmstId)
+                    .OrderBy(t => t.Orden)
+                    .Select(t => t.TipoPruebaId)
+                    .ToListAsync();
+
+                List<ResultadoPrueba> resultadosParaDocumento;
+                var pruebasDeMuestra = await _context.Pruebas
+                    .Where(p => p.IdMuestra == muestra.MstCodigo)
+                    .Include(p => p.ResultadoPruebas)
+                    .ToListAsync();
+
+                if (tipoPruebaIds.Count > 0)
+                {
+                    resultadosParaDocumento = pruebasDeMuestra
+                        .Where(p => p.TipoPruebaId != null && tipoPruebaIds.Contains(p.TipoPruebaId.Value))
+                        .SelectMany(p => p.ResultadoPruebas)
+                        .ToList();
+                }
+                else
+                {
+                    resultadosParaDocumento = pruebasDeMuestra
+                        .SelectMany(p => p.ResultadoPruebas)
+                        .ToList();
+                }
+
+                if (!resultadosParaDocumento.Any())
+                    resultadosParaDocumento = prueba.ResultadoPruebas.ToList();
+
+                if (!resultadosParaDocumento.Any())
+                    throw new Exception("No hay resultados para generar el documento final.");
+
+                // 4) Generar Documento desde la Prueba (Excel -> PDF)
                 var version = await _context.Documentos
                     .Where(d => d.IdMuestra == muestra.MstCodigo)
                     .CountAsync() + 1;
@@ -386,7 +419,7 @@ public class MuestraRepositorio
                 var pdfPath = await _documentBuilder.CrearCertificadoAsync(
                     _context,
                     muestra,
-                    prueba.ResultadoPruebas,
+                    resultadosParaDocumento,
                     version,
                     outputDir);
 
