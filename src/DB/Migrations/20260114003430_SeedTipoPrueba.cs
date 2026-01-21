@@ -48,41 +48,37 @@ BEGIN
                 AND p.nombre_prueba = v.nombre_prueba
           );
 
-        -- Alimento (2)
-        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra, tipo_prueba_id)
-        SELECT v.nombre_prueba, i.MST_CODIGO, tp.id_tipo_prueba
-        FROM inserted i
-        CROSS APPLY (VALUES
-            (N''Análisis microbiológico''),
-            (N''Análisis físico-químico''),
-            (N''Etiquetado'')
-        ) v(nombre_prueba)
-        LEFT JOIN dbo.Tipo_Prueba tp ON tp.nombre = v.nombre_prueba
-        WHERE i.TPMST_ID = 2
-          AND NOT EXISTS (
-              SELECT 1
-              FROM dbo.Prueba p
-              WHERE p.id_muestra = i.MST_CODIGO
-                AND p.nombre_prueba = v.nombre_prueba
-          );
+                -- Alimento (2)
+                INSERT INTO dbo.Prueba (nombre_prueba, id_muestra, tipo_prueba_id)
+                SELECT v.nombre_prueba, i.MST_CODIGO, tp.id_tipo_prueba
+                FROM inserted i
+                CROSS APPLY (VALUES
+                        (N''Análisis microbiológico'')
+                ) v(nombre_prueba)
+                LEFT JOIN dbo.Tipo_Prueba tp ON tp.nombre = v.nombre_prueba
+                WHERE i.TPMST_ID = 2
+                    AND NOT EXISTS (
+                            SELECT 1
+                            FROM dbo.Prueba p
+                            WHERE p.id_muestra = i.MST_CODIGO
+                                AND p.nombre_prueba = v.nombre_prueba
+                    );
 
-        -- Bebida alcohólica (3)
-        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra, tipo_prueba_id)
-        SELECT v.nombre_prueba, i.MST_CODIGO, tp.id_tipo_prueba
-        FROM inserted i
-        CROSS APPLY (VALUES
-            (N''Graduación alcohólica''),
-            (N''Metales pesados''),
-            (N''Etiquetado'')
-        ) v(nombre_prueba)
-        LEFT JOIN dbo.Tipo_Prueba tp ON tp.nombre = v.nombre_prueba
-        WHERE i.TPMST_ID = 3
-          AND NOT EXISTS (
-              SELECT 1
-              FROM dbo.Prueba p
-              WHERE p.id_muestra = i.MST_CODIGO
-                AND p.nombre_prueba = v.nombre_prueba
-          );
+                -- Bebida alcohólica (3)
+                INSERT INTO dbo.Prueba (nombre_prueba, id_muestra, tipo_prueba_id)
+                SELECT v.nombre_prueba, i.MST_CODIGO, tp.id_tipo_prueba
+                FROM inserted i
+                CROSS APPLY (VALUES
+                        (N''Parámetros fisicoquímicos'')
+                ) v(nombre_prueba)
+                LEFT JOIN dbo.Tipo_Prueba tp ON tp.nombre = v.nombre_prueba
+                WHERE i.TPMST_ID = 3
+                    AND NOT EXISTS (
+                            SELECT 1
+                            FROM dbo.Prueba p
+                            WHERE p.id_muestra = i.MST_CODIGO
+                                AND p.nombre_prueba = v.nombre_prueba
+                    );
 
         IF @outerTranCount = 0
             COMMIT;

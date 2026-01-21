@@ -102,9 +102,6 @@ public static class AppDataSeeder
         await EnsureTipoPruebaAsync("MICRO", "Microbiológicos");
         await EnsureTipoPruebaAsync("AN_MICRO", "Análisis microbiológico");
         await EnsureTipoPruebaAsync("AN_FQ", "Análisis físico-químico");
-        await EnsureTipoPruebaAsync("ETIQ", "Etiquetado");
-        await EnsureTipoPruebaAsync("GRAD", "Graduación alcohólica");
-        await EnsureTipoPruebaAsync("METALES", "Metales pesados");
 
         var tipoPruebaParFqId = GetTipoPruebaId("PAR_FQ", "Parámetros fisicoquímicos");
         var tipoPruebaMicroId = GetTipoPruebaId("MICRO", "Microbiológicos");
@@ -175,8 +172,8 @@ public static class AppDataSeeder
         UpsertParametroNorma("Listeria monocytogenes", "Presencia/25g", 2, tipoPruebaAnalisisMicroId, 0m, 0m);
 
         // Bebida alcoholica
-        // Grado Alcohólico
-        UpsertParametroNorma("Grado Alcohólico", "% vol", 3, tipoPruebaParFqId, 5m, 40m);
+        // Grado alcoholico (parametros fisioquimicos)
+        UpsertParametroNorma("Grado alcoholico", "% vol", 3, tipoPruebaParFqId, 5m, 40m);
 
         // Seed Tipo_Muestra_Tipo_Prueba
         EnsureTipoMuestraTipoPrueba(1, tipoPruebaParFqId, 1);

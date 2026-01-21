@@ -263,9 +263,9 @@ go
 -- Trigger: Generar pruebas automáticamente al crear una muestra
 -- Cubre tanto dbo.sp_crear_muestra como INSERT directo en dbo.Muestra.
 -- Asignación de pruebas según tipo de muestra:
---   - Alimento (TPMST_ID=2): análisis microbiológico, físico-químico, etiquetado
+--   - Alimento (TPMST_ID=2): análisis microbiológico
 --   - Agua (TPMST_ID=1): parámetros fisicoquímicos, microbiológicos
---   - Bebida alcohólica (TPMST_ID=3): graduación alcohólica, metales pesados, etiquetado
+--   - Bebida alcohólica (TPMST_ID=3): parámetros fisicoquímicos
 -----------------------------------------------------------------------------
 CREATE OR ALTER TRIGGER dbo.trg_muestra_generar_pruebas
 ON dbo.Muestra
@@ -285,13 +285,14 @@ BEGIN
 
     BEGIN TRY
         -- Agua (1)
-        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra)
-        SELECT v.nombre_prueba, i.MST_CODIGO
+        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra, tipo_prueba_id)
+        SELECT v.nombre_prueba, i.MST_CODIGO, tp.id_tipo_prueba
         FROM inserted i
         CROSS APPLY (VALUES
             ('Parámetros fisicoquímicos'),
             ('Microbiológicos')
         ) v(nombre_prueba)
+        LEFT JOIN dbo.Tipo_Prueba tp ON tp.nombre = v.nombre_prueba
         WHERE i.TPMST_ID = 1
           AND NOT EXISTS (
               SELECT 1
@@ -301,14 +302,13 @@ BEGIN
           );
 
         -- Alimento (2)
-        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra)
-        SELECT v.nombre_prueba, i.MST_CODIGO
+        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra, tipo_prueba_id)
+        SELECT v.nombre_prueba, i.MST_CODIGO, tp.id_tipo_prueba
         FROM inserted i
         CROSS APPLY (VALUES
-            ('Análisis microbiológico'),
-            ('Análisis físico-químico'),
-            ('Etiquetado')
+            ('Análisis microbiológico')
         ) v(nombre_prueba)
+        LEFT JOIN dbo.Tipo_Prueba tp ON tp.nombre = v.nombre_prueba
         WHERE i.TPMST_ID = 2
           AND NOT EXISTS (
               SELECT 1
@@ -318,14 +318,13 @@ BEGIN
           );
 
         -- Bebida alcohólica (3)
-        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra)
-        SELECT v.nombre_prueba, i.MST_CODIGO
+        INSERT INTO dbo.Prueba (nombre_prueba, id_muestra, tipo_prueba_id)
+        SELECT v.nombre_prueba, i.MST_CODIGO, tp.id_tipo_prueba
         FROM inserted i
         CROSS APPLY (VALUES
-            ('Graduación alcohólica'),
-            ('Metales pesados'),
-            ('Etiquetado')
+            ('Parámetros fisicoquímicos')
         ) v(nombre_prueba)
+        LEFT JOIN dbo.Tipo_Prueba tp ON tp.nombre = v.nombre_prueba
         WHERE i.TPMST_ID = 3
           AND NOT EXISTS (
               SELECT 1
